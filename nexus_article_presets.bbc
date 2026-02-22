@@ -1,0 +1,68 @@
+[center]
+[color=#ffff00][size=6][b]Presets: Mod Author Guide[/b][/size][/color][/center]
+[line]
+So you've found a preem photo spot, a secret hideout, or built a custom location, and you want to share it with the world? The [b]Preset Import[/b] feature makes it super easy.
+
+It allows you to distribute your locations as simple text files. SLM handles the rest - loading, updating, and making sure nothing breaks.
+
+[line]
+[color=#ffff00][size=5][b]How it works[/b][/size][/color]
+[list]
+[*][b]Drop & Load:[/b] Users just drop your [font=Courier New].txt[/font] file in the folder, and it appears in-game.
+[*][b]Auto-Updates:[/b] If you tweak your location later, SLM updates it for the user automatically.
+[*][b]Safety First:[/b] We check for existing locations so we don't spam the user's UI or overwrite their own saves.
+[/list]
+[line]
+[color=#ffff00][size=5][b]1. Creating your Preset[/b][/size][/color]
+[list=1]
+[*][b]Go there:[/b] Stand in your spot in-game.
+[*][b]Save it:[/b] Add it to SLM. Give it a nice name, category, and description.
+[*][b]Export it:[/b][list]
+[*][b]Single Location:[/b] Select it and click [b]Export to Clipboard[/b].
+[*][b]Whole Category:[/b] Right-click a Category header -> [b]Export Category[/b].
+[*][b]Whole District:[/b] Right-click a District header -> [b]Export District[/b].
+[*][b]Everything:[/b] Config Tab -> [b]Export All Data[/b].
+[/list]
+[*][b]Save to File:[/b][list]
+[*]Create a new text file (e.g., [font=Courier New]MyCustomLocation.txt[/font]).
+[*]Paste that code string right in there.
+[*][b]Pro Tip:[/b] Keep it to [b]one location string per file[/b]. If you have 5 spots to share, just make 5 .txt files. It keeps things clean and easy to manage!
+[/list]
+[/list]
+[line]
+[color=#ffff00][size=5][b]2. Packaging it up[/b][/size][/color]
+Pack your mod so your files land in this folder:
+
+[code]bin/x64/plugins/cyber_engine_tweaks/mods/SimpleLocationManager/presets/[/code]
+
+[b]Tip:[/b] Name your file something unique (like [font=Courier New]AuthorName_LocationName.txt[/font]) so you don't accidentally clash with other modders.
+
+[line]
+[color=#ffff00][size=5][b]3. Updates (Calculated Magic)[/b][/size][/color]
+SLM remembers the [b]ID[/b] inside your export string.
+
+If you decide later that your "Secret Base" needs to be moved 2 meters to the left, just update your [font=Courier New].txt[/font] file with the new export string (from the updated location). When the user installs your update, SLM will see the matching ID and [b]update the location automatically[/b].
+
+This means users always get your latest version without duplicate markers cluttering their list! ✨
+
+[line]
+[color=#ffff00][size=5][b]4. Conflict Detection (No Drama)[/b][/size][/color]
+We respect the user's game state. Before importing anything new, SLM checks for existing locations.
+
+[list]
+[*]If the user (or another mod) already has a location within [b]0.5 meters[/b] of yours, we [b]SKIP[/b] your import.
+[*][b]Why?[/b][list=1][*]To prevent 10 duplicate waypoints stacking on top of each other.
+[*]To ensure we [b]never overwrite a user's manually created location[/b]. Their personal saves are sacred!
+[/list]
+[/list]
+[line]
+[color=#ffff00][size=5][b]5. Verification[/b][/size][/color]
+Want to check if it's working? Open the CET console and check the logs:
+
+[list]
+[*][font=Courier New]Imported Location: The Afterlife Roof[/font] -> Success! It's in.
+[*][font=Courier New]Synced Preset Location: ...[/font] -> Updated an existing one.
+[*][font=Courier New][SKIP] Conflict: Position match...[/font] -> Skipped because something was already there. (System working as intended!)
+[/list]
+
+Happy modding! 🚀
