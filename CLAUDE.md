@@ -1,9 +1,13 @@
 # SimpleLocationManager (SLM)
 
 **Family:** Standalone (Location/Utility)
+
 **Status:** Published
+
 **Version:** 1.3.1
+
 **Summary:** Save locations with custom names and descriptions. SLM automatically organises them by District, so you never lose a spot again. Features custom categories, map pins, search features, and instant teleport. Simple, powerful, and clean.
+
 **Nexus:** [Simple Location Manager](https://www.nexusmods.com/cyberpunk2077/mods/26454)
 
 ## Key Files
