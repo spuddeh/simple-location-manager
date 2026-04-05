@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Simple Location Manager UI module.
--- Mod Version: 1.3.1
+-- Mod Version: 1.4.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ local Impex = require("modules/impex")
 local IconPicker = require("modules/icon_picker")
 
 local MOD_NAME = "Simple Location Manager"
-local MOD_VERSION = "1.3.1"
+local MOD_VERSION = "1.4.0"
 local MODAL_PREFIX = "[SLM] "
 
 -- UI State
@@ -23,6 +23,7 @@ local lastSearchQuery = ""      -- Previous frame's search query (for detecting 
 local filteredLocationCount = 0 -- QOL: Store filtered count for footer
 local activeTab = "Locations"   -- Current active tab in the main window
 local lastDebugInfo = nil       -- Stores the last printed debug info string
+local lastDistrictInfo = nil    -- Stores the last dumped district info string
 
 -- Group expand/collapse persistence (survives search filtering)
 local groupOpenState = {}           -- Last known open/closed state per group key
@@ -1501,15 +1502,18 @@ local function DrawSettingsTab()
     ImGui.NextColumn()
 
     -- Col 2: Debugging
-    if ImGui.Button(IconGlyphs.Console .. " Print Coordinates") then
+    if ImGui.Button(IconGlyphs.Console .. " Dump Coordinates") then
         local info = Utils.GetDebugInfoString()
-        print(Utils.ConsolePrefix .. " Debug\n" .. info)
+        print(Utils.ConsolePrefix .. " Coordinates\n" .. info)
         lastDebugInfo = info
+        ImGui.SetClipboardText(info)
+        Utils.Notify("Coordinates copied to clipboard.")
     end
-    if ImGui.IsItemHovered() then ImGui.SetTooltip("Prints current coordinates to the CET Console.") end
+    if ImGui.IsItemHovered() then ImGui.SetTooltip("Dumps current coordinates to the CET Console and copies to clipboard.") end
 
     if ImGui.Button(IconGlyphs.ApplicationExport .. " Dump District Info") then
         Utils.DumpDistrictInfo()
+        lastDistrictInfo = Utils.GetDistrictInfoString()
     end
     if ImGui.IsItemHovered() then
         ImGui.SetTooltip(
@@ -1522,6 +1526,28 @@ local function DrawSettingsTab()
         ImGui.PushTextWrapPos(0.0)
         ImGui.TextWrapped(lastDebugInfo)
         ImGui.PopTextWrapPos()
+        if ImGui.IsItemHovered() then
+            ImGui.SetTooltip("Middle-click to copy to clipboard")
+            if ImGui.IsMouseClicked(2) then
+                ImGui.SetClipboardText(lastDebugInfo)
+                Utils.Notify("Coordinates copied to clipboard.")
+            end
+        end
+    end
+
+    if lastDistrictInfo then
+        ImGui.Spacing()
+        ImGui.TextColored(0.4, 0.8, 1.0, 1.0, "Last district info:")
+        ImGui.PushTextWrapPos(0.0)
+        ImGui.TextWrapped(lastDistrictInfo)
+        ImGui.PopTextWrapPos()
+        if ImGui.IsItemHovered() then
+            ImGui.SetTooltip("Middle-click to copy to clipboard")
+            if ImGui.IsMouseClicked(2) then
+                ImGui.SetClipboardText(lastDistrictInfo)
+                Utils.Notify("District info copied to clipboard.")
+            end
+        end
     end
 
     ImGui.Columns(1) -- Reset

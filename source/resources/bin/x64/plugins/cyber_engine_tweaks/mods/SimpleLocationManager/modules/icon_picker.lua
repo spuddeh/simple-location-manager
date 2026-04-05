@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Helper module for selecting icons from CET IconGlyphs.
--- Mod Version: 1.3.1
+-- Mod Version: 1.4.0
 -------------------------------------------------------------------
 
 local IconPicker = {}

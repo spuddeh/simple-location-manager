@@ -47,3 +47,6 @@
 ### v1.4.0
 
 - QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
+- QOL: Dump Coordinates Auto-Copy - The Dump Coordinates button now automatically copies to clipboard for easy pasting.
+- QOL: Dump District Info Preview - District info now displays as a live preview in the Debugging panel (light blue text).
+- QOL: Middle-Click Copy on Previews - Both coordinate and district info previews can be middle-clicked to copy to clipboard with a tooltip hint.

@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Utility functions for district detection and math.
--- Mod Version: 1.3.1
+-- Mod Version: 1.4.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
@@ -195,14 +195,14 @@ function Utils.Log(msg)
     spdlog.info(str)
 end
 
---- Dumps full district info to the log for debugging
-function Utils.DumpDistrictInfo()
-    Utils.Log(" ====== District Debug Dump ======")
+--- Builds district info body (without markers) for both logging and preview display
+local function _buildDistrictBody()
+    local lines = {}
 
     local player = Game.GetPlayer()
     if player then
         local pos = player:GetWorldPosition()
-        Utils.Log(string.format("Player Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z))
+        table.insert(lines, string.format("Player Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z))
     end
 
     -- Prevention System
@@ -211,27 +211,27 @@ function Utils.DumpDistrictInfo()
         if sys and sys.districtManager then
             local d = sys.districtManager:GetCurrentDistrict()
             if d then
-                Utils.Log("PreventionSystem District ID: " .. tostring(d:GetDistrictID().value))
+                table.insert(lines, "PreventionSystem District ID: " .. tostring(d:GetDistrictID().value))
                 local rec = TweakDBInterface.GetDistrictRecord(d:GetDistrictID())
                 if rec then
-                    Utils.Log("  Record ID: " .. tostring(rec:GetID().value))
-                    Utils.Log("  LocalizedName: " .. rec:LocalizedName())
-                    Utils.Log("  EnumName: " .. rec:EnumName())
+                    table.insert(lines, "  Record ID: " .. tostring(rec:GetID().value))
+                    table.insert(lines, "  LocalizedName: " .. rec:LocalizedName())
+                    table.insert(lines, "  EnumName: " .. rec:EnumName())
                     local parent = rec:ParentDistrict()
                     if parent then
-                        Utils.Log("  Parent District:")
-                        Utils.Log("    Record ID: " .. tostring(parent:GetID().value))
-                        Utils.Log("    LocalizedName: " .. parent:LocalizedName())
-                        Utils.Log("    EnumName: " .. parent:EnumName())
+                        table.insert(lines, "  Parent District:")
+                        table.insert(lines, "    Record ID: " .. tostring(parent:GetID().value))
+                        table.insert(lines, "    LocalizedName: " .. parent:LocalizedName())
+                        table.insert(lines, "    EnumName: " .. parent:EnumName())
                     else
-                        Utils.Log("  Parent: None")
+                        table.insert(lines, "  Parent: None")
                     end
                 end
             else
-                Utils.Log("PreventionSystem: No Current District Object")
+                table.insert(lines, "PreventionSystem: No Current District Object")
             end
         else
-            Utils.Log("PreventionSystem: Not found")
+            table.insert(lines, "PreventionSystem: Not found")
         end
     end)
 
@@ -243,15 +243,31 @@ function Utils.DumpDistrictInfo()
             local bb = sys:Get(blackboardDefs.UI_Map)
             if bb then
                 local loc = bb:GetString(blackboardDefs.UI_Map.currentLocation)
-                Utils.Log("Blackboard UI_Map currentLocation: " .. tostring(loc))
-                Utils.Log("  Localized: " .. GetLocalizedText(tostring(loc)))
+                table.insert(lines, "Blackboard UI_Map currentLocation: " .. tostring(loc))
+                table.insert(lines, "  Localized: " .. GetLocalizedText(tostring(loc)))
             else
-                Utils.Log("Blackboard UI_Map: Not found")
+                table.insert(lines, "Blackboard UI_Map: Not found")
             end
         end
     end)
 
+    return table.concat(lines, "\n")
+end
+
+--- Dumps full district info to the log for debugging
+function Utils.DumpDistrictInfo()
+    Utils.Log(" ====== District Debug Dump ======")
+    Utils.Log(_buildDistrictBody())
     Utils.Log(" ====== End Dump ======")
+end
+
+--- Returns formatted district info string for preview display
+function Utils.GetDistrictInfoString()
+    local player = Game.GetPlayer()
+    if not player then
+        return "District info unavailable."
+    end
+    return _buildDistrictBody()
 end
 
 --- Formatting helper for numbers
@@ -267,14 +283,8 @@ function Utils.GetDebugInfoString()
 
     local pos = player:GetWorldPosition()
     local rot = player:GetWorldOrientation():ToEulerAngles()
-    local locData = Utils.GetLocationData(pos)
 
-    local fullDistrict = locData.district
-    if locData.subDistrict then fullDistrict = fullDistrict .. " / " .. locData.subDistrict end
-
-    -- Requested format: coords = {x = <x>, y = <y>, z = <z>, yaw = <yaw>}
-    return string.format("District: %s\ncoords = {x = %.4f, y = %.4f, z = %.4f, yaw = %.4f}",
-        fullDistrict,
+    return string.format("{x = %.4f, y = %.4f, z = %.4f, yaw = %.4f}",
         pos.x, pos.y, pos.z,
         rot.yaw)
 end
