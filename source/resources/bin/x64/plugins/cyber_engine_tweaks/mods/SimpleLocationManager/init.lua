@@ -3,7 +3,6 @@
 -- Author: Spuddeh
 -- Description: Entry point for the Simple Location Manager mod.
 -- Mod Version: 1.3.1
--- File Version: 1.0.5
 -------------------------------------------------------------------
 
 local Logic = require("modules/logic")

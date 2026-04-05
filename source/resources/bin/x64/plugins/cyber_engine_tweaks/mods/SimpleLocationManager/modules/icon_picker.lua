@@ -3,7 +3,6 @@
 -- Author: Spuddeh
 -- Description: Helper module for selecting icons from CET IconGlyphs.
 -- Mod Version: 1.3.1
--- File Version: 1.1.5
 -------------------------------------------------------------------
 
 local IconPicker = {}

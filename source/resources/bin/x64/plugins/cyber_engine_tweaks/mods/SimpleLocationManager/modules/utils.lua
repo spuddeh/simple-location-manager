@@ -3,7 +3,6 @@
 -- Author: Spuddeh
 -- Description: Utility functions for district detection and math.
 -- Mod Version: 1.3.1
--- File Version: 1.3.2
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 

@@ -43,3 +43,7 @@
 - Bug Fix: Self-Healing IDs - Preset updates now automatically repair broken ID links caused by re-exports or fresh installs.
 - Feature: User Edit Protection - Manual edits to Preset locations now prevent future preset updates from overwriting your changes.
 - Feature: Smart Conflict Resolution - "Conflict" skips now respect Manual Input locations, preventing accidental overwrites by the Self-Healing logic.
+
+### v1.4.0
+
+- QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.

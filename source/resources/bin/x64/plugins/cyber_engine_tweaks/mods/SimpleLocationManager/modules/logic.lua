@@ -3,7 +3,6 @@
 -- Author: Spuddeh
 -- Description: Core logic handling state, persistence, and game actions.
 -- Mod Version: 1.3.1
--- File Version: 1.9.9
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
