@@ -10,7 +10,7 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [color=#ffff00][size=4][b]New in v1.1.0[/b][/size][/color]
 [list]
 [*][b]Custom Categories:[/b] create, edit, and share your own categories with unique custom icons.
-[*][b]AMM Support:[/b] import Appearance Menu Mod locations. 
+[*][b]AMM Support:[/b] import Appearance Menu Mod locations.
 [*][b]Presets:[/b] support for installing location packs with auto-installing categories.
 [/list]
 [color=#ffff00][size=5][b]Key Features[/b][/size][/color]
@@ -19,12 +19,13 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [*][b]Smart Organisation:[/b] Locations are automatically grouped by [b]District[/b] or [b]Category[/b].
 [*][b]Favorites:[/b] Keep your most-used spots at the top of the list for instant access.
 [*][b]Custom Categories (New):[/b] Create your own categories (e.g., "Stunts", "Photos") and assign them unique icons.
-[*][b]AMM Support (New):[/b] Import existing locations created for Appearance Menu Mod. [i]AMM is [b]not[/b] required for this to work.[/i] 
+[*][b]AMM Support (New):[/b] Import existing locations created for Appearance Menu Mod. [i]AMM is [b]not[/b] required for this to work.[/i]
 [*][b]Powerful Search:[/b] Filter by name, district, or description in real-time.
 [*][b]Import / Export:[/b] Share locations with your choombas! Copy a single spot, a whole district, or your entire database to the clipboard as a text string.
 [*][b]Navigation:[/b] One-click to set a [b]Custom Map Pin[/b] to any saved location. [i]Works great with Autodrive![/i]
 [*][b]Lazy Mode (Teleport):[/b] Optional feature to instantly teleport to any saved spot (Disabled by default).
-[*][b]Customizable:[/b][list]
+[*][b]Customizable:[/b]
+[list]
 [*]Adjust duplicate warning distance.
 [*]Choose if groups start Expanded or Collapsed.
 [*]Toggle extra UI details like raw coordinates.
@@ -37,16 +38,16 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 
 [b]How to Install:[/b]
 [list=1]
-[*] Download the mod.
-[*] Extract the [font=Courier New]bin[/font] folder to your Cyberpunk 2077 root directory.
+[*]Download the mod.
+[*]Extract the [font=Courier New]bin[/font] folder to your Cyberpunk 2077 root directory.
 [i]*Final Path should look like:* [font=Courier New]Cyberpunk 2077\bin\x64\plugins\cyber_engine_tweaks\mods\SimpleLocationManager\[/font][/i]
 [/list]
 [line]
 [color=#ffff00][size=5][b]Usage[/b][/size][/color]
 [list=1]
-[*] Open the CET Overlay (chosen during CET install).
-[*] The [b]Simple Location Manager[/b] window will appear.
-[*] Click [b]"+"[/b] to save your current spot.
+[*]Open the CET Overlay (chosen during CET install).
+[*]The [b]Simple Location Manager[/b] window will appear.
+[*]Click [b]"+"[/b] to save your current spot.
 [/list]
 [line]
 [color=#ffff00][size=5][b]For Mod Authors: Create Presets[/b][/size][/color]
@@ -78,8 +79,10 @@ to the SLM import folder:
 [font=Courier New]bin\x64\plugins\cyber_engine_tweaks\mods\SimpleLocationManager\import[/font]
 [*]Load the game, open SLM &gt; Settings Tab &gt; Import Button &gt; "AMM Bulk Import" tab.
 [*]Click "Scan Directory & Import".
-[/list][/list]
-[list][*][b]Manual Import:[/b] Simply paste the content from any AMM JSON file into the import box, and it will be automatically detected and converted.
+[/list]
+[/list]
+[list]
+[*][b]Manual Import:[/b] Simply paste the content from any AMM JSON file into the import box, and it will be automatically detected and converted.
 [/list]
 [color=#ffff00][size=4][b]SLM Export Strings[/b][/size][/color]
 These strings can be shared with other users of the mod, or as a way to back up your list of locations (Export all button in the settings tab).
@@ -87,8 +90,7 @@ These strings can be shared with other users of the mod, or as a way to back up 
 Here are some examples that you can import to get started. [b][i]Check out the Forum posts for more locations as they get added![/i][/b]
 
 [color=#ffff00][size=4][b]All Vanilla and DLC apartments (Available as an optional preset download)[/b][/size][/color]
-[spoiler][code]eyJ0eXBlIjoiYmF0Y2giLCJ2IjoxLCJkYXRhIjpbeyJmYXZvcml0ZSI6ZmFsc2UsInBvcyI6eyJ5IjoxMjcxLjE2NzQ4MDQ2ODgsIngiOi0xMzkwLjYzOTI4MjIyNjYsInoiOjEyMy4wODIzOTc0NjA5NCwidyI6MX0sInJvdCI6eyJyb2xsIjowLCJwaXRjaCI6MCwieWF3IjotOTMuOTUwMDI3NDY1ODJ9LCJuYW1lIjoiVidzIEgxMCBBcGFydG1lbnQiLCJzdWJEaXN0cmljdCI6IkxpdHRsZSBDaGluYSIsImRlc2NyaXB0aW9uIjoiIiwiaWQiOiIxNzY2NDcyNzQ3LTE3ODMiLCJkaXN0cmljdCI6IldhdHNvbiIsImNhdGVnb3J5IjoiQXBhcnRtZW50In0seyJmYXZvcml0ZSI6ZmFsc2UsInBvcyI6eyJ5IjoyMjI1LjA1NTE3NTc4MTMsIngiOi0xNTAyLjU5OTQ4NzMwNDcsInoiOjIyLjE5OTk5Njk0ODI0MiwidyI6MX0sInJvdCI6eyJyb2xsIjowLCJwaXRjaCI6MCwieWF3IjozNy42OTk5OTY5NDgyNDJ9LCJuYW1lIjoiVidzIE5vcnRoc2lkZSBBcGFydG1lbnQiLCJzdWJEaXN0cmljdCI6Ik5vcnRoc2lkZSIsImRlc2NyaXB0aW9uIjoiIiwiaWQiOiIxNzY2NTI1NTY3LTU0MzQiLCJkaXN0cmljdCI6IldhdHNvbiIsImNhdGVnb3J5IjoiQXBhcnRtZW50In0seyJmYXZvcml0ZSI6ZmFsc2UsInBvcyI6eyJ5Ijo5NzguNjAzNTE1NjI1LCJ4IjotNzgxLjg5MDc0NzA3MDMxLCJ6IjoyOC4yMDk1NDEzMjA4MDEsInciOjF9LCJyb3QiOnsicm9sbCI6MCwicGl0Y2giOjAsInlhdyI6OTcuODQ5ODg0MDMzMjAzfSwibmFtZSI6IlYncyBKYXBhbnRvd24gQXBhcnRtZW50Iiwic3ViRGlzdHJpY3QiOiJKYXBhbnRvd24iLCJkZXNjcmlwdGlvbiI6IiIsImlkIjoiMTc2NjUyNTcxMy00MjIyIiwiZGlzdHJpY3QiOiJXZXN0YnJvb2siLCJjYXRlZ29yeSI6IkFwYXJ0bWVudCJ9LHsiZmF2b3JpdGUiOmZhbHNlLCJwb3MiOnsieSI6LTk3MC4wNzM3MzA0Njg3NSwieCI6LTE1MjUuMzg2OTYyODkwNiwieiI6OS4wNzM2Njk0MzM1OTM4LCJ3IjoxfSwicm90Ijp7InJvbGwiOi0wLCJwaXRjaCI6MCwieWF3IjotMy4wNDk5Njc1MjczODk1fSwibmFtZSI6IlYncyBHbGVuIEFwYXJ0bWVudCIsInN1YkRpc3RyaWN0IjoiVGhlIEdsZW4iLCJkZXNjcmlwdGlvbiI6IiIsImlkIjoiMTc2NjUyNjA0OS03NjM5IiwiZGlzdHJpY3QiOiJIZXl3b29kIiwiY2F0ZWdvcnkiOiJBcGFydG1lbnQifSx7ImZhdm9yaXRlIjpmYWxzZSwicG9zIjp7InkiOjM2Mi4wODA4NzE1ODIwMywieCI6LTE2MDYuNTAwNDg4MjgxMywieiI6NDkuMjA5OTk5MDg0NDczLCJ3IjoxfSwicm90Ijp7InJvbGwiOjAsInBpdGNoIjowLCJ5YXciOjE3OC43NDk5Njk0ODI0Mn0sIm5hbWUiOiJWJ3MgQ29ycG8gUGxhemEgQXBhcnRtZW50Iiwic3ViRGlzdHJpY3QiOiJDb3JwbyBQbGF6YSIsImRlc2NyaXB0aW9uIjoiIiwiaWQiOiIxNzY2NTI2MTI1LTc1MjEiLCJkaXN0cmljdCI6IkNpdHkgQ2VudGVyIiwiY2F0ZWdvcnkiOiJBcGFydG1lbnQifSx7Im5hbWUiOiJWJ3MgRG9ndG93biBBcGFydG1lbnQiLCJkaXN0cmljdCI6IkRvZ3Rvd24iLCJmYXZvcml0ZSI6ZmFsc2UsImRlc2NyaXB0aW9uIjoiIiwicG9zIjp7InkiOi0yNTUzLjg4MjMyNDIxODgsIngiOi0yMjM5Ljg1OTYxOTE0MDYsInoiOjgwLjMwMDk3OTYxNDI1OCwidyI6MX0sImlkIjoiMTc2NjUyNjI1MC01MjE0Iiwicm90Ijp7InJvbGwiOi0wLCJwaXRjaCI6MCwieWF3IjotMTM2LjY0OTk3ODYzNzd9LCJjYXRlZ29yeSI6IkFwYXJ0bWVudCJ9XX0=
-[/code][/spoiler]
+[spoiler][code]eyJ0eXBlIjoiYmF0Y2giLCJ2IjoxLCJkYXRhIjpbeyJmYXZvcml0ZSI6ZmFsc2UsInBvcyI6eyJ5IjoxMjcxLjE2NzQ4MDQ2ODgsIngiOi0xMzkwLjYzOTI4MjIyNjYsInoiOjEyMy4wODIzOTc0NjA5NCwidyI6MX0sInJvdCI6eyJyb2xsIjowLCJwaXRjaCI6MCwieWF3IjotOTMuOTUwMDI3NDY1ODJ9LCJuYW1lIjoiVidzIEgxMCBBcGFydG1lbnQiLCJzdWJEaXN0cmljdCI6IkxpdHRsZSBDaGluYSIsImRlc2NyaXB0aW9uIjoiIiwiaWQiOiIxNzY2NDcyNzQ3LTE3ODMiLCJkaXN0cmljdCI6IldhdHNvbiIsImNhdGVnb3J5IjoiQXBhcnRtZW50In0seyJmYXZvcml0ZSI6ZmFsc2UsInBvcyI6eyJ5IjoyMjI1LjA1NTE3NTc4MTMsIngiOi0xNTAyLjU5OTQ4NzMwNDcsInoiOjIyLjE5OTk5Njk0ODI0MiwidyI6MX0sInJvdCI6eyJyb2xsIjowLCJwaXRjaCI6MCwieWF3IjozNy42OTk5OTY5NDgyNDJ9LCJuYW1lIjoiVidzIE5vcnRoc2lkZSBBcGFydG1lbnQiLCJzdWJEaXN0cmljdCI6Ik5vcnRoc2lkZSIsImRlc2NyaXB0aW9uIjoiIiwiaWQiOiIxNzY2NTI1NTY3LTU0MzQiLCJkaXN0cmljdCI6IldhdHNvbiIsImNhdGVnb3J5IjoiQXBhcnRtZW50In0seyJmYXZvcml0ZSI6ZmFsc2UsInBvcyI6eyJ5Ijo5NzguNjAzNTE1NjI1LCJ4IjotNzgxLjg5MDc0NzA3MDMxLCJ6IjoyOC4yMDk1NDEzMjA4MDEsInciOjF9LCJyb3QiOnsicm9sbCI6MCwicGl0Y2giOjAsInlhdyI6OTcuODQ5ODg0MDMzMjAzfSwibmFtZSI6IlYncyBKYXBhbnRvd24gQXBhcnRtZW50Iiwic3ViRGlzdHJpY3QiOiJKYXBhbnRvd24iLCJkZXNjcmlwdGlvbiI6IiIsImlkIjoiMTc2NjUyNTcxMy00MjIyIiwiZGlzdHJpY3QiOiJXZXN0YnJvb2siLCJjYXRlZ29yeSI6IkFwYXJ0bWVudCJ9LHsiZmF2b3JpdGUiOmZhbHNlLCJwb3MiOnsieSI6LTk3MC4wNzM3MzA0Njg3NSwieCI6LTE1MjUuMzg2OTYyODkwNiwieiI6OS4wNzM2Njk0MzM1OTM4LCJ3IjoxfSwicm90Ijp7InJvbGwiOi0wLCJwaXRjaCI6MCwieWF3IjotMy4wNDk5Njc1MjczODk1fSwibmFtZSI6IlYncyBHbGVuIEFwYXJ0bWVudCIsInN1YkRpc3RyaWN0IjoiVGhlIEdsZW4iLCJkZXNjcmlwdGlvbiI6IiIsImlkIjoiMTc2NjUyNjA0OS03NjM5IiwiZGlzdHJpY3QiOiJIZXl3b29kIiwiY2F0ZWdvcnkiOiJBcGFydG1lbnQifSx7ImZhdm9yaXRlIjpmYWxzZSwicG9zIjp7InkiOjM2Mi4wODA4NzE1ODIwMywieCI6LTE2MDYuNTAwNDg4MjgxMywieiI6NDkuMjA5OTk5MDg0NDczLCJ3IjoxfSwicm90Ijp7InJvbGwiOjAsInBpdGNoIjowLCJ5YXciOjE3OC43NDk5Njk0ODI0Mn0sIm5hbWUiOiJWJ3MgQ29ycG8gUGxhemEgQXBhcnRtZW50Iiwic3ViRGlzdHJpY3QiOiJDb3JwbyBQbGF6YSIsImRlc2NyaXB0aW9uIjoiIiwiaWQiOiIxNzY2NTI2MTI1LTc1MjEiLCJkaXN0cmljdCI6IkNpdHkgQ2VudGVyIiwiY2F0ZWdvcnkiOiJBcGFydG1lbnQifSx7Im5hbWUiOiJWJ3MgRG9ndG93biBBcGFydG1lbnQiLCJkaXN0cmljdCI6IkRvZ3Rvd24iLCJmYXZvcml0ZSI6ZmFsc2UsImRlc2NyaXB0aW9uIjoiIiwicG9zIjp7InkiOi0yNTUzLjg4MjMyNDIxODgsIngiOi0yMjM5Ljg1OTYxOTE0MDYsInoiOjgwLjMwMDk3OTYxNDI1OCwidyI6MX0sImlkIjoiMTc2NjUyNjI1MC01MjE0Iiwicm90Ijp7InJvbGwiOi0wLCJwaXRjaCI6MCwieWF3IjotMTM2LjY0OTk3ODYzNzd9LCJjYXRlZ29yeSI6IkFwYXJ0bWVudCJ9XX0=[/code][/spoiler]
 
 [color=#ffff00][size=4][b]V's H10 Apartment[/b][/size][/color]
 [spoiler][code]eyJ0eXBlIjoiYmF0Y2giLCJ2IjoxLCJkYXRhIjpbeyJmYXZvcml0ZSI6ZmFsc2UsInBvcyI6eyJ5IjoxMjcxLjE2NzQ4MDQ2ODgsIngiOi0xMzkwLjYzOTI4MjIyNjYsInoiOjEyMy4wODIzOTc0NjA5NCwidyI6MX0sInJvdCI6eyJyb2xsIjowLCJwaXRjaCI6MCwieWF3IjotOTMuOTUwMDI3NDY1ODJ9LCJuYW1lIjoiVidzIEgxMCBBcGFydG1lbnQiLCJzdWJEaXN0cmljdCI6IkxpdHRsZSBDaGluYSIsImRlc2NyaXB0aW9uIjoiIiwiaWQiOiIxNzY2NDcyNzQ3LTE3ODMiLCJkaXN0cmljdCI6IldhdHNvbiIsImNhdGVnb3J5IjoiQXBhcnRtZW50In1dfQ==[/code][/spoiler]
@@ -116,11 +118,15 @@ Here are some examples that you can import to get started. [b][i]Check out the F
 [*]Check the [b]Settings[/b] tab to [b]enable Lazy Mode[/b] (Teleport) or adjust UI preferences.
 [*]Right-click any district or category header to [b]Export[/b] it.
 [*]You can get the coordinates for your current location using the "Print Coordinates" button in the settings tab.
-[list][*]This outputs the coordinates to the CET Console.
+[list]
+[*]This outputs the coordinates to the CET Console.
 [*]This does [i]not[/i] add the current location to the list.
-[/list][*]The [b]Dump District Info [/b]button will output your current district and subdistrict details to the console and the mods .log file
-[list][*]This is useful for debugging purposes
-[/list][/list]
+[/list]
+[*]The [b]Dump District Info [/b]button will output your current district and subdistrict details to the console and the mods .log file
+[list]
+[*]This is useful for debugging purposes
+[/list]
+[/list]
 [line]
 [color=#ffff00][size=5][b]Known issues[/b][/size][/color]
 [list]

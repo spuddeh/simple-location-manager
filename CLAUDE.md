@@ -4,7 +4,7 @@
 
 **Status:** Published
 
-**Version:** 1.3.1
+**Version:** 1.4.0
 
 **Summary:** Save locations with custom names and descriptions. SLM automatically organises them by District, so you never lose a spot again. Features custom categories, map pins, search features, and instant teleport. Simple, powerful, and clean.
 
