@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Utility functions for district detection and math.
--- Mod Version: 1.4.0
+-- Mod Version: 1.5.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 

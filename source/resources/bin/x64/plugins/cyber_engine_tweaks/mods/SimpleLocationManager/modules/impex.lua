@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Import/Export module using Base64 encoded JSON strings.
--- Mod Version: 1.4.0
+-- Mod Version: 1.5.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 local Impex = {}

@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Simple Location Manager UI module.
--- Mod Version: 1.4.0
+-- Mod Version: 1.5.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
@@ -13,8 +13,8 @@ local Impex = require("modules/impex")
 local IconPicker = require("modules/icon_picker")
 
 local MOD_NAME = "Simple Location Manager"
-local MOD_VERSION = "1.4.0"
-local MODAL_PREFIX = "[SLM] "
+local MOD_VERSION = "1.5.0"
+local MODAL_PREFIX = "SLM - "
 
 -- UI State
 local isOverlayOpen = false     -- Tracks if the CET overlay is currently visible
