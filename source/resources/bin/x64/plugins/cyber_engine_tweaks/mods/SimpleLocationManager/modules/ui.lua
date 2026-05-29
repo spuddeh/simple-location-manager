@@ -491,7 +491,8 @@ local function DrawLocationRow(loc, uniqueSuffix)
 
     -- Category Info (District View OR Favorite)
     -- User Request: "Locations in the favourites category should always show the Category"
-    if Logic.settings.groupBy == "District" or loc.favorite then
+    -- A-Z view is ungrouped, so the category isn't shown as a header; show it per row instead.
+    if Logic.settings.groupBy == "District" or Logic.settings.groupBy == "A-Z" or loc.favorite then
         local catName = loc.category or "Misc"
         local catIcon = "DotsCircle"
         for _, c in ipairs(Logic.GetCategories()) do
@@ -718,13 +719,17 @@ local function DrawLocationsTab()
         local tCat = ImGui.CalcTextSize("Category")
         local comboW = math.max(tDist, tCat) + (style.FramePadding.x * 4) + 25 -- Text + Padding + Arrow
 
+        -- Expand/Collapse buttons only matter for grouped views; they are disabled (not hidden)
+        -- in the flat A-Z view so the layout stays stable as the user switches modes.
+        local currentSort = Logic.settings.groupBy or "District"
+        local showGroupButtons = currentSort ~= "A-Z"
+
         local rightOffset = b1w + b2w + comboW + (style.ItemSpacing.x * 2)
 
         ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - rightOffset)
 
         -- Sort Combo
         ImGui.SetNextItemWidth(comboW)
-        local currentSort = Logic.settings.groupBy or "District"
 
         if ImGui.BeginCombo("##sort", currentSort) then
             if ImGui.Selectable("District", currentSort == "District") then
@@ -739,22 +744,36 @@ local function DrawLocationsTab()
                     Logic.Save()
                 end
             end
+            if ImGui.Selectable("A-Z", currentSort == "A-Z") then
+                if currentSort ~= "A-Z" then
+                    Logic.settings.groupBy = "A-Z"
+                    Logic.Save()
+                end
+            end
             ImGui.EndCombo()
         end
         if ImGui.IsItemHovered() then ImGui.SetTooltip("Sort By: " .. currentSort) end
 
         ImGui.SameLine()
 
+        ImGui.BeginDisabled(not showGroupButtons)
+
         if ImGui.Button(IconGlyphs.ArrowExpandAll) then
             forceExpand = true
         end
-        if ImGui.IsItemHovered() then ImGui.SetTooltip("Expand All Groups") end
+        if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
+            ImGui.SetTooltip(showGroupButtons and "Expand All Groups" or "No groups to expand in A-Z view")
+        end
 
         ImGui.SameLine()
         if ImGui.Button(IconGlyphs.ArrowCollapseAll) then
             forceCollapse = true
         end
-        if ImGui.IsItemHovered() then ImGui.SetTooltip("Collapse All Groups") end
+        if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
+            ImGui.SetTooltip(showGroupButtons and "Collapse All Groups" or "No groups to collapse in A-Z view")
+        end
+
+        ImGui.EndDisabled()
 
         -- Row 2: Search Bar with Clear Button AND Export Button
         local style = ImGui.GetStyle()
@@ -852,7 +871,7 @@ local function DrawLocationsTab()
         end
     end
 
-    -- 2b. Main List (Category or District)
+    -- 2b. Main List (Category, A-Z, or District)
     local currentSort = Logic.settings.groupBy or "District"
 
     if currentSort == "Category" then
@@ -921,6 +940,30 @@ local function DrawLocationsTab()
                     end
                     ImGui.Unindent(10)
                 end
+            end
+        end
+    elseif currentSort == "A-Z" then
+        -- A-Z VIEW (Flat, ungrouped)
+        -- No group headers and no per-group count: the footer already shows the total.
+        -- Favorites remain in their own pinned section above and are not repeated here.
+        local flatLocs = {}
+        for _, loc in ipairs(Logic.locations) do
+            if not loc.favorite and CheckSearch(loc) then
+                table.insert(flatLocs, loc)
+                filteredLocationCount = filteredLocationCount + 1
+            end
+        end
+        table.sort(flatLocs, SortLocationByName)
+
+        if #flatLocs > 0 then
+            if ImGui.BeginTable("AZTable", 1, ImGuiTableFlags.RowBg) then
+                ImGui.TableSetupColumn("Loc", ImGuiTableColumnFlags.WidthStretch)
+                for _, loc in ipairs(flatLocs) do
+                    ImGui.TableNextRow()
+                    ImGui.TableSetColumnIndex(0)
+                    DrawLocationRow(loc, "AZ")
+                end
+                ImGui.EndTable()
             end
         end
     else
