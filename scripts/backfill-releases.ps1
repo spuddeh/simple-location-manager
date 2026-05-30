@@ -115,3 +115,7 @@ foreach ($r in $releases) {
 Write-Host ""
 Write-Host "Done. created=$created skipped=$skipped missing=$missing" -ForegroundColor Yellow
 if ($DryRun) { Write-Host "(dry run - nothing was created)" -ForegroundColor Cyan }
+
+# Clean exit code (real failures already threw above; the existence probe leaves a
+# stray non-zero $LASTEXITCODE we don't want to surface).
+if ($missing -gt 0) { exit 1 } else { exit 0 }
