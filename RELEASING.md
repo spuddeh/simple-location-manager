@@ -52,7 +52,7 @@ at the zip root exactly as the game expects.
    The **release body becomes the Nexus file description**, so write the changelog there.
 3. On publish, the workflow:
    - parses the tag -> looks up the artifact in the manifest,
-   - stages `contentDir` -> `installDir` and zips it,
+   - stages `contentDir` -> `installDir` and zips it as `<fileBaseName>_v<version>.zip` (e.g. `SimpleLocationManager_v1.6.0.zip`),
    - attaches the zip to the GitHub Release,
    - uploads to Nexus (`file_category`, `display_name`, `archive_existing_file: true`, etc.).
 

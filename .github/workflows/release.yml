@@ -86,19 +86,22 @@ jobs:
             echo "::error::file_group_id for '$ART' is still a placeholder. Set it in release-manifest.json (Files tab > API Info on the mod page)."
             exit 1
           fi
+          BASENAME="$(get fileBaseName)"
+          [ -z "$BASENAME" ] && BASENAME="$ART"   # fall back to the artifact id
           {
             echo "content_dir=$CONTENT"
             echo "install_dir=$INSTALL"
             echo "file_group_id=$FGID"
             echo "file_category=$(get file_category)"
             echo "display_name=$(get displayName)"
+            echo "file_base_name=$BASENAME"
             echo "primary=$(jq -r --arg a "$ART" '.artifacts[$a].primary_mod_manager_download // false' release-manifest.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Build zip
         id: zip
         run: |
-          ZIP="${{ steps.meta.outputs.artifact }}-v${{ steps.meta.outputs.version }}.zip"
+          ZIP="${{ steps.art.outputs.file_base_name }}_v${{ steps.meta.outputs.version }}.zip"
           CONTENT='${{ steps.art.outputs.content_dir }}'
           INSTALL='${{ steps.art.outputs.install_dir }}'
           # Stage contentDir's contents into the in-game install path, then zip the stage
