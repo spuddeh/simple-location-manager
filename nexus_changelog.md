@@ -66,11 +66,11 @@ No issues flagged.
 [color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
 
 [b][size=3]Version 1.5.0[/size][/b]
-[spoiler][list][*]Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
+[list][*]Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
 [*]Feature: SmartPaste™ - the Manual Coordinates box understands labelled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. Always double-check the auto-filled values before saving or teleporting.
 [*]Feature: A-Z View - a third sort mode that lists every location in one flat alphabetical list, with no district or category grouping.
 [*]Fix: Renamed the mod's window titles to the "SLM - " prefix to prevent a conflict with other CET mods.
-[/list][/spoiler]
+[/list]
 [b][size=3]Version 1.4.0[/size][/b]
 [spoiler][list][*]QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
 [*]QOL: Dump Coordinates (previously "Print Coordinates") Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
@@ -78,11 +78,11 @@ No issues flagged.
 [*]QOL: Middle-Click Copy on Previews - Both coordinate and district info previews can be middle-clicked to copy to clipboard with a tooltip hint.
 [/list][/spoiler]
 [b][size=3]Version 1.3.1[/size][/b]
-[list][*]Bug Fix: Resolved issue where Preset Updates were failing due to incorrect duplicate detection.
+[spoiler][list][*]Bug Fix: Resolved issue where Preset Updates were failing due to incorrect duplicate detection.
 [*]Bug Fix: Self-Healing IDs - Preset updates now automatically repair broken ID links caused by re-exports or fresh installs.
 [*]Feature: User Edit Protection - Manual edits to Preset locations now prevent future preset updates from overwriting your changes.
 [*]Feature: Smart Conflict Resolution - "Conflict" skips now respect Manual Input locations, preventing accidental overwrites by the Self-Healing logic.
-[/list]
+[/list][/spoiler]
 [b][size=3]Version 1.3.0[/size][/b]
 [spoiler][list][*]QOL: Export Filtered - Added a copy button next to the search bar to export only the locations matching your current search.
 [*]QOL: Improved Footer - Now displays filtered counts when searching (e.g., "Locations: 5 / 20").
