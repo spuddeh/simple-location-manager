@@ -7,6 +7,12 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 
 [b]Simple Location Manager[/b] is designed for organisation first. It automatically detects your location, identifying the District and sub-district, and organises your locations into a clean, collapsible hierarchy.
 
+[color=#ffff00][size=4][b]New in v1.5.0[/b][/size][/color]
+[list]
+[*][b]Manual Coordinates:[/b] paste or type an X/Y/Z (and optional Yaw) to save or teleport straight to a spot a choomba shared, with no console command needed. Choose Save, Save & Teleport, or Teleport.
+[*][b]Smart Paste:[/b] the coordinate box understands labelled values, AMM JSON, and full CET teleport commands, then fills the fields for you.
+[*][b]A-Z View:[/b] a new flat, alphabetical list of every location, alongside the District and Category views.
+[/list]
 [color=#ffff00][size=4][b]New in v1.1.0[/b][/size][/color]
 [list]
 [*][b]Custom Categories:[/b] create, edit, and share your own categories with unique custom icons.
@@ -16,7 +22,8 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [color=#ffff00][size=5][b]Key Features[/b][/size][/color]
 [list]
 [*][b]Save Anywhere:[/b] Instantly record your position. Add custom names, descriptions, or let the mod auto-timestamp them.
-[*][b]Smart Organisation:[/b] Locations are automatically grouped by [b]District[/b] or [b]Category[/b].
+[*][b]Smart Organisation:[/b] Locations are automatically grouped by [b]District[/b] or [b]Category[/b], or shown as a flat [b]A-Z[/b] list.
+[*][b]Manual Coordinates (New):[/b] Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a console command. Pastes CET teleport commands and AMM JSON too.
 [*][b]Favorites:[/b] Keep your most-used spots at the top of the list for instant access.
 [*][b]Custom Categories (New):[/b] Create your own categories (e.g., "Stunts", "Photos") and assign them unique icons.
 [*][b]AMM Support (New):[/b] Import existing locations created for Appearance Menu Mod. [i]AMM is [b]not[/b] required for this to work.[/i]
@@ -29,7 +36,7 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [*]Adjust duplicate warning distance.
 [*]Choose if groups start Expanded or Collapsed.
 [*]Toggle extra UI details like raw coordinates.
-[*]Group locations by [b]District [/b]or [b]Category[/b].
+[*]Group locations by [b]District[/b], [b]Category[/b], or a flat [b]A-Z[/b] list.
 [/list]
 [/list][line]
 [color=#ffff00][size=5][b]Installation[/b][/size][/color]
@@ -138,3 +145,6 @@ Here are some examples that you can import to get started. [b][i]Check out the F
 [*][b]The Modding Community[/b] for documentation and support.
 [*][b][url=https://www.nexusmods.com/profile/Ka0ziun?gameId=3333]Ka0ziun [/url][/b]for super helpful suggestions and bouncing ideas back and forth.
 [/list]
+[line]
+[color=#ffff00][size=5][b]Disclaimer[/b][/size][/color]
+This mod was developed with the assistance of an LLM. All in-game testing and code validation was performed by a human. No rogue AIs were permitted through the Blackwall.

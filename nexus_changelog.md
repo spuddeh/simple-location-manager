@@ -1,5 +1,11 @@
 # Simple Location Manager — Nexus Changelogs
 
+### 1.5.0
+- Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
+- Feature: Smart Paste - the Manual Coordinates box understands labeled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. It drives the fields and has a clear button.
+- Feature: A-Z View - a third sort mode that lists every location in one flat alphabetical list, with no district or category grouping.
+- Fix: Renamed the mod's window titles from "[SLM]" to "SLM - " to prevent a conflict with other CET mods.
+
 ### 1.4.0
 - QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
 - QOL: Dump Coordinates (previously "Print Coordinates") Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
