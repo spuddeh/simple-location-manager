@@ -10,14 +10,8 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [color=#ffff00][size=4][b]New in v1.5.0[/b][/size][/color]
 [list]
 [*][b]Manual Coordinates:[/b] paste or type an X/Y/Z (and optional Yaw) to save or teleport straight to a spot a choomba shared, with no console command needed. Choose Save, Save & Teleport, or Teleport.
-[*][b]Smart Paste:[/b] the coordinate box understands labelled values, AMM JSON, and full CET teleport commands, then fills the fields for you.
+[*][b]SmartPaste™:[/b] the coordinate box understands labelled values, AMM JSON, and full CET teleport commands, then fills the fields for you. [i]SmartPaste™ does its best, but always double-check the auto-filled X/Y/Z/Yaw before you save or teleport.[/i]
 [*][b]A-Z View:[/b] a new flat, alphabetical list of every location, alongside the District and Category views.
-[/list]
-[color=#ffff00][size=4][b]New in v1.1.0[/b][/size][/color]
-[list]
-[*][b]Custom Categories:[/b] create, edit, and share your own categories with unique custom icons.
-[*][b]AMM Support:[/b] import Appearance Menu Mod locations.
-[*][b]Presets:[/b] support for installing location packs with auto-installing categories.
 [/list]
 [color=#ffff00][size=5][b]Key Features[/b][/size][/color]
 [list]

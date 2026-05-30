@@ -8,7 +8,7 @@
 
 * **Save Anywhere:** Instantly record your position with a custom name and description (or an auto-timestamp).
 * **Smart Organisation:** Locations are grouped by **District**, by **Category**, or shown as a flat **A-Z** list.
-* **Manual Coordinates:** Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. The smart paste box understands labelled values, AMM JSON, and full CET `Vector4.new(...)` / `EulerAngles.new(...)` teleport commands.
+* **Manual Coordinates:** Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. **SmartPaste™** understands labelled values, AMM JSON, and full CET `Vector4.new(...)` / `EulerAngles.new(...)` teleport commands and fills the fields for you (double-check the auto-filled values before saving or teleporting).
 * **Custom Categories:** Create, edit, and share your own categories with unique icons.
 * **Favorites:** Keep your most-used spots pinned at the top of the list.
 * **Powerful Search:** Real-time filtering by name, description, district, or category.
