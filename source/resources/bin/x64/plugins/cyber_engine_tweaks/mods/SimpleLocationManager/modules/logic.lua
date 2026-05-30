@@ -271,6 +271,40 @@ function Logic.CreateLocationData()
     }
 end
 
+--- Create a transient location data object from manually-entered coordinates.
+--- District is intentionally NOT auto-detected (the game only reports the player's
+--- current district, not an arbitrary XYZ) - it is tagged "Manual" so the user can
+--- Refresh it once they have visited. Not added to the DB; caller decides.
+---@param x number
+---@param y number
+---@param z number
+---@param yaw number|nil Defaults to 0
+---@param name string|nil Defaults to "Manual Location"
+---@param category string|nil Defaults to "Misc"
+---@return table loc
+function Logic.CreateManualLocationData(x, y, z, yaw, name, category)
+    local desc = ""
+    if Logic.settings.defaultDesc == "Timestamp" then
+        desc = "Added: " .. os.date("%Y-%m-%d %H:%M:%S")
+    elseif Logic.settings.defaultDesc and Logic.settings.defaultDesc ~= "" then
+        desc = Logic.settings.defaultDesc
+    end
+
+    return {
+        id = GenerateID(),
+        name = (name and name ~= "") and name or "Manual Location",
+        description = desc,
+        category = (category and category ~= "") and category or "Misc",
+        district = "Manual",
+        subDistrict = "",
+        pos = { x = x, y = y, z = z, w = 1.0 },
+        rot = { pitch = 0, yaw = yaw or 0, roll = 0 },
+        favorite = false,
+        sourceType = "Manual Coordinates",
+        sourceDetail = ""
+    }
+end
+
 --- Add a location to the database (Accepts existing data object OR name, desc, cat)
 function Logic.AddLocation(arg1, arg2, arg3)
     local loc

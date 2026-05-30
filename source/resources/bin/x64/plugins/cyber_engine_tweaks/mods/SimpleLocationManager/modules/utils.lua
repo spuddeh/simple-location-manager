@@ -289,4 +289,62 @@ function Utils.GetDebugInfoString()
         rot.yaw)
 end
 
+--- Parse coordinates out of an arbitrary pasted string. In priority order it handles:
+---   1. Labeled values - x= y= z= yaw= (also "x": for JSON, with '=' or ':'). Covers SLM's
+---      Dump format, AMM JSON exports, and ToVector4{x=..} tables.
+---   2. Positional CET command - Vector4.new(x, y, z[, w]) plus EulerAngles.new(roll, pitch, yaw).
+---   3. A plain ordered number list ("x, y, z [yaw]") as a last resort.
+---@param str string
+---@return number|nil x
+---@return number|nil y
+---@return number|nil z
+---@return number|nil yaw
+function Utils.ParseCoordinates(str)
+    if not str or str == "" then return nil end
+
+    -- Prepend a space so a label at position 1 still has a non-letter boundary before it.
+    -- The [^%a] guard stops "max"/"box" etc. from matching a bare x/y/z label.
+    local s = " " .. string.lower(str)
+    local NUM = "%-?%d+%.?%d*"
+
+    -- Labeled grab: matches `x = ..`, `x: ..`, and JSON `"x": ..` (optional quote after label).
+    local function grab(label)
+        local v = string.match(s, "[^%a]" .. label .. '"?%s*[=:]%s*(' .. NUM .. ")")
+        return v and tonumber(v) or nil
+    end
+
+    -- Yaw: prefer an explicit label, else the 3rd arg of EulerAngles.new(roll, pitch, yaw).
+    local function grabYaw()
+        local y = grab("yaw")
+        if y then return y end
+        local _, _, ey = string.match(s,
+            "eulerangles%s*%.%s*new%s*%(%s*(" .. NUM .. ")%s*,%s*(" .. NUM .. ")%s*,%s*(" .. NUM .. ")")
+        return ey and tonumber(ey) or nil
+    end
+
+    -- 1. Labeled x / y / z
+    local x, y, z = grab("x"), grab("y"), grab("z")
+    if x and y and z then
+        return x, y, z, grabYaw()
+    end
+
+    -- 2. Positional Vector4.new(x, y, z[, w]) - ignore the w component
+    local vx, vy, vz = string.match(s,
+        "vector4%s*%.%s*new%s*%(%s*(" .. NUM .. ")%s*,%s*(" .. NUM .. ")%s*,%s*(" .. NUM .. ")")
+    if vx and vy and vz then
+        return tonumber(vx), tonumber(vy), tonumber(vz), grabYaw()
+    end
+
+    -- 3. Bare ordered number list ("x, y, z [yaw]")
+    local nums = {}
+    for n in string.gmatch(str, NUM) do
+        table.insert(nums, tonumber(n))
+    end
+    if #nums >= 3 then
+        return nums[1], nums[2], nums[3], nums[4]
+    end
+
+    return nil
+end
+
 return Utils

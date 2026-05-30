@@ -59,6 +59,17 @@ local tempName = ""
 local tempDesc = ""
 local tempCategory = "Misc"
 
+-- Manual Coordinates Modal State
+local showManualModal = false       -- Flag for the Manual Coordinates modal
+local manualPaste = ""              -- Smart paste buffer (auto-parsed on change)
+local manualLastPaste = ""          -- Previous frame's paste value (change detection)
+local manualX = 0.0
+local manualY = 0.0
+local manualZ = 0.0
+local manualYaw = 0.0
+local manualName = "Manual Location"
+local manualCategory = "Misc"
+
 
 
 --- Initialize UI
@@ -464,6 +475,16 @@ local function OpenCreateModal(locData)
     tempCategory = locData.category or "Misc"
 end
 
+--- Prepare and open the Manual Coordinates modal (resets all fields)
+local function OpenManualModal()
+    manualPaste = ""
+    manualLastPaste = ""
+    manualX, manualY, manualZ, manualYaw = 0.0, 0.0, 0.0, 0.0
+    manualName = "Manual Location"
+    manualCategory = "Misc"
+    showManualModal = true
+end
+
 --- Draw a single location row
 local function DrawLocationRow(loc, uniqueSuffix)
     ImGui.PushID(loc.id .. (uniqueSuffix or ""))
@@ -705,6 +726,13 @@ local function DrawLocationsTab()
             end
         end
         if ImGui.IsItemHovered() then ImGui.SetTooltip("Add current location") end
+
+        -- Manual Coordinates Button (add a location from typed/pasted XYZ)
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.CrosshairsGps) then
+            OpenManualModal()
+        end
+        if ImGui.IsItemHovered() then ImGui.SetTooltip("Add location from manual coordinates") end
 
         -- Right Align Expand/Collapse + Sort Combo
         ImGui.SameLine()
@@ -1871,6 +1899,154 @@ local function DrawDeleteCategoryConfirmModal()
     })
 end
 
+--- Draw the Manual Coordinates modal (save/teleport to typed or pasted XYZ)
+local function DrawManualModal()
+    local shouldOpen = showManualModal
+    -- Fixed width with NoResize: AlwaysAutoResize would collapse the window to its content
+    -- (the -1 width fields), so we pin the width and let height auto-fit on appear.
+    if shouldOpen then ImGui.SetNextWindowSize(420, 0, ImGuiCond.Appearing) end
+
+    UI.WrapperModal("Manual Coordinates", shouldOpen, ImGuiWindowFlags.NoResize, function()
+        -- Smart paste box (source of truth): any change re-syncs the coordinate fields below.
+        ImGui.Text("Paste coordinates (optional):")
+
+        local style = ImGui.GetStyle()
+        local clearBtnW = ImGui.CalcTextSize(IconGlyphs.Eraser) + (style.FramePadding.x * 2)
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail() - clearBtnW - style.ItemSpacing.x)
+        manualPaste = ImGui.InputTextWithHint("##manualPaste",
+            "e.g. x=-1234.5, y=678.9, z=12.3, yaw=90", manualPaste, 256)
+        if ImGui.IsItemHovered() then
+            ImGui.SetTooltip("Accepts x= y= z= [yaw=], a CET Teleport(...) command, or plain 'x, y, z [yaw]'")
+        end
+
+        -- Paste box drives the fields: parse on change, or reset to 0 when empty/unparseable.
+        if manualPaste ~= manualLastPaste then
+            manualLastPaste = manualPaste
+            local px, py, pz, pyaw = Utils.ParseCoordinates(manualPaste)
+            if px and py and pz then
+                manualX, manualY, manualZ, manualYaw = px, py, pz, (pyaw or 0.0)
+            else
+                manualX, manualY, manualZ, manualYaw = 0.0, 0.0, 0.0, 0.0
+            end
+        end
+
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.Eraser) then
+            manualPaste = ""
+            manualLastPaste = ""
+            manualX, manualY, manualZ, manualYaw = 0.0, 0.0, 0.0, 0.0
+        end
+        if ImGui.IsItemHovered() then ImGui.SetTooltip("Clear paste box and coordinates") end
+
+        ImGui.Separator()
+
+        -- Coordinate fields (step = 0 hides the +/- spinner buttons)
+        ImGui.PushItemWidth(140)
+        manualX = ImGui.InputFloat("X##manualX", manualX, 0, 0, "%.3f")
+        manualY = ImGui.InputFloat("Y##manualY", manualY, 0, 0, "%.3f")
+        manualZ = ImGui.InputFloat("Z##manualZ", manualZ, 0, 0, "%.3f")
+        manualYaw = ImGui.InputFloat("Yaw (optional)##manualYaw", manualYaw, 0, 0, "%.3f")
+        ImGui.PopItemWidth()
+
+        ImGui.Separator()
+
+        -- Name
+        ImGui.Text("Name:")
+        ImGui.SetNextItemWidth(-1)
+        manualName = ImGui.InputText("##manualName", manualName, 100)
+
+        -- Category (same input + dropdown pattern as the Edit modal)
+        ImGui.Text("Category:")
+        ImGui.SameLine()
+        local currentCatIcon = "Help"
+        for _, c in ipairs(Logic.GetCategories()) do
+            if c.name == manualCategory then
+                currentCatIcon = c.icon
+                break
+            end
+        end
+        local glyph = IconGlyphs[currentCatIcon] or IconGlyphs.Help
+        ImGui.AlignTextToFramePadding()
+        ImGui.Text(glyph .. " ")
+        ImGui.SameLine()
+        ImGui.SetNextItemWidth(200)
+        manualCategory = ImGui.InputText("##manualCatInput", manualCategory, 50)
+        if ImGui.IsItemHovered() then ImGui.SetTooltip("Type a new category name or pick from the dropdown") end
+        ImGui.SameLine()
+        ImGui.SetNextItemWidth(20)
+        if ImGui.BeginCombo("##manualCatSelect", "", ImGuiComboFlags.NoPreview) then
+            for _, c in ipairs(Logic.GetCategories()) do
+                local icon = IconGlyphs[c.icon] or IconGlyphs.Help
+                if ImGui.Selectable(icon .. " " .. c.name, false) then
+                    manualCategory = c.name
+                end
+            end
+            ImGui.EndCombo()
+        end
+
+        ImGui.Separator()
+
+        -- Local helpers
+        local function allZero()
+            return manualX == 0.0 and manualY == 0.0 and manualZ == 0.0
+        end
+        local function ensureCategory()
+            for _, c in ipairs(Logic.GetCategories()) do
+                if c.name == manualCategory then return end
+            end
+            if manualCategory ~= "" then Logic.AddCategory(manualCategory, "Star") end
+        end
+        local function buildLoc()
+            return Logic.CreateManualLocationData(manualX, manualY, manualZ, manualYaw, manualName, manualCategory)
+        end
+        local function close()
+            showManualModal = false
+            ImGui.CloseCurrentPopup()
+        end
+
+        -- Action buttons
+        if ImGui.Button(IconGlyphs.ContentSave .. " Save") then
+            if allZero() then
+                Utils.NotifyWarning("Enter coordinates first (X/Y/Z are all 0).")
+            else
+                ensureCategory()
+                local loc = Logic.AddLocation(buildLoc())
+                Utils.Notify("Saved manual location: " .. (loc and loc.name or manualName))
+                close()
+            end
+        end
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.ContentSaveMove .. " Save & Teleport") then
+            if allZero() then
+                Utils.NotifyWarning("Enter coordinates first (X/Y/Z are all 0).")
+            else
+                ensureCategory()
+                local loc = Logic.AddLocation(buildLoc())
+                if loc then Logic.TeleportTo(loc) end
+                Utils.Notify("Saved and teleported: " .. (loc and loc.name or manualName))
+                close()
+            end
+        end
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.RunFast .. " Teleport") then
+            if allZero() then
+                Utils.NotifyWarning("Enter coordinates first (X/Y/Z are all 0).")
+            else
+                Logic.TeleportTo(buildLoc())
+                close()
+            end
+        end
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.Cancel .. " Cancel") then
+            close()
+        end
+    end, {
+        onClose = function()
+            showManualModal = false
+        end
+    })
+end
+
 --- Main Draw Function
 function UI.Draw()
     if not isOverlayOpen then return end
@@ -1953,6 +2129,10 @@ function UI.Draw()
 
         if showResetConfirm then
             DrawResetSettingsConfirmModal()
+        end
+
+        if showManualModal then
+            DrawManualModal()
         end
     else
         isOverlayOpen = false
