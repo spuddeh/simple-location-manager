@@ -90,7 +90,7 @@ No issues flagged.
 [b][size=3]Version 1.1.0[/size][/b]
 [spoiler][list][*]Feature: Categories - Locations can now be assigned a Category (Icon + Name) for better organisation
 [*]Feature: Custom Category Portability - Exports and Imports now automatically include custom category definitions
-[*]Feature: AMM Support - Full support for importing Appearance Menu Mod locations (Bulk Import &amp; String Import)
+[*]Feature: AMM Support - Full support for importing Appearance Menu Mod locations (Bulk Import & String Import)
 [*]Feature: Preset Support (For Authors) - Distribute full location packs with custom categories/icons that auto-install seamlessly for players
 [*]Feature: Category Manager - Create, Edit, and Delete custom categories
 [*]Feature: Lazy Mode - The "enable Lazy Mode" (Teleport Buttons) setting is now persistent and saves to your config

@@ -9,6 +9,6 @@
 - Initial Upload
 
 ### v1.0.1
-- Updated names and descriptions for Zone 3 locations based on feedback from LordTrilobite<br />
+- Updated names and descriptions for Zone 3 locations based on feedback from LordTrilobite
 - Updated position of the Plaza and Corpo building basement markers based on feedback from LordTrilobite
 - Fixed some typos in other location names

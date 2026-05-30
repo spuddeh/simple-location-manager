@@ -78,7 +78,7 @@ You can now import existing Appearance Menu Mod locations!
 [font=Courier New]bin\x64\plugins\cyber_engine_tweaks\mods\AppearanceMenuMod\User\Locations[/font]
 to the SLM import folder:
 [font=Courier New]bin\x64\plugins\cyber_engine_tweaks\mods\SimpleLocationManager\import[/font]
-[*]Load the game, open SLM &gt; Settings Tab &gt; Import Button &gt; "AMM Bulk Import" tab.
+[*]Load the game, open SLM > Settings Tab > Import Button > "AMM Bulk Import" tab.
 [*]Click "Scan Directory & Import".
 [/list]
 [/list]
