@@ -65,6 +65,12 @@ No issues flagged.
 ```
 [color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
 
+[b][size=3]Version 1.5.0[/size][/b]
+[spoiler][list][*]Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
+[*]Feature: SmartPaste™ - the Manual Coordinates box understands labelled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. Always double-check the auto-filled values before saving or teleporting.
+[*]Feature: A-Z View - a third sort mode that lists every location in one flat alphabetical list, with no district or category grouping.
+[*]Fix: Renamed the mod's window titles to the "SLM - " prefix to prevent a conflict with other CET mods.
+[/list][/spoiler]
 [b][size=3]Version 1.4.0[/size][/b]
 [spoiler][list][*]QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
 [*]QOL: Dump Coordinates (previously "Print Coordinates") Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
@@ -115,4 +121,4 @@ No issues flagged.
 [/list][/spoiler]
 ```
 
-> Character count: 3921 / 5000
+> Character count: 4743 / 5000
