@@ -56,10 +56,12 @@ at the zip root exactly as the game expects.
    - attaches the zip to the GitHub Release,
    - uploads to Nexus (`file_category`, `display_name`, `archive_existing_file: true`, etc.).
 4. **Manually on the Nexus mod page** (the API does NOT do these): bump the **Mod Version**
-   field to the new version, and add the changelog entry. The upload-action only sets the
-   *file* version (`POST /mod-file-update-groups/{id}/versions`); it never touches the mod's
-   headline version or changelog. The mod-page version is what drives the "Update available"
-   badge and mod-manager update checks, so users are not notified until you bump it.
+   field, add the changelog entry, and update the description if needed. The upload-action only
+   sets the *file* version (`POST /mod-file-update-groups/{id}/versions`); it never touches the
+   mod's headline version, changelog, or description. (The "update available" trigger is most
+   likely the new main file / the mod's updated file list rather than the headline version
+   string, but bump the version + changelog regardless so the page reads correctly.)
+   Recommended order: do these page edits *before* cutting the release.
 
 You can also run it manually from the **Actions** tab (workflow_dispatch) with `artifact` +
 `version` inputs (and an optional existing `tag` to attach the zip to).
