@@ -1,0 +1,65 @@
+[color=#ffff00][size=5][b]Overview[/b][/size][/color]
+This is a custom preset file for [b]Simple Location Manager[/b] that automatically imports locations for the [b]Japantown North Verticality Expanded[/b] mod.
+
+It adds [b]18 new locations[/b] covering some of the major additions from JNVE, including the construction platform, walkways, the AT AK building complex, apartments, and the new corpo building and plaza.
+
+[line]
+[color=#ffff00][size=5][b]Requirements[/b][/size][/color]
+To use this preset, you must have the following mods installed:[list]
+[*] [url=https://www.nexusmods.com/cyberpunk2077/mods/26454]Simple Location Manager[/url]
+[*] [url=https://www.nexusmods.com/cyberpunk2077/mods/25441]Japantown North Verticality Expanded[/url]
+[/list]
+[line]
+[color=#ffff00][size=5][b]Locations[/b][/size][/color]
+
+[b][color=#00ffff]Zone 1: North East Platform[/color][/b]
+[spoiler]
+[list]
+[*]NE Construction Platform
+[*]Poor Apartment East
+[*]Scaffolding Building
+[*]Unfinished Building Main Interior
+[*]West Walkway Connection
+[/list][/spoiler]
+
+[b][color=#00ffff]Zone 2: AT AK Building (Center North)[/color][/b]
+[spoiler]
+[list]
+[*]AT AK Garage (East Entrance)
+[*]AT AK Garage (West Entrance)
+[*]AT AK Garage (3rd Floor Exit)
+[*]AT AK Apartment Markets
+[*]AT AK High Walkway
+[*]AT AK Penthouse
+[*]AT AK Utility Roof
+[/list][/spoiler]
+
+[b][color=#00ffff]Zone 3: Palm Plaza & Corpo Building[/color][/b]
+[spoiler]
+[list]
+[*]Palm Plaza
+[*]Palm Plaza Corpo Building
+[*]Palm Plaza Corpo Building (Lobby)
+[*]Palm Plaza Corpo Building Basement Entrance
+[/list][/spoiler]
+
+[b][color=#00ffff]Zone 4: Connections & Misc[/color][/b]
+[spoiler]
+[list]
+[*]Underpass Tunnel
+[*]South Walkway Roof
+[/list][/spoiler]
+
+[line]
+[color=#ffff00][size=5][b]Installation[/b][/size][/color]
+[list=1]
+[*]Ensure you have [b][url=https://www.nexusmods.com/cyberpunk2077/mods/26454]Simple Location Manager[/url] and [url=https://www.nexusmods.com/cyberpunk2077/mods/25441]Japantown North Verticality Expanded[/url][/b] installed.
+[*]Install this mod using a mod manager or manually place the file into your Simple Location Manager presets folder:
+[font=Courier New]bin/x64/plugins/cyber_engine_tweaks/mods/SimpleLocationManager/presets/[/font]
+[*]Launch the game and open SLM to view the locations.
+[/list]
+[line]
+[color=#ffff00][size=5][b]Credits[/b][/size][/color]
+[list]
+[*][b][url=https://www.nexusmods.com/cyberpunk2077/users/80636368]LordTrilobite[/url] [/b]- For creating the amazing JNVE mod and granting permission to create this preset.
+[/list]
