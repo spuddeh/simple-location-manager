@@ -32,7 +32,7 @@ local groupPresentThisFrame = {}    -- Set of group keys rendered in current fra
 
 -- Modal Flags & State
 local editingId = nil            -- ID of the location currently being edited (Edit Modal)
-local pendingNewLocation = nil   -- Bug Fix: Temp location object for "New Location" (before save)
+local pendingNewLocation = nil   -- Temp location object for "New Location" (before save)
 local confirmDeleteId = nil      -- ID of the location pending deletion (Delete Confirmation Modal)
 local confirmDeleteAll = false   -- Flag for "Delete All Locations" confirmation modal
 local showResetConfirm = false   -- Flag for "Reset Settings" confirmation modal
@@ -98,11 +98,8 @@ function UI.WrapperModal(titleSuffix, shouldOpen, flags, renderContent, options)
     end
 
     -- Draw Modal
-    -- Note: onPreOpen might also need to run before BeginPopupModal if it affects size *every frame*
-    -- usually SetNextWindowSize is frame-dependent.
-    -- If 'shouldOpen' is false but popup is open, we still need to render.
-    -- So we always run onPreOpen if provided? Or only if appearing?
-    -- Standard practice: Run before Begin.
+    -- onPreOpen runs every frame, before BeginPopupModal: SetNextWindowSize only applies to the
+    -- next window begun, and the popup still has to render on frames where shouldOpen is false.
     if options.onPreOpen then options.onPreOpen() end
 
     if ImGui.BeginPopupModal(fullTitle, true, flags) then
@@ -253,8 +250,7 @@ end
 local function DrawEditModal()
     local shouldOpen = (editingId ~= nil)
 
-    -- Fix: Remove AlwaysAutoResize to prevent growth loop
-    -- Set a reasonable default size, but allow user resizing
+    -- SetNextWindowSize pins the initial width so AlwaysAutoResize cannot run away.
     if shouldOpen then ImGui.SetNextWindowSize(500, 0, ImGuiCond.Appearing) end
 
     UI.WrapperModal("Edit Location", shouldOpen, ImGuiWindowFlags.AlwaysAutoResize, function()
@@ -263,8 +259,8 @@ local function DrawEditModal()
 
         ImGui.Text("Description:")
         ImGui.SetNextItemWidth(-1)
-        -- QOL: 3 lines high, 250 max chars
-        -- Revert: Use dynamic width now that window size is constrained
+        -- 3 lines high, 500 char limit.
+        -- Dynamic width, now that the window size is constrained.
         tempDesc = ImGui.InputTextMultiline("##desc", tempDesc, 500, ImGui.GetContentRegionAvail(),
             ImGui.GetTextLineHeight() * 4)
 
@@ -273,7 +269,7 @@ local function DrawEditModal()
         local len = string.len(tempDesc)
         local remaining = 500 - len
 
-        -- Fix Alignment: Use ContentRegionAvail to align right
+        -- Use ContentRegionAvail to align right
         local avail = ImGui.GetContentRegionAvail()
         local txt = len .. " / 500"
         local txtW = ImGui.CalcTextSize(txt)
@@ -362,7 +358,7 @@ local function DrawEditModal()
 
             if editingId then
                 if editingId == "NEW" then
-                    -- Bug Fix: Commit the new location now
+                    -- Commit the new location now
                     if pendingNewLocation then
                         pendingNewLocation.name = tempName
                         pendingNewLocation.description = tempDesc
@@ -490,7 +486,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
     ImGui.PushID(loc.id .. (uniqueSuffix or ""))
     ImGui.BeginGroup()
 
-    ImGui.Separator() -- User Request: "separator above the location name"
+    ImGui.Separator()
 
     -- 1. Text Information (Name, Desc, District)
     ImGui.BeginGroup()
@@ -511,7 +507,6 @@ local function DrawLocationRow(loc, uniqueSuffix)
     ImGui.PopStyleColor()
 
     -- Category Info (District View OR Favorite)
-    -- User Request: "Locations in the favourites category should always show the Category"
     -- A-Z view is ungrouped, so the category isn't shown as a header; show it per row instead.
     if Logic.settings.groupBy == "District" or Logic.settings.groupBy == "A-Z" or loc.favorite then
         local catName = loc.category or "Misc"
@@ -525,13 +520,11 @@ local function DrawLocationRow(loc, uniqueSuffix)
         local glyph = IconGlyphs[catIcon] or IconGlyphs.Help
         -- Category: Medium Purple (0.6, 0.4, 0.9) - Readable "Middle Ground"
         ImGui.PushStyleColor(ImGuiCol.Text, 0.6, 0.4, 0.9, 1.0)
-        -- User Request: "add 'Category:' before the category icon and name"
         ImGui.Text("Category: " .. glyph .. " " .. catName)
         ImGui.PopStyleColor()
     end
 
     -- District Information (Conditional OR Favorite)
-    -- User Request: "Force the items to display the district \ sub district text when they are favourited"
     if Logic.settings.showDistrict or loc.favorite then
         local districtName = loc.district or "Unknown"
         local subDistrictName = loc.subDistrict
@@ -642,7 +635,6 @@ local function DrawLocationRow(loc, uniqueSuffix)
     ImGui.SameLine()
 
     -- Delete (Red Button)
-    -- User Request: "Deeper Red"
     ImGui.PushStyleColor(ImGuiCol.Button, 0.55, 0.15, 0.15, 1.0)
     ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0.65, 0.2, 0.2, 1.0)
     ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.45, 0.1, 0.1, 1.0)
@@ -653,7 +645,6 @@ local function DrawLocationRow(loc, uniqueSuffix)
     if ImGui.IsItemHovered() then ImGui.SetTooltip("Delete location") end
 
     ImGui.EndGroup()
-    -- ImGui.Separator() -- Removed as per request (Moved to before headers)
     ImGui.PopID()
     return true
 end
@@ -717,7 +708,7 @@ local function DrawLocationsTab()
                     shouldOpenDuplicateModal = true
                     showDuplicateModal = true
                 else
-                    -- Bug Fix: Don't save immediately. Use CreateLocationData + Edit Modal
+                    -- Don't save immediately: use CreateLocationData plus the Edit modal.
                     local newLocData = Logic.CreateLocationData()
                     if newLocData then
                         OpenCreateModal(newLocData)
@@ -820,11 +811,9 @@ local function DrawLocationsTab()
         if ImGui.IsItemHovered() then ImGui.SetTooltip("Clear Search") end
 
         -- QOL: Export Filtered Button
-        -- Only show if search is active
         ImGui.SameLine()
         if ImGui.Button(IconGlyphs.ContentCopy) then
-            -- Get list of filtered items (Current Tab View logic?)
-            -- User generic "SearchLocations" which mimics the view filter
+            -- SearchLocations applies the same filter as the list view.
             local list = Logic.SearchLocations(searchQuery)
             if list and #list > 0 then
                 local b64, count = Impex.ExportList(list)
@@ -861,7 +850,6 @@ local function DrawLocationsTab()
     table.sort(filteredFavorites, SortLocationByName)
 
     if #filteredFavorites > 0 then
-        -- ImGui.Separator() -- Reverted
         ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.84, 0.0, 1.0) -- Gold for header
 
         local headerFlags = ImGuiTreeNodeFlags.DefaultOpen
@@ -873,7 +861,6 @@ local function DrawLocationsTab()
         elseif groupOpenState["fav"] ~= nil and not groupPresentLastFrame["fav"] then ImGui.SetNextItemOpen(groupOpenState["fav"])
         end
 
-        -- User Request: "Make them transparent"
         ImGui.PushStyleColor(ImGuiCol.Header, 0, 0, 0, 0.0)
         ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
         ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
@@ -906,7 +893,6 @@ local function DrawLocationsTab()
         -- CATEGORY VIEW
         local cats = Logic.GetCategories()
         for _, catInfo in ipairs(cats) do
-            -- ImGui.Separator() -- Reverted
             -- Filter locations
             local catLocs = {}
             for _, loc in ipairs(Logic.locations) do
@@ -1017,7 +1003,6 @@ local function DrawLocationsTab()
         table.sort(sortedDistricts)
 
         for _, dName in ipairs(sortedDistricts) do
-            -- ImGui.Separator() -- Reverted
             local subDistricts = districts[dName]
             local count = 0
             for _, group in pairs(subDistricts) do count = count + #group end
@@ -1090,9 +1075,7 @@ local function DrawLocationsTab()
                         local locs = subDistricts[sName]
                         table.sort(locs, SortLocationByName)
 
-                        -- Skip "Locations" or "General" headers if they are the only ones (Logic removed for simplicity/legacy, keeping headers per subdistrict)
-                        -- Actually, let's keep it simple: Show header for subdistrict.
-
+                        -- One header per subdistrict.
                         local headerText = sName
                         local subHeaderFlags = ImGuiTreeNodeFlags.DefaultOpen
                         if Logic.settings.defaultGroupState == "Collapsed" then subHeaderFlags = ImGuiTreeNodeFlags.None end
@@ -1245,7 +1228,6 @@ local function DrawSettingsTab()
         Logic.settings.defaultName = newDName
         Logic.Save()
     end
-    -- User Request: "reset default name ... right clicking"
     if ImGui.IsItemClicked(1) then
         Logic.settings.defaultName = Logic.defaultSettings.defaultName
         Logic.Save()
@@ -1268,7 +1250,6 @@ local function DrawSettingsTab()
         Logic.settings.defaultDesc = newDDesc
         Logic.Save()
     end
-    -- User Request: "reset default description ... right clicking"
     if ImGui.IsItemClicked(1) then
         Logic.settings.defaultDesc = Logic.defaultSettings.defaultDesc
         Logic.Save()
@@ -1425,7 +1406,6 @@ local function DrawSettingsTab()
     ImGui.Text("Enable Teleport Buttons (Lazy Mode)")
     ImGui.PopTextWrapPos()
 
-    -- Warning / Disclaimer
     -- Warning / Disclaimer
     ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.6, 0.0, 1.0)
     if ImGui.Button(IconGlyphs.AlertDecagram .. " Read Safety Protocol") then
@@ -1635,9 +1615,7 @@ local function DrawSettingsTab()
     ImGui.Columns(2, "DangerCols", false)
 
     -- Col 1
-    -- Col 1
     -- Delete All (Red Button)
-    -- User Request: "Deeper Red"
     ImGui.PushStyleColor(ImGuiCol.Button, 0.6, 0.1, 0.1, 1.0)
     ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0.7, 0.15, 0.15, 1.0)
     ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.5, 0.05, 0.05, 1.0)
@@ -1744,7 +1722,7 @@ local function DrawDuplicateWarningModal()
 
         if ImGui.Button(IconGlyphs.Pencil .. " Edit existing") then
             if duplicateWarningId then
-                local existingLoc = Logic.GetLocation(duplicateWarningId) -- Fix: GetLocationById -> GetLocation
+                local existingLoc = Logic.GetLocation(duplicateWarningId)
                 if existingLoc then
                     OpenEditModal(existingLoc)
                 end
@@ -2052,7 +2030,6 @@ function UI.Draw()
     if not isOverlayOpen then return end
 
     -- Calc Dynamic Min Width based on longest Setting Button
-    -- User Request: "minimum window width? It should be set to whatever the longest button button is in the settings * 2, plus spacing"
     local style = ImGui.GetStyle()
     local longestText = IconGlyphs.Delete .. " Delete All Locations" -- Roughly the longest
     local btnW = ImGui.CalcTextSize(longestText) + (style.FramePadding.x * 2)

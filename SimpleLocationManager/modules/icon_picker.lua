@@ -27,11 +27,9 @@ local function EnsureCache()
 end
 
 --- Clear the search filter
---- Clear the search filter
 function IconPicker.ClearSearch()
     searchText = ""
     filteredIcons = nil
-    -- Force reclaim focus? No, just state reset.
 end
 
 --- Draw the picker widget
@@ -107,7 +105,6 @@ function IconPicker.Draw(currentIconName, onSelectCallback, height)
             if isSelected then
                 ImGui.PushStyleColor(ImGuiCol.Button, 0.2, 0.6, 1.0, 1.0) -- Blue Current
             else
-                -- User Request: "make them transparent"
                 ImGui.PushStyleColor(ImGuiCol.Button, 0.0, 0.0, 0.0, 0.0) -- Transparent Default
             end
 

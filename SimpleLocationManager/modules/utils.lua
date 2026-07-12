@@ -183,12 +183,7 @@ function Utils.Log(msg)
     -- Normalize message
     local str = tostring(msg)
 
-    -- Print to CET Console Overlay (requires explicit prefix if desired, but we usually want cleaner output here if it's a dump)
-    -- User wanted ConsolePrefix for console logs.
-    -- The print() goes to CET Console AND CET Log.
-    -- spdlog goes to mod-specific log.
-
-    -- Let's just print exactly what we want.
+    -- print() goes to the CET console and the CET log; spdlog goes to the mod-specific log.
     print(str)
 
     -- Log to spdlog (mod log)

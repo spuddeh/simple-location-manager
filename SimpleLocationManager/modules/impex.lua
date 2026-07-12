@@ -143,7 +143,7 @@ local function MinifyLocation(loc)
     if loc.description and loc.description ~= "" then
         min.desc = loc.description -- Key: 'desc'
     end
-    -- Fix: Ensure ID is preserved in V2 export
+    -- The ID is preserved in the V2 export.
     min.i = loc.id -- Key: 'i' (Critical for Preset Updates)
 
     -- 2. IDs (District, SubD, Category)
@@ -153,7 +153,7 @@ local function MinifyLocation(loc)
     min.c = CategoryMap[loc.category] or loc.category
 
     -- 3. Position (Array [x,y,z], Rounded 3 decimals)
-    -- W is usually 1.0, only store if different? No, always 1.0 for player pos. Omit.
+    -- w is always 1.0 for a player position, so it is omitted from the payload and restored as 1.0 on expand.
     min.p = {
         Round(loc.pos.x, 3),
         Round(loc.pos.y, 3),
@@ -419,8 +419,6 @@ function Impex.ImportFromAMMDirectory(path)
                             local checkDist = 0.5
                             local pos1 = Vector4.new(ammLoc.pos.x, ammLoc.pos.y, ammLoc.pos.z, ammLoc.pos.w)
 
-                            -- Check dist for logging purposes?
-                            -- We just skip and log.
                             report.skipped = report.skipped + 1
                             local msg = "Skipped (Duplicate): " .. fileInfo.name
                             table.insert(report.logs, msg)
@@ -498,7 +496,6 @@ function Impex.ProcessImport(importString)
 
 
     if package.categories and #package.categories > 0 then
-        -- Silent check or minimal log if needed
     end
 
     return expandedData, "SLM String", nil, package.categories
@@ -514,7 +511,7 @@ function Impex.IsExactDuplicate(newLoc)
     local p1 = newLoc.pos
 
     for _, existing in ipairs(Logic.locations) do
-        -- Fix: If ID matches, it's an UPDATE, not a Duplicate (return false to allow processing)
+        -- If the ID matches this is an UPDATE, not a duplicate: return false so it gets processed.
         if newLoc.id and existing.id and newLoc.id == existing.id then
             return false
         end
@@ -540,10 +537,8 @@ end
 ---@param sourceDetail string|nil
 ---@param customCats table|nil List of custom category definitions
 ---@return table report {imported, skipped, logs}
-function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, customCats) -- Renamed from ProcessImport to avoid conflict
+function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, customCats)
     local report = { imported = 0, skipped = 0, logs = {} }
-
-    -- (Debug logs removed)
 
     -- Process Custom Categories First
     if customCats and #customCats > 0 then
@@ -567,15 +562,6 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
             if not loc.category or loc.category == "" or loc.category == "Misc" then
                 loc.category = "Imported"
             end
-
-            -- Check logic for adding...
-            -- We bypass standard AddLocation to prevent ID regen if valid?
-            -- Actually for String Imports, we treat as NEW locations unless specified otherwise.
-            -- Logic.ImportLocation handles ID generation if not provided.
-
-            -- Duplicate Check handled by Logic.ImportLocation ONLY IF we implement it there?
-            -- Wait, Logic.ImportLocation doesn't check duplicates. It just adds.
-            -- We need to check duplicates here?
 
             if Impex.IsExactDuplicate(loc) then
                 local districtStr = (loc.district or "Unknown") .. " \\ " .. (loc.subDistrict or "Unknown")

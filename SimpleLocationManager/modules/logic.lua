@@ -20,7 +20,7 @@ Logic.defaultSettings = {
     warningDistance = 25.0,
     showCoords = false,
     showDistrict = false,
-    lazyMode = false,               -- Now persistent (Default: false)
+    lazyMode = false,               -- Default: false
     defaultGroupState = "Expanded", -- "Expanded" or "Collapsed"
     groupBy = "District",           -- "District" or "Category"
     showSourceInfo = true,          -- Show source/conflict info
@@ -71,7 +71,7 @@ function Logic.Init()
     Logic.Load()
 end
 
---- Load data from JSON (Handlers Migration)
+--- Load data from JSON
 function Logic.Load()
     -- 1. Load Settings
     local sFile = io.open(SETTINGS_FILE, "r")
@@ -249,7 +249,6 @@ function Logic.CreateLocationData()
     local desc = ""
 
     -- Auto Timestamp logic
-    -- User Request: "default description text does not show up anymore" -> Pre-fill it here
     if Logic.settings.defaultDesc == "Timestamp" then
         desc = "Added: " .. os.date("%Y-%m-%d %H:%M:%S")
     elseif Logic.settings.defaultDesc and Logic.settings.defaultDesc ~= "" then
@@ -328,11 +327,7 @@ function Logic.AddLocation(arg1, arg2, arg3)
 
     -- Check Timestamp logic only if using defaults
     if loc.name == "New Location" and Logic.settings.defaultDesc == "Timestamp" and (not loc.description or loc.description == "") then
-        -- If it wasn't already set? Actually Logic.CreateLocationData leaves desc empty.
-        -- So we can set it here if desired, but user QOL said "let it go to 250...".
-        -- The old logic set timestamp. Let's keep it for consistency.
-        -- Wait, `CreateLocationData` does NOT set timestamp.
-        -- If `AddLocation` is called with just `name="New Location"`, we should probably timestamp it if setting is enabled.
+        -- Legacy 3-arg callers get the default timestamp description.
         loc.description = "Added: " .. os.date("%Y-%m-%d %H:%M:%S")
     end
 
@@ -378,7 +373,7 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
     end
 
     -- 2. New Import
-    -- Fix: If preserveId is true, use data.id (if valid) instead of generating new
+    -- If preserveId is true, use data.id (when valid) instead of generating a new one.
     local newId = GenerateID()
     if preserveId and data.id then
         newId = data.id
@@ -655,13 +650,12 @@ function Logic.DeleteCategory(name)
         Logic.settings.customCategories = newCats
         Logic.Save()
 
-        -- Reset locations with this category to "Misc" (or "Imported" or whatever)
-        -- Actually, keeping them is fine, they just revert to generic icon if not found.
-        -- If user re-adds category later, it links back up.
+        -- Locations keep their category tag on purpose: they are not re-tagged. While the
+        -- category is missing they fall back to the generic icon, and they re-link if the
+        -- category is added back.
     end
 end
 
---- Update a custom category (Rename and/or Change Icon)
 --- Update a custom category (Rename and/or Change Icon)
 function Logic.UpdateCategory(oldName, newName, newIcon)
     if not Logic.settings.customCategories then return false end
