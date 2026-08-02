@@ -63,19 +63,20 @@ at the zip root exactly as the game expects.
    # a preset:
    gh release create konpeki-v1.1.0 --title "Konpeki Plaza Preset v1.1.0" --notes "..."
    ```
-   The release body is the GitHub release notes (write the full changelog here; also paste it into the Nexus Changelogs tab manually). For the **Nexus file description** (capped at 255 chars), put a `<!-- nexus-description-end -->` marker on its own line: everything **before** it becomes the file description (for example a new requirement, or "delete the old folder first"). Omit the marker, or leave nothing before it, to send no file description.
+   The release body feeds two Nexus fields, split by a `<!-- nexus-description-end -->` marker on its own line. Everything **before** the marker becomes the **file description** (capped at 255 chars — for example a new requirement, or "delete the old folder first"); everything **after** it is appended to the mod page's **changelog**. With no marker at all, the whole body becomes the changelog and no file description is sent.
 3. On publish, the workflow:
    - parses the tag -> looks up the artifact in the manifest,
    - stages `contentDir` -> `installDir` and zips it as `<fileBaseName>_v<version>.zip` (e.g. `SimpleLocationManager_v1.6.0.zip`),
    - attaches the zip to the GitHub Release,
    - uploads to Nexus (`category`, `display_name`, `archive_existing_version: true`, etc.).
-4. **Manually on the Nexus mod page** (the API does NOT do these): bump the **Mod Version**
-   field, add the changelog entry, and update the description if needed. The upload-action only
-   sets the *file* version (`POST /mod-files/{id}/versions`); it never touches the
-   mod's headline version, changelog, or description. (The "update available" trigger is most
-   likely the new main file / the mod's updated file list rather than the headline version
-   string, but bump the version + changelog regardless so the page reads correctly.)
-   Recommended order: do these page edits *before* cutting the release.
+4. **On the Nexus mod page:** the workflow sets the **Mod Version** field and appends the
+   **changelog** entry itself. Only the mod **description** is still manual.
+   The changelog endpoint APPENDS rather than replaces, so publishing the same release twice
+   leaves the entry on the page twice and nothing here can remove it. A `workflow_dispatch`
+   re-run never posts a changelog.
+   Presets are the exception: they carry `"update_mod_version": false`, so a preset release sets
+   neither the page version nor the page changelog. Page 26454 belongs to `slm` and page 26743 to
+   `jnve`; a preset's `1.0.0kp`-style version is a file version and nothing more.
 
 You can also run it manually from the **Actions** tab (workflow_dispatch) with `artifact` +
 `version` inputs (and an optional existing `tag` to attach the zip to).
@@ -83,9 +84,10 @@ You can also run it manually from the **Actions** tab (workflow_dispatch) with `
 ## Notes
 
 - The Nexus upload uses [`Nexus-Mods/upload-action`](https://github.com/Nexus-Mods/upload-action),
-  pinned to `v1.0.0-beta.8` (the Nexus v3 upload API). beta.8's `createModFileVersion` endpoint
-  replaces the old `createUpdateGroupVersion`, which Nexus **removes on 2026-09-09** — so this pin
-  is required to keep uploading after that date. This API is still labelled evaluation-only, so bump
+  pinned to `v1.0.0-beta.10` (the Nexus v3 upload API). The `createModFileVersion` endpoint it
+  uses replaces the old `createUpdateGroupVersion`, which Nexus **removes on 2026-09-09** — so a
+  pin older than beta.8 stops uploading after that date. beta.9 added `update_mod_version`, beta.10
+  the changelog endpoint; both are wired up here. The API is still labelled evaluation-only, so bump
   the pin when a stable release appears (watch for further input renames).
 - `archive_existing_version: true` archives the previous file when a new version is uploaded.
 - `show_requirements_pop_up: true` shows the requirements popup on download (SLM requires CET; the
