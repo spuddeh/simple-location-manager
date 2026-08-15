@@ -29,6 +29,8 @@ local lastDistrictInfo = nil    -- Stores the last dumped district info string
 local groupOpenState = {}           -- Last known open/closed state per group key
 local groupPresentLastFrame = {}    -- Set of group keys rendered in previous frame
 local groupPresentThisFrame = {}    -- Set of group keys rendered in current frame
+local forceExpand = false           -- Expand every group on the next frame, then clears
+local forceCollapse = false         -- Collapse every group on the next frame, then clears
 
 -- Modal Flags & State
 local editingId = nil            -- ID of the location currently being edited (Edit Modal)
@@ -39,6 +41,7 @@ local showResetConfirm = false   -- Flag for "Reset Settings" confirmation modal
 local showDuplicateModal = false -- Flag for "Duplicate Location" warning modal
 local duplicateWarningName = ""  -- Name of the location causing the duplicate warning
 local duplicateWarningId = nil   -- ID of the location causing the duplicate warning
+local updateConfirmId = nil      -- ID of the location pending a position update (Update Confirmation Modal)
 
 -- Import System State
 local showImportRed = false -- Flag for the Import Data modal
@@ -267,7 +270,6 @@ local function DrawEditModal()
         -- QOL: Char Counter
         ImGui.PushStyleColor(ImGuiCol.Text, 0.5, 0.5, 0.5, 1.0)
         local len = string.len(tempDesc)
-        local remaining = 500 - len
 
         -- Use ContentRegionAvail to align right
         local avail = ImGui.GetContentRegionAvail()
@@ -704,8 +706,7 @@ local function DrawLocationsTab()
                 if isDup then
                     duplicateWarningName = dupName or "Unknown"
                     duplicateWarningId = dupId
-                    -- Set flag to open popup in main scope (outside child)
-                    shouldOpenDuplicateModal = true
+                    -- The popup opens in the main scope, outside this child window
                     showDuplicateModal = true
                 else
                     -- Don't save immediately: use CreateLocationData plus the Edit modal.
@@ -1488,7 +1489,7 @@ local function DrawSettingsTab()
                             showCategoryModal = true
                             newCatName = c.name
                             newCatIcon = c.icon
-                            -- We use a flag to know we are editing vs creating
+                            -- The flag is what distinguishes editing from creating
                             isEditingCategory = true
                             editingCategoryOriginalName = c.name
                         end
@@ -1880,8 +1881,8 @@ end
 --- Draw the Manual Coordinates modal (save/teleport to typed or pasted XYZ)
 local function DrawManualModal()
     local shouldOpen = showManualModal
-    -- Fixed width with NoResize: AlwaysAutoResize would collapse the window to its content
-    -- (the -1 width fields), so we pin the width and let height auto-fit on appear.
+    -- Fixed width with NoResize: AlwaysAutoResize collapses the window onto its content
+    -- (the -1 width fields). The width is pinned; the height auto-fits on appear.
     if shouldOpen then ImGui.SetNextWindowSize(420, 0, ImGuiCond.Appearing) end
 
     UI.WrapperModal("Manual Coordinates", shouldOpen, ImGuiWindowFlags.NoResize, function()

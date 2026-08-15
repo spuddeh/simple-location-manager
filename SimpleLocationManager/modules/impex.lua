@@ -414,13 +414,15 @@ function Impex.ImportFromAMMDirectory(path)
                     -- Import via Logic
                     if Logic and Logic.ImportLocation then
                         -- DUPLICATE / CONFLICT CHECK
-                        if Impex.IsExactDuplicate(ammLoc) then
-                            -- Tag the existing location with conflict info
-                            local checkDist = 0.5
-                            local pos1 = Vector4.new(ammLoc.pos.x, ammLoc.pos.y, ammLoc.pos.z, ammLoc.pos.w)
-
+                        -- A duplicate is skipped, never merged: the existing location is the
+                        -- user's and an AMM file carries no ID that could link the two.
+                        local isDup, existingLoc = Impex.IsExactDuplicate(ammLoc)
+                        if isDup then
                             report.skipped = report.skipped + 1
                             local msg = "Skipped (Duplicate): " .. fileInfo.name
+                            if existingLoc then
+                                msg = msg .. " - matches \"" .. (existingLoc.name or "Unnamed") .. "\""
+                            end
                             table.insert(report.logs, msg)
                         else
                             Logic.ImportLocation(ammLoc, false, "AMM Bulk Import", fileInfo.name)
@@ -494,26 +496,23 @@ function Impex.ProcessImport(importString)
         expandedData = package.data
     end
 
-
-    if package.categories and #package.categories > 0 then
-    end
-
     return expandedData, "SLM String", nil, package.categories
 end
 
 --- Internal: Check strictly for duplicate (Same Position)
+--- The warning distance is deliberately ignored: this is a strict check with a fixed 0.5 m
+--- tolerance, where Logic.CheckForDuplicate uses the user-configurable warningDistance.
 ---@param newLoc table
 ---@return boolean isDuplicate
+---@return table|nil existingLoc The location that was matched, for reporting
 function Impex.IsExactDuplicate(newLoc)
-    -- We ignore warning distance here. Only exact duplicates (very small tolerance)
-    -- Logic.CheckForDuplicate uses warningDistance, so we roll our own strict check
     local epsilon = 0.5 * 0.5 -- 0.5m tolerance squared
     local p1 = newLoc.pos
 
     for _, existing in ipairs(Logic.locations) do
         -- If the ID matches this is an UPDATE, not a duplicate: return false so it gets processed.
         if newLoc.id and existing.id and newLoc.id == existing.id then
-            return false
+            return false, nil
         end
 
         local p2 = existing.pos
@@ -524,11 +523,11 @@ function Impex.IsExactDuplicate(newLoc)
             local distSq = (dx * dx) + (dy * dy) + (dz * dz)
 
             if distSq <= epsilon then
-                return true
+                return true, existing
             end
         end
     end
-    return false
+    return false, nil
 end
 
 --- Process an array of location data (Generic Import)
@@ -563,9 +562,13 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
                 loc.category = "Imported"
             end
 
-            if Impex.IsExactDuplicate(loc) then
+            local isDup, existingLoc = Impex.IsExactDuplicate(loc)
+            if isDup then
                 local districtStr = (loc.district or "Unknown") .. " \\ " .. (loc.subDistrict or "Unknown")
                 local msg = "[SKIP] Duplicate Position: " .. districtStr .. " \\ " .. loc.name
+                if existingLoc then
+                    msg = msg .. " - matches \"" .. (existingLoc.name or "Unnamed") .. "\""
+                end
                 table.insert(report.logs, msg)
                 print(Utils.ConsolePrefix .. " " .. msg) -- Verbose Console
                 report.skipped = report.skipped + 1
@@ -675,7 +678,7 @@ function Impex.LoadPresets()
                                     -- Check Source Compatibility (Only Heal if it's likely a broken link from a preset)
                                     -- If sourceType is nil, it's Legacy (assume it might be a preset).
                                     -- If sourceType contains "Preset", it's definitely a preset.
-                                    -- If sourceType is "Manual Input" or "AMM", we should NOT touch it (treat as Conflict).
+                                    -- A "Manual Input" or "AMM" sourceType is never touched: it is a Conflict.
                                     local isSimpatia = (not conflictLoc.sourceType) or
                                     string.find(conflictLoc.sourceType, "Preset")
 
@@ -689,8 +692,8 @@ function Impex.LoadPresets()
                                             (conflictLoc.sourceType or "Unknown") .. " location: " .. conflictLoc.name)
                                     else
                                         -- ** SELF HEALING **
-                                        -- IDs differ, but position matches and user hasn't edited it.
-                                        -- Fix: Update existing ID to match Preset ID, then Update.
+                                        -- IDs differ, position matches, and the user has not edited it.
+                                        -- The existing ID is restored to the Preset ID, then updated.
                                         print(Utils.ConsolePrefix ..
                                             " [FIX] Resyncing ID for location: " .. conflictLoc.name)
 

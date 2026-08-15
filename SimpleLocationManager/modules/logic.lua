@@ -186,8 +186,7 @@ end
 function Logic.CheckForDuplicate(newPos)
     local checkDist = Logic.settings.warningDistance
 
-    -- If setting is 0 (disabled), we STILL check for essentially exact duplicates (e.g. < 0.5m)
-    -- This prevents exact overlapping pins.
+    -- 0 disables the warning, but the check still runs at 0.5m to prevent exactly overlapping pins.
     if checkDist <= 0 then checkDist = 0.5 end
 
     local warningDistSq = checkDist * checkDist
@@ -498,7 +497,6 @@ function Logic.UpdateLocationPosition(id)
             loc.district = state.district
             loc.subDistrict = state.subDistrict
             loc.pos = state.pos
-            loc.rot = state.rot
             loc.rot = state.rot
 
             -- User Edit Protection: Mark as edited if from Preset
