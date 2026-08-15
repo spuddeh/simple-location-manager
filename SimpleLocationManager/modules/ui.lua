@@ -23,9 +23,23 @@ local MODAL_PREFIX = "SLM - "
 -- by the time onDraw first fires.
 local wu = nil
 local function ResolveWindowUtils()
-    if not wu then
-        wu = GetMod("WindowUtils") or ImGui
+    if wu then return wu end
+
+    wu = GetMod("WindowUtils") or ImGui
+
+    -- Per-window config is the fallback the library reads while its master toggle is
+    -- off, which is its shipped state. Stating the values here rather than inheriting
+    -- them means SLM keeps this feel even if the library's own defaults move.
+    if wu.SetWindowConfig then
+        wu.SetWindowConfig(MOD_NAME, {
+            gridEnabled = true,
+            animationEnabled = true,
+            animationDuration = 0.2,
+            easeFunction = "easeOut",
+            snapCollapsed = true
+        })
     end
+
     return wu
 end
 
@@ -2248,9 +2262,10 @@ function UI.Draw()
         ImGui.SetNextWindowSizeConstraints(minW, 300, 9999, 9999)
     end
 
-    -- Window Begin. The first return is visibility (false while collapsed), the second
-    -- is the title-bar close button. Collapsing must not close the window.
-    local visible, stillOpen = wu.Begin(MOD_NAME, true)
+    -- CET's ImGui.Begin(name, open) returns (open, open and shouldDraw) - the close
+    -- button FIRST, visibility second. Reading them the other way round closes the
+    -- window every time it is collapsed, because collapsed means shouldDraw is false.
+    local stillOpen, visible = wu.Begin(MOD_NAME, true)
     if visible then
         local frameH = ImGui.GetFrameHeightWithSpacing()
         -- Dynamic Footer: FrameHeight + small padding for Separator + text
@@ -2327,7 +2342,8 @@ function UI.Draw()
 
     wu.End()
 
-    if stillOpen == false then
+    -- Only the title-bar close button ends the session; collapsing does not.
+    if not stillOpen then
         isOverlayOpen = false
     end
 end

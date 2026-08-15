@@ -7,8 +7,6 @@
 - New: Settings for whether saved time and weather are applied on teleport, and how long the weather takes to change.
 - New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 - New: Codeware is now required. It is what makes setting the weather possible.
-- Fix: Collapsing the SLM window made it disappear until you closed and reopened the CET overlay.
-- Fix: The X button on the SLM window title bar did nothing.
 - Minor code improvements
 
 ### 1.5.0
@@ -87,8 +85,6 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]New: Settings for whether saved time and weather are applied on teleport, and how long the weather takes to change.
 [*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 [*]New: Codeware is now required. It is what makes setting the weather possible.
-[*]Fix: Collapsing the SLM window made it disappear until you closed and reopened the CET overlay.
-[*]Fix: The X button on the SLM window title bar did nothing.
 [*]Minor code improvements
 [/list]
 [b][size=3]Version 1.5.0[/size][/b]
@@ -121,7 +117,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 4335 / 5000
+> Character count: 4141 / 5000
 
 ### Comment 2 - older versions
 
