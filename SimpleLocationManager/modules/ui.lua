@@ -12,6 +12,7 @@ local Utils = require("modules/utils")
 local Impex = require("modules/impex")
 local IconPicker = require("modules/icon_picker")
 local Env = require("modules/env")
+local Cron = require("modules/Cron")
 
 local MOD_NAME = "Simple Location Manager"
 local MOD_VERSION = "1.6.0"
@@ -51,6 +52,11 @@ local filteredLocationCount = 0 -- QOL: Store filtered count for footer
 local activeTab = "Locations"   -- Current active tab in the main window
 local lastDebugInfo = nil       -- Stores the last printed debug info string
 local lastDistrictInfo = nil    -- Stores the last dumped district info string
+
+-- Footer readout. Sampled on a timer rather than per frame: reading the weather state
+-- allocates a handle, and half a second is finer than anyone reads a clock.
+local envReadout = nil
+local READOUT_INTERVAL = 0.5
 
 -- Group expand/collapse persistence (survives search filtering)
 local groupOpenState = {}           -- Last known open/closed state per group key
@@ -109,6 +115,12 @@ local manualCategory = "Misc"
 --- Initialize UI
 function UI.Init(logicModule)
     Logic = logicModule
+
+    -- Sampling is skipped while the overlay is shut, because nothing reads it then.
+    Cron.Every(READOUT_INTERVAL, function()
+        if not isOverlayOpen then return end
+        envReadout = Env.GetReadout()
+    end)
 end
 
 --- Generic Modal Wrapper Helper
@@ -152,6 +164,9 @@ function UI.OnOverlayOpen()
     -- A different save can load a different environment definition, so the weather
     -- state list is rebuilt rather than carried across.
     Env.InvalidateCache()
+    -- Sampled immediately so the footer is right on the first frame, not half a
+    -- second later.
+    envReadout = Env.GetReadout()
 end
 
 function UI.OnOverlayClose()
@@ -2307,6 +2322,44 @@ function UI.Draw()
         end
 
         ImGui.TextColored(0.5, 0.5, 0.5, 1.0, countText)
+
+        -- Middle: live time and weather, so what the mod is doing to them is visible
+        -- without opening another mod's window.
+        if envReadout then
+            ImGui.SameLine()
+            local readoutText = IconGlyphs.ClockOutline .. " " .. envReadout.time ..
+                "   " .. IconGlyphs.WeatherPartlyCloudy .. " " .. envReadout.weather
+
+            local r, g, b = 0.5, 0.5, 0.5
+            if envReadout.status == "held" then
+                r, g, b = 0.9, 0.75, 0.35
+            elseif envReadout.status == "overridden" then
+                r, g, b = 1.0, 0.5, 0.4
+            end
+
+            local readoutW = ImGui.CalcTextSize(readoutText)
+            ImGui.SetCursorPosX((ImGui.GetWindowWidth() - readoutW) * 0.5)
+            ImGui.TextColored(r, g, b, 1.0, readoutText)
+
+            if ImGui.IsItemHovered() then
+                local tip = "Game time and current weather state"
+                if envReadout.weatherId then
+                    tip = tip .. "\n" .. envReadout.weatherId
+                end
+                if envReadout.status == "held" then
+                    tip = tip .. "\n\nSLM forced this state, so the weather cycle is stopped." ..
+                        "\nSettings has a button to hand it back."
+                elseif envReadout.status == "overridden" then
+                    tip = tip .. "\n\nSLM set " .. Env.GetWeatherLabel(envReadout.forcedState) ..
+                        " and another mod replaced it."
+                else
+                    -- The engine's cycle flag is not readable from script, so silence
+                    -- here means SLM is not forcing, not that the cycle is running.
+                    tip = tip .. "\n\nSLM is not forcing the weather."
+                end
+                ImGui.SetTooltip(tip)
+            end
+        end
 
         -- Right: Version
         ImGui.SameLine()

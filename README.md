@@ -17,6 +17,7 @@
 * **Navigation:** One click to drop a custom Map Pin at any saved location.
 * **Teleport (Lazy Mode):** Optional instant teleport to any saved spot (disabled by default).
 * **Time & Weather:** A location can store a time of day and a weather state. Left-click a teleport button to teleport; right-click to teleport and set them. Opt-in per location. Weather states added by other mods are picked up automatically, and one that is no longer installed is skipped rather than failing the teleport. A weather mod holding its own locked state overrides this, and SLM says so rather than failing quietly.
+* **Live Readout:** The footer shows the current game time and weather state, and flags when another mod has taken the weather.
 * **Per-Save Persistence:** Your locations are tied to each save file.
 
 ## 📋 Requirements

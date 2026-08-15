@@ -29,6 +29,12 @@ local TIME_REASON = "SimpleLocationManager"
 local stateCache = nil
 local stateById = nil
 
+-- What this mod last forced, cleared when it hands the weather back. The engine's own
+-- cycle flag is a raw memory offset Codeware writes and never exposes a getter for, so
+-- there is no way to ask the game whether the cycle is running. This tracks only what
+-- SLM did, which is the one thing it can state truthfully.
+local forcedId = nil
+
 --- Turn a raw state id into something readable.
 --- "24h_weather_fog_heavy" becomes "Fog Heavy".
 ---@param id string
@@ -196,7 +202,11 @@ function Env.SetWeather(id, blendTime)
     local sys = GetWeatherSystem()
     if not sys or not sys.SetWeather then return false end
 
-    return sys:SetWeather(id, blendTime or DEFAULT_BLEND, WEATHER_PRIORITY) == true
+    local applied = sys:SetWeather(id, blendTime or DEFAULT_BLEND, WEATHER_PRIORITY) == true
+    if applied then
+        forcedId = id
+    end
+    return applied
 end
 
 --- Whether the game is still in the state that was last requested.
@@ -221,7 +231,40 @@ function Env.ResetWeather(blendTime)
     local sys = GetWeatherSystem()
     if not sys or not sys.ResetWeather then return false end
 
-    return sys:ResetWeather(false, blendTime or DEFAULT_BLEND) == true
+    local released = sys:ResetWeather(false, blendTime or DEFAULT_BLEND) == true
+    if released then
+        forcedId = nil
+    end
+    return released
+end
+
+--- What this mod is doing to the weather right now.
+--- "held"       - SLM forced a state and the game is still in it
+--- "overridden" - SLM forced a state and something else changed it
+--- nil          - SLM is not forcing anything, which says nothing about whether the
+---                game's cycle is running: another mod may be holding it instead.
+---@return string|nil status
+---@return string|nil forcedState The id SLM asked for
+function Env.GetHoldStatus()
+    if not forcedId then return nil, nil end
+    if Env.GetCurrentWeather() == forcedId then return "held", forcedId end
+    return "overridden", forcedId
+end
+
+--- A live readout of the time and weather, for the footer.
+---@return table readout { time, weather, weatherId, status, forcedState }
+function Env.GetReadout()
+    local time = Env.GetCurrentTime()
+    local weatherId = Env.GetCurrentWeather()
+    local status, forcedState = Env.GetHoldStatus()
+
+    return {
+        time = time and string.format("%02d:%02d", time.h, time.m) or "--:--",
+        weather = weatherId and Env.GetWeatherLabel(weatherId) or "Unknown",
+        weatherId = weatherId,
+        status = status,
+        forcedState = forcedState
+    }
 end
 
 --- Snapshot the current time and weather, in the shape a location stores.
