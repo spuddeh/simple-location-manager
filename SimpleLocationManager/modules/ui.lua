@@ -1559,6 +1559,10 @@ local function DrawSettingsTab()
         Utils.Notify("Reset 'Weather Transition'")
     end
     ResetTooltip()
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.TextColored(0.6, 0.6, 0.6, 1.0,
+        "Only visible over short hops. A long teleport reloads the world and arrives at full strength.")
+    ImGui.PopTextWrapPos()
 
     if Env.IsWeatherAvailable() then
         -- Forcing a weather state stops the natural cycle, so there has to be a
