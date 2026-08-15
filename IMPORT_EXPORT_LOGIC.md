@@ -1,8 +1,29 @@
 # Simple Location Manager - Import/Export Logic Flow
 
-**Version:** 1.3.1 (Logic v1.9.9 / Impex v1.2.7)
+**Version:** 1.6.0
 
 This document outlines the internal logic used for processing the four distinct types of location imports. Understanding this flow is critical for debugging ID mismatches and conflict resolution.
+
+---
+
+## 0. The V2 Minified Keys
+
+| Key | Holds | Notes |
+| --- | --- | --- |
+| `n` | Name | |
+| `desc` | Description | Omitted when empty |
+| `i` | ID | Preserved on export; preset sync depends on it |
+| `d` / `s` / `c` | District / Sub-district / Category | An integer where the hardcoded map has the name, the raw string otherwise |
+| `p` | Position `[x, y, z]` | Rounded to 3 decimals; `w` is always 1.0 and is restored rather than stored |
+| `r` | Rotation | A bare number is Yaw; the array form `[roll, pitch, yaw]` appears only when roll or pitch is non-zero |
+| `t` | Time `[h, m, s]` | Optional. Absent unless the user saved a time and weather snapshot |
+| `w` | Weather state id | Optional, e.g. `24h_weather_rain`. Absent when the snapshot has no weather |
+
+`t` and `w` are additive: a location without a snapshot exports exactly as it did before they
+existed, and a reader that predates them ignores them. **That is why adding them did not bump the
+format version.** A `w` naming a state the current game does not have is detected on apply and
+skipped, leaving the time and the teleport intact - the id stays on the record, so it works again if
+the weather mod that defined it comes back.
 
 ---
 

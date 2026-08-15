@@ -2,6 +2,21 @@
 
 Notable changes to Simple Location Manager. Versioning is semantic (MAJOR.MINOR.PATCH). Preset companion files carry their own suffixed tags and track their history independently.
 
+## v1.6.0
+
+- Feature: Time & Weather - a location can store a time of day and a weather state, applied on teleport. Opt-in per location via a "Save time and weather" section in the Edit modal, with a "Use current" button; a global "Apply Time & Weather" toggle and a weather transition slider live in Settings.
+- Feature: Custom weather states - the weather picker is built from `GetWeatherSystem():GetEnvironmentDefinition().weatherStates`, so states added by a weather mod (Nova City 2 and the like) appear without SLM carrying a list. A saved state the current game does not have is detected and skipped, leaving the time and the teleport intact; the id is kept so it works again if the mod returns. `Env.SetWeather` returning false is a second guard on the same case.
+- Feature: Restore natural weather - forcing a state stops the game's weather cycle, so Settings carries a button calling `ResetWeather` to hand it back.
+- Feature: Window Utils support - `wu` resolves to `GetMod("WindowUtils") or ImGui`, so the library is optional. When present the main window gains grid snapping, animation and an entry in the Window Utils manager; `SetConstraints` replaces `SetNextWindowSizeConstraints` because it grid-aligns the bounds.
+- New: `modules/env.lua` - time and weather reads, writes, state discovery and the pretty-label mapping. Weather calls route through Codeware's `WeatherSystem` additions and are all behind an availability check.
+- Format: The V2 export gains two optional keys, `t` (time array) and `w` (weather id). Absent on a location with no snapshot, so existing strings and presets are unaffected and the version was not bumped.
+- Fix: Collapsing the SLM window made it vanish until the overlay was toggled - `ImGui.Begin`'s first return is visibility, and it was being read as "closed". The title-bar X did nothing, because the second return was passed in and discarded. Both now behave.
+- Fix: `ui.lua` assigned `updateConfirmId`, `forceExpand` and `forceCollapse` without `local`, leaking three globals into the CET Lua state every installed mod shares.
+- Fix: `Logic.UpdateLocationPosition` assigned `loc.rot` twice; `GetPlayerState` returns four fields and all four were already assigned, so nothing was missing.
+- Fix: The AMM bulk-import duplicate branch claimed in a comment to tag the existing location with conflict info and never did, leaving `checkDist` and `pos1` computed and discarded. Skip-and-log remains the behaviour - an AMM file carries no ID to link the two records by - and `Impex.IsExactDuplicate` now returns the matched location so both import paths name it in the report.
+- Refactor: `Logic.MarkPresetEdited` extracted from two inline copies of the user-edit protection check, now used by three callers.
+- Cleanup: removed an empty `package.categories` if-block in `impex.lua`, an unused `remaining` local in the description character counter, and the write-only `shouldOpenDuplicateModal` flag that duplicated `showDuplicateModal`.
+
 ## v1.5.0
 
 - Feature: Manual Coordinates - a new button (next to "Add current location") opens a modal to save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command first. Choose Save, Save & Teleport, or Teleport.

@@ -1,5 +1,16 @@
 # Simple Location Manager — Nexus Changelogs
 
+### [Unreleased - v1.6.0]
+- New: Time & Weather - a location can remember a time of day and a weather state, and set them when you teleport to it. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
+- New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
+- New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
+- New: Settings for whether saved time and weather are applied on teleport, and how long the weather takes to change.
+- New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
+- New: Codeware is now required. It is what makes setting the weather possible.
+- Fix: Collapsing the SLM window made it disappear until you closed and reopened the CET overlay.
+- Fix: The X button on the SLM window title bar did nothing.
+- Minor code improvements
+
 ### 1.5.0
 - Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
 - Feature: SmartPaste™ - the Manual Coordinates box understands labeled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. It drives the fields and has a clear button. Always double-check the auto-filled values before saving or teleporting.
@@ -8,7 +19,7 @@
 
 ### 1.4.0
 - QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
-- QOL: Dump Coordinates (previously "Print Coordinates") Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
+- QOL: Dump Coordinates Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
 - QOL: Dump District Info Preview - District info now displays as a live preview in the Debugging panel (light blue text).
 - QOL: Middle-Click Copy on Previews - Both coordinate and district info previews can be middle-clicked to copy to clipboard with a tooltip hint.
 
@@ -62,18 +73,33 @@ No issues flagged.
 ---
 ## Stickied Comment BBCode
 
+The history no longer fits one Nexus comment (5000 char limit), so it is two posts. Post the second one first, then the first, so the newest sits at the top of the thread.
+
+### Comment 1 - current
+
 ```
 [color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
 
+[b][size=3]Version 1.6.0[/size][/b]
+[list][*]New: Time & Weather - a location can remember a time of day and a weather state, and set them when you teleport to it. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
+[*]New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
+[*]New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
+[*]New: Settings for whether saved time and weather are applied on teleport, and how long the weather takes to change.
+[*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
+[*]New: Codeware is now required. It is what makes setting the weather possible.
+[*]Fix: Collapsing the SLM window made it disappear until you closed and reopened the CET overlay.
+[*]Fix: The X button on the SLM window title bar did nothing.
+[*]Minor code improvements
+[/list]
 [b][size=3]Version 1.5.0[/size][/b]
-[list][*]Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
+[spoiler][list][*]Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
 [*]Feature: SmartPaste™ - the Manual Coordinates box understands labelled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. Always double-check the auto-filled values before saving or teleporting.
 [*]Feature: A-Z View - a third sort mode that lists every location in one flat alphabetical list, with no district or category grouping.
 [*]Fix: Renamed the mod's window titles to the "SLM - " prefix to prevent a conflict with other CET mods.
-[/list]
+[/list][/spoiler]
 [b][size=3]Version 1.4.0[/size][/b]
 [spoiler][list][*]QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
-[*]QOL: Dump Coordinates (previously "Print Coordinates") Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
+[*]QOL: Dump Coordinates Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
 [*]QOL: Dump District Info Preview - District info now displays as a live preview in the Debugging panel (light blue text).
 [*]QOL: Middle-Click Copy on Previews - Both coordinate and district info previews can be middle-clicked to copy to clipboard with a tooltip hint.
 [/list][/spoiler]
@@ -93,6 +119,17 @@ No issues flagged.
 [b][size=3]Version 1.2.1[/size][/b]
 [spoiler][list][*]Added "V2" Export Compression (70% smaller strings). Old SLM strings will still import without issue.
 [/list][/spoiler]
+```
+
+> Character count: 4335 / 5000
+
+### Comment 2 - older versions
+
+```
+[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
+
+[i](Continued - older versions)[/i]
+
 [b][size=3]Version 1.1.0[/size][/b]
 [spoiler][list][*]Feature: Categories - Locations can now be assigned a Category (Icon + Name) for better organisation
 [*]Feature: Custom Category Portability - Exports and Imports now automatically include custom category definitions
@@ -121,4 +158,4 @@ No issues flagged.
 [/list][/spoiler]
 ```
 
-> Character count: 4743 / 5000
+> Character count: 1796 / 5000

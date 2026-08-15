@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Utility functions for district detection and math.
--- Mod Version: 1.5.0
+-- Mod Version: 1.6.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
@@ -79,7 +79,8 @@ function Utils.GetLocationData(currPos)
                 while ptr do
                     table.insert(ancestry, ptr)
                     local parent = ptr:ParentDistrict()
-                    -- Stop if parent is invalid or is "Night City" (we want the children of Night City as roots)
+                    -- The children of Night City are the roots, so an invalid parent or
+                    -- "Night City" itself ends the walk.
                     if not parent or parent:EnumName() == "NightCity" then
                         break
                     end
@@ -115,9 +116,8 @@ function Utils.GetLocationData(currPos)
 
 
     -- 2. Sub-District Refinement (Blackboard)
-    -- If we have a valid structure, we might check if blackboard gives a more specific name for the LEAF
-    -- But our recursive logic already handles the structure well.
-    -- We'll keep this as a supplementary check if subDistrict is "Unknown" or same as District
+    -- The recursive walk above already resolves the structure. This is a supplementary
+    -- pass, and it only fills in a sub-district the walk could not name.
     pcall(function()
         local blackboardDefs = GetAllBlackboardDefs()
         if blackboardDefs and blackboardDefs.UI_Map then
@@ -131,7 +131,8 @@ function Utils.GetLocationData(currPos)
                         local bbText = (localized and localized ~= "") and localized or locStr
 
                         if bbText ~= "" and bbText ~= "Unknown" then
-                            -- Only use BB text if we don't have a good subDistrict, OR if it matches our recursive logic
+                            -- The blackboard text is a fallback: it applies only where the
+                            -- recursive walk produced no sub-district.
                             if data.subDistrict == "Unknown" or data.subDistrict == nil then
                                 data.subDistrict = bbText
                             end

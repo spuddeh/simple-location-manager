@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Simple Location Manager UI module.
--- Mod Version: 1.5.0
+-- Mod Version: 1.6.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ local IconPicker = require("modules/icon_picker")
 local Env = require("modules/env")
 
 local MOD_NAME = "Simple Location Manager"
-local MOD_VERSION = "1.5.0"
+local MOD_VERSION = "1.6.0"
 local MODAL_PREFIX = "SLM - "
 
 -- Window Utils is optional. Where it is absent, `wu` is ImGui itself and the window

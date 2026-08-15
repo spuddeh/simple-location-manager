@@ -16,11 +16,18 @@
 * **Presets:** Install location packs that auto-create their custom categories for you.
 * **Navigation:** One click to drop a custom Map Pin at any saved location.
 * **Teleport (Lazy Mode):** Optional instant teleport to any saved spot (disabled by default).
+* **Time & Weather:** A location can store a time of day and a weather state and set them on teleport. Opt-in per location. Weather states added by other mods are picked up automatically, and one that is no longer installed is skipped rather than failing the teleport.
 * **Per-Save Persistence:** Your locations are tied to each save file.
 
 ## 📋 Requirements
 
 * [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107) (latest version).
+* [Codeware](https://www.nexusmods.com/cyberpunk2077/mods/7780) - required to set the weather.
+
+### Optional
+
+* [Window Utils](https://www.nexusmods.com/cyberpunk2077/mods/26589) - grid snapping, animation and
+  window management for the SLM window.
 
 ## 🎮 Usage
 

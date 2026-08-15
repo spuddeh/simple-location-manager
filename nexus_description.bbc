@@ -7,11 +7,12 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 
 [b]Simple Location Manager[/b] is designed for organisation first. It automatically detects your location, identifying the District and sub-district, and organises your locations into a clean, collapsible hierarchy.
 
-[color=#ffff00][size=4][b]New in v1.5.0[/b][/size][/color]
+[color=#ffff00][size=4][b]New in v1.6.0[/b][/size][/color]
 [list]
-[*][b]Manual Coordinates:[/b] paste or type an X/Y/Z (and optional Yaw) to save or teleport straight to a spot a choomba shared, with no console command needed. Choose Save, Save & Teleport, or Teleport.
-[*][b]SmartPaste™:[/b] the coordinate box understands labelled values, AMM JSON, and full CET teleport commands, then fills the fields for you. [i]SmartPaste™ does its best, but always double-check the auto-filled X/Y/Z/Yaw before you save or teleport.[/i]
-[*][b]A-Z View:[/b] a new flat, alphabetical list of every location, alongside the District and Category views.
+[*][b]Time & Weather:[/b] a location can remember a time of day and a weather state and set them when you teleport to it. Turn it on per location in the Edit window, or hit [b]Use current[/b] to copy whatever the game is doing right now.
+[*][b]Custom Weather:[/b] anything a weather mod adds shows up in the picker on its own. Save a location using a modded weather, remove that mod later, and the location still works - you get the time, the weather is skipped, and it comes back if you reinstall.
+[*][b]Restore Natural Weather:[/b] a button in Settings hands the weather back to the game's own cycle.
+[*][b]Window Utils Support:[/b] with [url=https://www.nexusmods.com/cyberpunk2077/mods/26589]Window Utils[/url] installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 [/list]
 [color=#ffff00][size=5][b]Key Features[/b][/size][/color]
 [list]
@@ -24,6 +25,7 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [*][b]Powerful Search:[/b] Filter by name, district, or description in real-time.
 [*][b]Import / Export:[/b] Share locations with your choombas! Copy a single spot, a whole district, or your entire database to the clipboard as a text string.
 [*][b]Navigation:[/b] One-click to set a [b]Custom Map Pin[/b] to any saved location. [i]Works great with Autodrive![/i]
+[*][b]Time & Weather (New):[/b] Store a time of day and a weather state on a location and have them set when you teleport there. Off by default, and set per location.
 [*][b]Lazy Mode (Teleport):[/b] Optional feature to instantly teleport to any saved spot (Disabled by default).
 [*][b]Customizable:[/b]
 [list]
@@ -36,6 +38,10 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [color=#ffff00][size=5][b]Installation[/b][/size][/color]
 [b]Requirements:[/b]
 [url=https://www.nexusmods.com/cyberpunk2077/mods/107]Cyber Engine Tweaks[/url] (Latest Version)
+[url=https://www.nexusmods.com/cyberpunk2077/mods/7780]Codeware[/url] - sets the weather
+
+[b]Optional:[/b]
+[url=https://www.nexusmods.com/cyberpunk2077/mods/26589]Window Utils[/url] - grid snapping, animation and window management for the SLM window
 
 [b]How to Install:[/b]
 [list=1]
@@ -138,6 +144,8 @@ Here are some examples that you can import to get started. [b][i]Check out the F
 [list]
 [*][b]The Modding Community[/b] for documentation and support.
 [*][b][url=https://www.nexusmods.com/profile/Ka0ziun?gameId=3333]Ka0ziun [/url][/b]for super helpful suggestions and bouncing ideas back and forth.
+[*][b][url=https://www.nexusmods.com/profile/psiberx/mods]psiberx[/url][/b] for Codeware, which is what makes setting the weather possible.
+[*][b][url=https://www.nexusmods.com/profile/theCyanideX/mods]CyanideX[/url][/b] for Window Utils.
 [/list]
 [line]
 [color=#ffff00][size=5][b]Disclaimer[/b][/size][/color]
