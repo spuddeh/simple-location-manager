@@ -69,7 +69,16 @@
 ---
 ## Notes
 
-No issues flagged.
+**1.6.0 is an internal checkpoint and was never uploaded to Nexus.** It is tested and tagged
+(`slm-v1.6.0-internal`) but deliberately unpublished, so its section stays under
+`[Unreleased - v1.6.0]`.
+
+The next batch of work becomes `[Unreleased - v1.7.0]`, added **above** it rather than merged into
+it. When that ships, **both sections go up together**: the GitHub Release body must carry 1.7.0 and
+1.6.0, because `release.yml` appends only the body to the Nexus page changelog, and a reader who
+skipped straight from 1.5.0 to 1.7.0 never saw the 1.6.0 entries.
+
+The stickied-comment BBCode needs the same treatment - two version blocks in the newest post, not one.
 
 ---
 ## Stickied Comment BBCode
