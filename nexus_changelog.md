@@ -5,7 +5,7 @@
 - New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
 - New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 - New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
-- New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. It turns amber while SLM is holding a weather state and red if something else has replaced it.
+- New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 - New: A setting for how long the weather takes to change.
 - New: If another weather mod is holding a locked weather state, SLM now tells you instead of silently doing nothing. Clear that mod's lock first.
 - New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
@@ -86,7 +86,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
 [*]New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 [*]New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
-[*]New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. It turns amber while SLM is holding a weather state and red if something else has replaced it.
+[*]New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 [*]New: A setting for how long the weather takes to change.
 [*]New: If another weather mod is holding a locked weather state, SLM now tells you instead of silently doing nothing. Clear that mod's lock first.
 [*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
@@ -123,7 +123,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 4586 / 5000
+> Character count: 4653 / 5000
 
 ### Comment 2 - older versions
 

@@ -12,7 +12,6 @@ local Utils = require("modules/utils")
 local Impex = require("modules/impex")
 local IconPicker = require("modules/icon_picker")
 local Env = require("modules/env")
-local Cron = require("modules/Cron")
 
 local MOD_NAME = "Simple Location Manager"
 local MOD_VERSION = "1.6.0"
@@ -53,10 +52,10 @@ local activeTab = "Locations"   -- Current active tab in the main window
 local lastDebugInfo = nil       -- Stores the last printed debug info string
 local lastDistrictInfo = nil    -- Stores the last dumped district info string
 
--- Footer readout. Sampled on a timer rather than per frame: reading the weather state
--- allocates a handle, and half a second is finer than anyone reads a clock.
+-- Footer readout, sampled in UI.Draw. A Cron timer cannot do this job: Cron ticks from
+-- onUpdate, and onUpdate does not run while the CET overlay is open, which is the only
+-- time the footer is on screen.
 local envReadout = nil
-local READOUT_INTERVAL = 0.5
 
 -- Group expand/collapse persistence (survives search filtering)
 local groupOpenState = {}           -- Last known open/closed state per group key
@@ -115,12 +114,6 @@ local manualCategory = "Misc"
 --- Initialize UI
 function UI.Init(logicModule)
     Logic = logicModule
-
-    -- Sampling is skipped while the overlay is shut, because nothing reads it then.
-    Cron.Every(READOUT_INTERVAL, function()
-        if not isOverlayOpen then return end
-        envReadout = Env.GetReadout()
-    end)
 end
 
 --- Generic Modal Wrapper Helper
@@ -164,9 +157,6 @@ function UI.OnOverlayOpen()
     -- A different save can load a different environment definition, so the weather
     -- state list is rebuilt rather than carried across.
     Env.InvalidateCache()
-    -- Sampled immediately so the footer is right on the first frame, not half a
-    -- second later.
-    envReadout = Env.GetReadout()
 end
 
 function UI.OnOverlayClose()
@@ -2324,11 +2314,23 @@ function UI.Draw()
         ImGui.TextColored(0.5, 0.5, 0.5, 1.0, countText)
 
         -- Middle: live time and weather, so what the mod is doing to them is visible
-        -- without opening another mod's window.
+        -- without opening another mod's window. Sampled here rather than on a timer
+        -- because onUpdate, which drives Cron, is not running while the overlay is up.
+        envReadout = Env.GetReadout()
         if envReadout then
             ImGui.SameLine()
+
             local readoutText = IconGlyphs.ClockOutline .. " " .. envReadout.time ..
                 "   " .. IconGlyphs.WeatherPartlyCloudy .. " " .. envReadout.weather
+
+            -- The padlock is the plain signal that this state is being held rather
+            -- than cycling; the colour alone reads as decoration.
+            local locked = (envReadout.status ~= nil)
+            if envReadout.status == "held" then
+                readoutText = readoutText .. " " .. IconGlyphs.Lock
+            elseif envReadout.status == "overridden" then
+                readoutText = readoutText .. " " .. IconGlyphs.LockAlert
+            end
 
             local r, g, b = 0.5, 0.5, 0.5
             if envReadout.status == "held" then
@@ -2341,21 +2343,31 @@ function UI.Draw()
             ImGui.SetCursorPosX((ImGui.GetWindowWidth() - readoutW) * 0.5)
             ImGui.TextColored(r, g, b, 1.0, readoutText)
 
+            -- Right-click releases the lock, at the place the lock is shown.
+            if locked and ImGui.IsItemClicked(1) then
+                if Env.ResetWeather(Logic.settings.envBlendTime) then
+                    Utils.Notify("Weather handed back to the game")
+                else
+                    Utils.NotifyWarning("Could not release the weather")
+                end
+            end
+
             if ImGui.IsItemHovered() then
                 local tip = "Game time and current weather state"
                 if envReadout.weatherId then
                     tip = tip .. "\n" .. envReadout.weatherId
                 end
                 if envReadout.status == "held" then
-                    tip = tip .. "\n\nSLM forced this state, so the weather cycle is stopped." ..
-                        "\nSettings has a button to hand it back."
+                    tip = tip .. "\n\nSLM is holding this state, so the weather cycle is stopped." ..
+                        "\nRight-click to hand it back."
                 elseif envReadout.status == "overridden" then
                     tip = tip .. "\n\nSLM set " .. Env.GetWeatherLabel(envReadout.forcedState) ..
-                        " and another mod replaced it."
+                        " and another mod replaced it." ..
+                        "\nRight-click to stop holding it."
                 else
-                    -- The engine's cycle flag is not readable from script, so silence
-                    -- here means SLM is not forcing, not that the cycle is running.
-                    tip = tip .. "\n\nSLM is not forcing the weather."
+                    -- The engine's cycle flag is not readable from script, so no
+                    -- padlock means SLM is not holding it, not that the cycle is running.
+                    tip = tip .. "\n\nSLM is not holding the weather."
                 end
                 ImGui.SetTooltip(tip)
             end

@@ -11,7 +11,7 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [list]
 [*][b]Time & Weather:[/b] a location can remember a time of day and a weather state. Turn it on per location in the Edit window, or hit [b]Use current[/b] to copy whatever the game is doing right now. [b]Left-click[/b] a teleport button to just teleport; [b]right-click[/b] to teleport and set that location's time and weather.
 [*][b]Custom Weather:[/b] anything a weather mod adds shows up in the picker on its own. Save a location using a modded weather, remove that mod later, and the location still works - you get the time, the weather is skipped, and it comes back if you reinstall.
-[*][b]Restore Natural Weather:[/b] a button in Settings hands the weather back to the game's own cycle.
+[*][b]Restore Natural Weather:[/b] a button in Settings hands the weather back to the game's own cycle, or right-click the padlock in the footer.
 [*][b]Window Utils Support:[/b] with [url=https://www.nexusmods.com/cyberpunk2077/mods/26589]Window Utils[/url] installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 [/list]
 [color=#ffff00][size=5][b]Key Features[/b][/size][/color]

@@ -577,6 +577,10 @@ end
 --- the game is actually in. A mod holding its own locked state re-forces that state on
 --- any change, so SetWeather reports success and the sky never changes. Reporting it is
 --- all this mod can do: the lock lives in the other mod's Lua state, not in the engine.
+---
+--- Cron runs off onUpdate, which does not tick while the CET overlay is open, so this
+--- lands once the overlay is closed. The footer readout is what shows the same state
+--- while the overlay is still up.
 ---@param requestedId string
 function Logic.VerifyWeatherHeld(requestedId)
     if not requestedId or requestedId == "" then return end
