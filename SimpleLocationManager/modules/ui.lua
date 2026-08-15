@@ -16,6 +16,18 @@ local MOD_NAME = "Simple Location Manager"
 local MOD_VERSION = "1.5.0"
 local MODAL_PREFIX = "SLM - "
 
+-- Window Utils is optional. Where it is absent, `wu` is ImGui itself and the window
+-- behaves exactly as it does without the library, so nothing here is a dependency.
+-- Resolved on the first draw rather than in Init, because every CET mod has loaded
+-- by the time onDraw first fires.
+local wu = nil
+local function ResolveWindowUtils()
+    if not wu then
+        wu = GetMod("WindowUtils") or ImGui
+    end
+    return wu
+end
+
 -- UI State
 local isOverlayOpen = false     -- Tracks if the CET overlay is currently visible
 local searchQuery = ""          -- Current search text in the main location list
@@ -2036,11 +2048,22 @@ function UI.Draw()
     local btnW = ImGui.CalcTextSize(longestText) + (style.FramePadding.x * 2)
     local minW = (btnW * 2) + (style.ItemSpacing.x * 3) + 40         -- +40 buffer for scrolling/margin
 
-    ImGui.SetNextWindowSize(500, 600, ImGuiCond.FirstUseEver)
-    ImGui.SetNextWindowSizeConstraints(minW, 300, 9999, 9999)
+    ResolveWindowUtils()
 
-    -- Window Begin
-    if ImGui.Begin(MOD_NAME, true) then
+    ImGui.SetNextWindowSize(500, 600, ImGuiCond.FirstUseEver)
+
+    -- SetConstraints is Window Utils only: it aligns the bounds to the snap grid so a
+    -- snapped window is not immediately clamped back off it.
+    if wu.SetConstraints then
+        wu.SetConstraints(minW, 300, 9999, 9999, MOD_NAME)
+    else
+        ImGui.SetNextWindowSizeConstraints(minW, 300, 9999, 9999)
+    end
+
+    -- Window Begin. The first return is visibility (false while collapsed), the second
+    -- is the title-bar close button. Collapsing must not close the window.
+    local visible, stillOpen = wu.Begin(MOD_NAME, true)
+    if visible then
         local frameH = ImGui.GetFrameHeightWithSpacing()
         -- Dynamic Footer: FrameHeight + small padding for Separator + text
         local footerHeight = frameH + 10
@@ -2112,11 +2135,13 @@ function UI.Draw()
         if showManualModal then
             DrawManualModal()
         end
-    else
-        isOverlayOpen = false
     end
 
-    ImGui.End()
+    wu.End()
+
+    if stillOpen == false then
+        isOverlayOpen = false
+    end
 end
 
 return UI
