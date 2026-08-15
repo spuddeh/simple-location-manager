@@ -11,6 +11,7 @@ local Logic = require("modules/logic")
 local Utils = require("modules/utils")
 local Impex = require("modules/impex")
 local IconPicker = require("modules/icon_picker")
+local Env = require("modules/env")
 
 local MOD_NAME = "Simple Location Manager"
 local MOD_VERSION = "1.5.0"
@@ -73,6 +74,10 @@ local editingCategoryOriginalName = nil -- Stores original name when editing to 
 local tempName = ""
 local tempDesc = ""
 local tempCategory = "Misc"
+local tempEnvEnabled = false -- "Save time and weather with this location"
+local tempEnvHour = 12
+local tempEnvMinute = 0
+local tempEnvWeather = ""    -- Weather state id, "" for time only
 
 -- Manual Coordinates Modal State
 local showManualModal = false       -- Flag for the Manual Coordinates modal
@@ -130,6 +135,9 @@ end
 
 function UI.OnOverlayOpen()
     isOverlayOpen = true
+    -- A different save can load a different environment definition, so the weather
+    -- state list is rebuilt rather than carried across.
+    Env.InvalidateCache()
 end
 
 function UI.OnOverlayClose()
@@ -261,6 +269,107 @@ local function DrawImportModal()
     })
 end
 
+--- Fill the time/weather buffers from a location, or from the game where it has none.
+---@param loc table|nil
+local function SeedEnvBuffers(loc)
+    local env = loc and loc.env
+
+    tempEnvEnabled = env ~= nil
+    tempEnvWeather = (env and env.weather) or ""
+
+    local time = (env and env.time) or Env.GetCurrentTime()
+    tempEnvHour = (time and time.h) or 12
+    tempEnvMinute = (time and time.m) or 0
+
+    if not env then
+        tempEnvWeather = Env.GetCurrentWeather() or ""
+    end
+end
+
+--- Build the env block the buffers describe, or nil when the section is switched off.
+---@return table|nil
+local function BuildEnvFromBuffers()
+    if not tempEnvEnabled then return nil end
+
+    local env = {
+        time = { h = tempEnvHour, m = tempEnvMinute, s = 0 }
+    }
+    if tempEnvWeather ~= "" then
+        env.weather = tempEnvWeather
+    end
+    return env
+end
+
+--- Draw the "Time & Weather" section of the Edit modal.
+local function DrawEnvSection()
+    tempEnvEnabled = ImGui.Checkbox("Save time and weather", tempEnvEnabled)
+    if ImGui.IsItemHovered() then
+        ImGui.SetTooltip("Set the time of day and weather when teleporting to this location")
+    end
+
+    if not tempEnvEnabled then return end
+
+    ImGui.Indent(20)
+
+    -- Time
+    ImGui.AlignTextToFramePadding()
+    ImGui.Text("Time:")
+    ImGui.SameLine()
+    ImGui.SetNextItemWidth(80)
+    tempEnvHour = ImGui.SliderInt("##envHour", tempEnvHour, 0, 23)
+    ImGui.SameLine()
+    ImGui.Text(":")
+    ImGui.SameLine()
+    ImGui.SetNextItemWidth(80)
+    tempEnvMinute = ImGui.SliderInt("##envMinute", tempEnvMinute, 0, 59)
+
+    -- Weather
+    local weatherAvailable = Env.IsWeatherAvailable()
+    local states = weatherAvailable and Env.GetWeatherStates() or {}
+
+    ImGui.AlignTextToFramePadding()
+    ImGui.Text("Weather:")
+    ImGui.SameLine()
+
+    ImGui.BeginDisabled(not weatherAvailable)
+    ImGui.SetNextItemWidth(220)
+
+    local preview = (tempEnvWeather == "") and "Leave as is" or Env.GetWeatherLabel(tempEnvWeather)
+    if ImGui.BeginCombo("##envWeather", preview) then
+        if ImGui.Selectable("Leave as is", tempEnvWeather == "") then
+            tempEnvWeather = ""
+        end
+        for _, state in ipairs(states) do
+            if ImGui.Selectable(state.label, state.id == tempEnvWeather) then
+                tempEnvWeather = state.id
+            end
+        end
+        ImGui.EndCombo()
+    end
+    ImGui.EndDisabled()
+
+    if not weatherAvailable then
+        ImGui.TextColored(1.0, 0.7, 0.3, 1.0, "Weather needs Codeware - time still works")
+    elseif tempEnvWeather ~= "" and not Env.HasWeatherState(tempEnvWeather) then
+        -- The location came from a playthrough with a weather mod this one does not
+        -- have. The id is kept so it works again once that mod is reinstalled.
+        ImGui.TextColored(1.0, 0.7, 0.3, 1.0, "Not installed - this weather will be skipped")
+    end
+
+    ImGui.Spacing()
+    if ImGui.Button(IconGlyphs.MapClock .. " Use current") then
+        local now = Env.Capture()
+        if now then
+            tempEnvHour = now.time.h
+            tempEnvMinute = now.time.m
+            tempEnvWeather = now.weather or ""
+        end
+    end
+    if ImGui.IsItemHovered() then ImGui.SetTooltip("Copy the game's current time and weather") end
+
+    ImGui.Unindent(20)
+end
+
 --- Draw the Edit Location Modal
 local function DrawEditModal()
     local shouldOpen = (editingId ~= nil)
@@ -358,6 +467,10 @@ local function DrawEditModal()
 
         ImGui.Separator()
 
+        DrawEnvSection()
+
+        ImGui.Separator()
+
         if ImGui.Button(IconGlyphs.ContentSave .. " Save") then
             -- Auto-add category if new
             local exists = false
@@ -377,11 +490,13 @@ local function DrawEditModal()
                         pendingNewLocation.name = tempName
                         pendingNewLocation.description = tempDesc
                         pendingNewLocation.category = tempCategory
+                        pendingNewLocation.env = BuildEnvFromBuffers()
                         Logic.AddLocation(pendingNewLocation) -- Save to DB
                         Utils.Notify("Saved new location: " .. tempName)
                     end
                 else
                     Logic.UpdateLocation(editingId, tempName, tempDesc, nil, tempCategory)
+                    Logic.SetLocationEnv(editingId, BuildEnvFromBuffers())
                 end
 
                 editingId = nil
@@ -474,6 +589,7 @@ local function OpenEditModal(loc)
     tempName = loc.name
     tempDesc = loc.description or ""
     tempCategory = loc.category or "Misc"
+    SeedEnvBuffers(loc)
 end
 
 --- Prepare and open edit modal for NEW location
@@ -483,6 +599,7 @@ local function OpenCreateModal(locData)
     tempName = locData.name
     tempDesc = locData.description or ""
     tempCategory = locData.category or "Misc"
+    SeedEnvBuffers(locData)
 end
 
 --- Prepare and open the Manual Coordinates modal (resets all fields)
@@ -569,6 +686,20 @@ local function DrawLocationRow(loc, uniqueSuffix)
         ImGui.PushStyleColor(ImGuiCol.Text, 0.5, 0.5, 0.5, 1.0)
         ImGui.Text(cStr)
         ImGui.PopStyleColor()
+    end
+
+    -- Saved Time & Weather (Amber, so it reads as a state this location will impose)
+    if loc.env then
+        local envStr = Env.Describe(loc.env)
+        if envStr ~= "" then
+            ImGui.PushStyleColor(ImGuiCol.Text, 0.9, 0.75, 0.35, 1.0)
+            ImGui.Text(IconGlyphs.MapClock .. " " .. envStr)
+            ImGui.PopStyleColor()
+            if loc.env.weather and not Env.HasWeatherState(loc.env.weather) then
+                ImGui.SameLine()
+                ImGui.TextColored(1.0, 0.5, 0.4, 1.0, "(not installed)")
+            end
+        end
     end
 
     -- Source Information (Grey - Subtle)
@@ -1370,6 +1501,63 @@ local function DrawSettingsTab()
     ImGui.PushTextWrapPos(0.0)
     ImGui.Text("Show Import Source")
     ImGui.PopTextWrapPos()
+
+    -- Time & Weather on teleport
+    local applyEnv = Logic.settings.applyEnvOnTeleport
+    if applyEnv == nil then applyEnv = true end
+    local newApplyEnv, changedApplyEnv = ImGui.Checkbox("##applyEnv", applyEnv)
+    if changedApplyEnv then
+        Logic.settings.applyEnvOnTeleport = newApplyEnv
+        Logic.Save()
+    end
+    if ImGui.IsItemClicked(1) then
+        Logic.settings.applyEnvOnTeleport = Logic.defaultSettings.applyEnvOnTeleport
+        Logic.Save()
+        Utils.Notify("Reset 'Apply Time & Weather'")
+    end
+    ResetTooltip()
+    ImGui.SameLine()
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.Text("Apply Time & Weather")
+    ImGui.PopTextWrapPos()
+
+    if applyEnv then
+        ImGui.PushTextWrapPos(0.0)
+        ImGui.Text("Weather Transition (s)")
+        ImGui.PopTextWrapPos()
+        ImGui.SetNextItemWidth(-1)
+        local newBlend, changedBlend = ImGui.SliderFloat("##envBlend",
+            Logic.settings.envBlendTime or 5.0, 0.0, 30.0, "%.1f")
+        if changedBlend then
+            Logic.settings.envBlendTime = newBlend
+            Logic.Save()
+        end
+        if ImGui.IsItemClicked(1) then
+            Logic.settings.envBlendTime = Logic.defaultSettings.envBlendTime
+            Logic.Save()
+            Utils.Notify("Reset 'Weather Transition'")
+        end
+        ResetTooltip()
+
+        if Env.IsWeatherAvailable() then
+            -- Forcing a weather state stops the natural cycle, so there has to be a
+            -- way back to it that does not mean loading a save.
+            if ImGui.Button(IconGlyphs.WeatherPartlyCloudy .. " Restore natural weather", -1, 0) then
+                if Env.ResetWeather(Logic.settings.envBlendTime) then
+                    Utils.Notify("Weather cycle restored")
+                else
+                    Utils.NotifyWarning("Could not restore the weather cycle")
+                end
+            end
+            if ImGui.IsItemHovered() then
+                ImGui.SetTooltip("Hand weather back to the game after a location forced it")
+            end
+        else
+            ImGui.PushTextWrapPos(0.0)
+            ImGui.TextColored(1.0, 0.7, 0.3, 1.0, "Codeware is missing - time applies, weather does not.")
+            ImGui.PopTextWrapPos()
+        end
+    end
 
     ImGui.Spacing()
 

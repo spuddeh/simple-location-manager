@@ -9,10 +9,21 @@ local Logic = require("modules/logic")
 local UI = require("modules/ui")
 local Utils = require("modules/utils")
 local Impex = require("modules/impex")
+local Env = require("modules/env")
 
--- Register the 'onInit' event to load our data
+-- Load the saved locations and settings
 registerForEvent("onInit", function()
     print(Utils.ConsolePrefix .. " Initializing...")
+
+    -- Codeware is required: weather has no vanilla scripted setter. Everything else
+    -- keeps working without it, so this reports rather than stops.
+    local codewareVersion = Env.GetCodewareVersion()
+    if codewareVersion then
+        print(Utils.ConsolePrefix .. " Codeware " .. codewareVersion .. " found.")
+    else
+        print(Utils.ConsolePrefix ..
+            " Codeware not found. Saved weather will be skipped; time of day still applies.")
+    end
 
     -- Initialize Logic (Load Data)
     Logic.Init()
@@ -36,7 +47,7 @@ registerForEvent("onOverlayClose", function()
     UI.OnOverlayClose()
 end)
 
--- Register 'onDraw' event to draw our UI every frame
+-- Draw the UI every frame
 registerForEvent("onDraw", function()
     UI.Draw()
 end)

@@ -174,6 +174,22 @@ local function MinifyLocation(loc)
         }
     end
 
+    -- 5. Time and Weather (only present when the user saved them)
+    -- Both keys are optional, so a reader that predates them ignores them and a
+    -- location without them exports exactly as it always did.
+    if loc.env then
+        if loc.env.time then
+            min.t = {
+                loc.env.time.h or 0,
+                loc.env.time.m or 0,
+                loc.env.time.s or 0
+            }
+        end
+        if loc.env.weather and loc.env.weather ~= "" then
+            min.w = loc.env.weather
+        end
+    end
+
     return min
 end
 
@@ -217,6 +233,22 @@ local function ExpandLocation(min)
         loc.rot.roll = 0
         loc.rot.pitch = 0
         loc.rot.yaw = min.r or 0
+    end
+
+    -- 5. Restore Time and Weather. Absent keys leave loc.env nil, which is what a
+    -- location saved before these existed looks like.
+    if min.t or min.w then
+        loc.env = {}
+        if min.t then
+            loc.env.time = {
+                h = min.t[1] or 0,
+                m = min.t[2] or 0,
+                s = min.t[3] or 0
+            }
+        end
+        if min.w and min.w ~= "" then
+            loc.env.weather = min.w
+        end
     end
 
     -- Defaults

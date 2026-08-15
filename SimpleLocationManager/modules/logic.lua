@@ -7,6 +7,7 @@
 -------------------------------------------------------------------
 
 local Utils = require("modules/utils")
+local Env = require("modules/env")
 
 local Logic = {}
 
@@ -24,8 +25,13 @@ Logic.defaultSettings = {
     defaultGroupState = "Expanded", -- "Expanded" or "Collapsed"
     groupBy = "District",           -- "District" or "Category"
     showSourceInfo = true,          -- Show source/conflict info
+    applyEnvOnTeleport = true,      -- Apply a location's saved time/weather when teleporting to it
+    envBlendTime = 5.0,             -- Weather transition length in seconds
     customCategories = {}           -- List of {name="X", icon="Y"}
 }
+
+-- Re-exported so the UI reaches time and weather through one module.
+Logic.Env = Env
 
 -- Default Categories (Hardcoded)
 Logic.defaultCategories = {
@@ -360,6 +366,7 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
             existing.rot = data.rot or existing.rot
             existing.district = data.district or existing.district
             existing.subDistrict = data.subDistrict or existing.subDistrict
+            existing.env = data.env or existing.env
 
             -- Metadata Update
             existing.sourceType = sourceType
@@ -386,6 +393,7 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
         subDistrict = data.subDistrict or "Unknown",
         pos = data.pos,
         rot = data.rot or { pitch = 0, yaw = 0, roll = 0 },
+        env = data.env,
         favorite = false,
         sourceType = sourceType,
         sourceDetail = sourceDetail
@@ -422,6 +430,17 @@ function Logic.QuickSaveLocation()
     end
 end
 
+--- User Edit Protection: a preset location the user has changed is tagged so the
+--- preset auto-sync leaves it alone.
+---@param loc table
+function Logic.MarkPresetEdited(loc)
+    if not loc or not loc.sourceType then return end
+    if not string.find(loc.sourceType, "SLM Preset") then return end
+    if string.find(loc.sourceType, "%(Edited%)") then return end
+
+    loc.sourceType = loc.sourceType .. " (Edited)"
+end
+
 --- Update an existing location
 ---@param id string
 ---@param name string|nil
@@ -436,10 +455,7 @@ function Logic.UpdateLocation(id, name, description, favorite, category)
             if favorite ~= nil then loc.favorite = favorite end
             if category ~= nil then loc.category = category end
 
-            -- User Edit Protection: Mark as edited if from Preset
-            if loc.sourceType and string.find(loc.sourceType, "SLM Preset") and not string.find(loc.sourceType, "%(Edited%)") then
-                loc.sourceType = loc.sourceType .. " (Edited)"
-            end
+            Logic.MarkPresetEdited(loc)
 
             Logic.Save()
             return true
@@ -499,10 +515,7 @@ function Logic.UpdateLocationPosition(id)
             loc.pos = state.pos
             loc.rot = state.rot
 
-            -- User Edit Protection: Mark as edited if from Preset
-            if loc.sourceType and string.find(loc.sourceType, "SLM Preset") and not string.find(loc.sourceType, "%(Edited%)") then
-                loc.sourceType = loc.sourceType .. " (Edited)"
-            end
+            Logic.MarkPresetEdited(loc)
 
             Logic.Save()
             print(Utils.ConsolePrefix .. " Updated position for location: " .. loc.name)
@@ -526,6 +539,40 @@ function Logic.TeleportTo(loc)
 
     Game.GetTeleportationFacility():Teleport(player, pos, rot)
     print(Utils.ConsolePrefix .. " Teleported to " .. loc.name)
+
+    Logic.ApplyLocationEnv(loc)
+end
+
+--- Apply a location's saved time and weather, if it has any and the setting allows it.
+--- A weather state the current game does not have is skipped, and the time still lands.
+---@param loc table
+function Logic.ApplyLocationEnv(loc)
+    if not loc or not loc.env then return end
+    if not Logic.settings.applyEnvOnTeleport then return end
+
+    local report = Env.Apply(loc.env, Logic.settings.envBlendTime)
+
+    if report.missingWeather then
+        Utils.NotifyWarning("Weather \"" .. Env.GetWeatherLabel(report.missingWeather) ..
+            "\" is not installed - time only")
+    end
+end
+
+--- Set or clear a location's saved time and weather.
+---@param id string
+---@param env table|nil nil clears it
+---@return boolean applied
+function Logic.SetLocationEnv(id, env)
+    local loc = Logic.GetLocation(id)
+    if not loc then return false end
+
+    -- Nothing to record when the location had none and is still getting none.
+    if loc.env == nil and env == nil then return true end
+
+    loc.env = env
+    Logic.MarkPresetEdited(loc)
+    Logic.Save()
+    return true
 end
 
 --- Set a custom Map Pin
