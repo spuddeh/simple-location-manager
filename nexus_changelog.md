@@ -1,10 +1,12 @@
 # Simple Location Manager — Nexus Changelogs
 
 ### [Unreleased - v1.6.0]
-- New: Time & Weather - a location can remember a time of day and a weather state, and set them when you teleport to it. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
+- New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
+- New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
 - New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 - New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
-- New: Settings for whether saved time and weather are applied on teleport, and how long the weather takes to change.
+- New: A setting for how long the weather takes to change.
+- New: If another weather mod is holding a locked weather state, SLM now tells you instead of silently doing nothing. Clear that mod's lock first.
 - New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 - New: Codeware is now required. It is what makes setting the weather possible.
 - Minor code improvements
@@ -79,10 +81,12 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
 
 [b][size=3]Version 1.6.0[/size][/b]
-[list][*]New: Time & Weather - a location can remember a time of day and a weather state, and set them when you teleport to it. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
+[list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
+[*]New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
 [*]New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 [*]New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
-[*]New: Settings for whether saved time and weather are applied on teleport, and how long the weather takes to change.
+[*]New: A setting for how long the weather takes to change.
+[*]New: If another weather mod is holding a locked weather state, SLM now tells you instead of silently doing nothing. Clear that mod's lock first.
 [*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 [*]New: Codeware is now required. It is what makes setting the weather possible.
 [*]Minor code improvements
@@ -117,7 +121,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 4141 / 5000
+> Character count: 4355 / 5000
 
 ### Comment 2 - older versions
 

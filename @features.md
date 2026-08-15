@@ -9,7 +9,7 @@
 - [x] AMM Support: import Appearance Menu Mod locations.
 - [x] Map pins for saved locations.
 - [x] Teleport to any saved location directly.
-- [x] Time of day and weather stored per location and applied on teleport, opt-in per location.
+- [x] Time of day and weather stored per location, opt-in, applied by right-clicking a teleport button.
 - [x] Custom weather states read from the loaded environment, so weather mods are picked up automatically and a missing state is skipped rather than failing the teleport.
 - [x] In-game UI via Cyber Engine Tweaks overlay.
 - [x] Optional Window Utils integration: grid snapping, animation and window management when the library is installed.

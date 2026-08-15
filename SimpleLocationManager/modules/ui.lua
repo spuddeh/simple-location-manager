@@ -762,10 +762,22 @@ local function DrawLocationRow(loc, uniqueSuffix)
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 1.0, 0.6, 0.0, 0.8)
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 1.0, 0.6, 0.0, 0.6)
         if ImGui.Button(IconGlyphs.RunFast) then
-            Logic.TeleportTo(loc)
+            Logic.TeleportTo(loc, false)
+        end
+        -- Right-click carries the saved time and weather. Two gestures rather than a
+        -- setting, so the choice is made per teleport instead of once in Settings.
+        if ImGui.IsItemClicked(1) then
+            Logic.TeleportTo(loc, true)
         end
         ImGui.PopStyleColor(3)
-        if ImGui.IsItemHovered() then ImGui.SetTooltip("Teleport instantly") end
+        if ImGui.IsItemHovered() then
+            if loc.env then
+                ImGui.SetTooltip("Teleport instantly\nRight-click: teleport and set " ..
+                    Env.Describe(loc.env))
+            else
+                ImGui.SetTooltip("Teleport instantly")
+            end
+        end
         ImGui.SameLine()
     end
 
@@ -1516,61 +1528,51 @@ local function DrawSettingsTab()
     ImGui.Text("Show Import Source")
     ImGui.PopTextWrapPos()
 
-    -- Time & Weather on teleport
-    local applyEnv = Logic.settings.applyEnvOnTeleport
-    if applyEnv == nil then applyEnv = true end
-    local newApplyEnv, changedApplyEnv = ImGui.Checkbox("##applyEnv", applyEnv)
-    if changedApplyEnv then
-        Logic.settings.applyEnvOnTeleport = newApplyEnv
+    ImGui.Spacing()
+
+    -- Time & Weather. There is no on/off setting: the teleport button's left and right
+    -- click are the choice, so it is made per teleport rather than once here.
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.Text("Time & Weather")
+    ImGui.TextColored(0.6, 0.6, 0.6, 1.0,
+        "Right-click a teleport button to apply a location's saved time and weather.")
+    ImGui.PopTextWrapPos()
+
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.Text("Weather Transition (s)")
+    ImGui.PopTextWrapPos()
+    ImGui.SetNextItemWidth(-1)
+    local newBlend, changedBlend = ImGui.SliderFloat("##envBlend",
+        Logic.settings.envBlendTime or 5.0, 0.0, 30.0, "%.1f")
+    if changedBlend then
+        Logic.settings.envBlendTime = newBlend
         Logic.Save()
     end
     if ImGui.IsItemClicked(1) then
-        Logic.settings.applyEnvOnTeleport = Logic.defaultSettings.applyEnvOnTeleport
+        Logic.settings.envBlendTime = Logic.defaultSettings.envBlendTime
         Logic.Save()
-        Utils.Notify("Reset 'Apply Time & Weather'")
+        Utils.Notify("Reset 'Weather Transition'")
     end
     ResetTooltip()
-    ImGui.SameLine()
-    ImGui.PushTextWrapPos(0.0)
-    ImGui.Text("Apply Time & Weather")
-    ImGui.PopTextWrapPos()
 
-    if applyEnv then
+    if Env.IsWeatherAvailable() then
+        -- Forcing a weather state stops the natural cycle, so there has to be a
+        -- way back to it that does not mean loading a save.
+        if ImGui.Button(IconGlyphs.WeatherPartlyCloudy .. " Restore natural weather", -1, 0) then
+            if Env.ResetWeather(Logic.settings.envBlendTime) then
+                Utils.Notify("Weather cycle restored")
+            else
+                Utils.NotifyWarning("Could not restore the weather cycle")
+            end
+        end
+        if ImGui.IsItemHovered() then
+            ImGui.SetTooltip("Hand weather back to the game's own cycle.\n" ..
+                "A weather mod holding its own locked state overrides this - clear that lock first.")
+        end
+    else
         ImGui.PushTextWrapPos(0.0)
-        ImGui.Text("Weather Transition (s)")
+        ImGui.TextColored(1.0, 0.7, 0.3, 1.0, "Codeware is missing - time applies, weather does not.")
         ImGui.PopTextWrapPos()
-        ImGui.SetNextItemWidth(-1)
-        local newBlend, changedBlend = ImGui.SliderFloat("##envBlend",
-            Logic.settings.envBlendTime or 5.0, 0.0, 30.0, "%.1f")
-        if changedBlend then
-            Logic.settings.envBlendTime = newBlend
-            Logic.Save()
-        end
-        if ImGui.IsItemClicked(1) then
-            Logic.settings.envBlendTime = Logic.defaultSettings.envBlendTime
-            Logic.Save()
-            Utils.Notify("Reset 'Weather Transition'")
-        end
-        ResetTooltip()
-
-        if Env.IsWeatherAvailable() then
-            -- Forcing a weather state stops the natural cycle, so there has to be a
-            -- way back to it that does not mean loading a save.
-            if ImGui.Button(IconGlyphs.WeatherPartlyCloudy .. " Restore natural weather", -1, 0) then
-                if Env.ResetWeather(Logic.settings.envBlendTime) then
-                    Utils.Notify("Weather cycle restored")
-                else
-                    Utils.NotifyWarning("Could not restore the weather cycle")
-                end
-            end
-            if ImGui.IsItemHovered() then
-                ImGui.SetTooltip("Hand weather back to the game after a location forced it")
-            end
-        else
-            ImGui.PushTextWrapPos(0.0)
-            ImGui.TextColored(1.0, 0.7, 0.3, 1.0, "Codeware is missing - time applies, weather does not.")
-            ImGui.PopTextWrapPos()
-        end
     end
 
     ImGui.Spacing()

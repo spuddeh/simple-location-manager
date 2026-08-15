@@ -199,6 +199,21 @@ function Env.SetWeather(id, blendTime)
     return sys:SetWeather(id, blendTime or DEFAULT_BLEND, WEATHER_PRIORITY) == true
 end
 
+--- Whether the game is still in the state that was last requested.
+--- A weather mod holding its own locked state re-forces that state whenever the
+--- weather changes, which reverts this one within a frame or two. The call succeeds
+--- and the sky does not change, so the only way to know is to look again afterwards.
+---@param id string The state Env.SetWeather asked for
+---@return boolean held
+---@return string|nil actual What the game is in instead
+function Env.IsWeatherHeld(id)
+    if not id or id == "" then return true, nil end
+
+    local actual = Env.GetCurrentWeather()
+    if actual == id then return true, nil end
+    return false, actual
+end
+
 --- Hand weather back to the natural cycle.
 ---@param blendTime number|nil
 ---@return boolean applied

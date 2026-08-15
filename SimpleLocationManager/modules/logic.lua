@@ -8,8 +8,13 @@
 
 local Utils = require("modules/utils")
 local Env = require("modules/env")
+local Cron = require("modules/Cron")
 
 local Logic = {}
+
+-- Long enough for the weather transition to start and for another mod's own update
+-- loop to have re-forced its locked state, if it has one.
+local WEATHER_VERIFY_DELAY = 2.0
 
 -- State
 Logic.locations = {}
@@ -25,7 +30,6 @@ Logic.defaultSettings = {
     defaultGroupState = "Expanded", -- "Expanded" or "Collapsed"
     groupBy = "District",           -- "District" or "Category"
     showSourceInfo = true,          -- Show source/conflict info
-    applyEnvOnTeleport = true,      -- Apply a location's saved time/weather when teleporting to it
     envBlendTime = 5.0,             -- Weather transition length in seconds
     customCategories = {}           -- List of {name="X", icon="Y"}
 }
@@ -529,8 +533,13 @@ function Logic.GetDefaultNewLocationName()
     return "New Location"
 end
 
---- Teleport the player
-function Logic.TeleportTo(loc)
+--- Teleport the player.
+--- Time and weather are applied only when asked for, so the caller's gesture decides:
+--- the location list teleports plainly on left click and with the saved time and
+--- weather on right click.
+---@param loc table
+---@param applyEnv boolean|nil
+function Logic.TeleportTo(loc, applyEnv)
     if not loc or not loc.pos then return end
 
     local player = Game.GetPlayer()
@@ -540,22 +549,51 @@ function Logic.TeleportTo(loc)
     Game.GetTeleportationFacility():Teleport(player, pos, rot)
     print(Utils.ConsolePrefix .. " Teleported to " .. loc.name)
 
-    Logic.ApplyLocationEnv(loc)
+    if applyEnv then
+        Logic.ApplyLocationEnv(loc)
+    end
 end
 
---- Apply a location's saved time and weather, if it has any and the setting allows it.
+--- Apply a location's saved time and weather.
 --- A weather state the current game does not have is skipped, and the time still lands.
 ---@param loc table
 function Logic.ApplyLocationEnv(loc)
     if not loc or not loc.env then return end
-    if not Logic.settings.applyEnvOnTeleport then return end
 
     local report = Env.Apply(loc.env, Logic.settings.envBlendTime)
 
     if report.missingWeather then
         Utils.NotifyWarning("Weather \"" .. Env.GetWeatherLabel(report.missingWeather) ..
             "\" is not installed - time only")
+        return
     end
+
+    if report.weatherApplied then
+        Logic.VerifyWeatherHeld(loc.env.weather)
+    end
+end
+
+--- Check, once the transition has had time to run, that the requested weather is what
+--- the game is actually in. A mod holding its own locked state re-forces that state on
+--- any change, so SetWeather reports success and the sky never changes. Reporting it is
+--- all this mod can do: the lock lives in the other mod's Lua state, not in the engine.
+---@param requestedId string
+function Logic.VerifyWeatherHeld(requestedId)
+    if not requestedId or requestedId == "" then return end
+
+    Cron.After(WEATHER_VERIFY_DELAY, function()
+        local held, actual = Env.IsWeatherHeld(requestedId)
+        if held then return end
+
+        local msg = "Weather was overridden by another mod"
+        if actual then
+            msg = msg .. " (now " .. Env.GetWeatherLabel(actual) .. ")"
+        end
+        Utils.NotifyWarning(msg)
+        print(Utils.ConsolePrefix .. " Requested " .. requestedId ..
+            ", game is in " .. tostring(actual) ..
+            ". Another mod is holding the weather state - clear its lock first.")
+    end)
 end
 
 --- Set or clear a location's saved time and weather.

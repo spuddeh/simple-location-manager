@@ -10,6 +10,7 @@ local UI = require("modules/ui")
 local Utils = require("modules/utils")
 local Impex = require("modules/impex")
 local Env = require("modules/env")
+local Cron = require("modules/Cron")
 
 -- Load the saved locations and settings
 registerForEvent("onInit", function()
@@ -50,6 +51,11 @@ end)
 -- Draw the UI every frame
 registerForEvent("onDraw", function()
     UI.Draw()
+end)
+
+-- Ticks psiberx's Cron. No game logic lives here; the timers hold that.
+registerForEvent("onUpdate", function(delta)
+    Cron.Update(delta)
 end)
 
 -- Register Keybind for Quick Save
