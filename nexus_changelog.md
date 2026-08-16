@@ -18,7 +18,7 @@
 - New: Right-click a teleport button to teleport and apply that location's saved time and weather. Left-click teleports as always, and releases any weather SLM was holding.
 - New: The time and the weather are separately optional. A location can set one and leave the other alone.
 - New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
-- New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
+- New: Teleporting to a location with no time or weather saved unlocks the weather cycle, if SLM had locked it. Whatever weather is playing carries on, and the game is free to change it from there.
 - New: If another weather mod is holding its own weather state, SLM stops competing and tells you - clear that mod's lock first.
 - New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to unlock the weather cycle. Amber while held, red once something else has replaced it.
 - New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this unlocks it.
@@ -135,7 +135,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [*]New: Right-click a teleport button to teleport and apply that location's saved time and weather. Left-click teleports as always, and releases any weather SLM was holding.
 [*]New: The time and the weather are separately optional. A location can set one and leave the other alone.
 [*]New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
-[*]New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
+[*]New: Teleporting to a location with no time or weather saved unlocks the weather cycle, if SLM had locked it. Whatever weather is playing carries on, and the game is free to change it from there.
 [*]New: If another weather mod is holding its own weather state, SLM stops competing and tells you - clear that mod's lock first.
 [*]New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to unlock the weather cycle. Amber while held, red once something else has replaced it.
 [*]New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this unlocks it.
@@ -147,7 +147,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [/list][/spoiler]
 ```
 
-> Character count: 3738 / 5000
+> Character count: 3758 / 5000
 
 ### Comment 2 - older versions
 
