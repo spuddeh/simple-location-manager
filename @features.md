@@ -3,8 +3,8 @@
 - [x] Custom location names, descriptions, and auto-tagging.
 - [x] Smart organisation: locations grouped by District or Category, or a flat A-Z list.
 - [x] Manual coordinates: save or teleport to a shared X/Y/Z (with optional Yaw), with smart paste of CET/AMM/labeled formats.
-- [x] Custom categories with unique icons.
-- [x] Import/export locations as JSON for sharing.
+- [x] Custom categories with unique icons, picked either as the category is typed or from the Category Manager.
+- [x] Import/export locations as JSON for sharing, reachable from the Locations tab as well as Settings. An imported location's category is created from its name where the string did not define one.
 - [x] Presets system: install location packs with auto-installing categories.
 - [x] AMM Support: import Appearance Menu Mod locations.
 - [x] Map pins for saved locations.

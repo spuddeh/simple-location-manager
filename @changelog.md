@@ -2,6 +2,16 @@
 
 Notable changes to Simple Location Manager. Versioning is semantic (MAJOR.MINOR.PATCH). Preset companion files carry their own suffixed tags and track their history independently.
 
+## v1.7.0
+
+- Feature: An import button on the Locations tab, beside Add and Manual Coordinates. It sets the same `showImportRed` flag the Settings button sets, and the modal is drawn from the root draw, so no second modal exists.
+- Feature: A category typed into the Edit Location or Manual Coordinates box carries an icon of the user's choosing. The glyph beside the box becomes a button when the typed name matches no existing category, and opens `IconPicker` inline; an existing category keeps its glyph as text, because its icon belongs to the Category Manager. `DEFAULT_NEW_CATEGORY_ICON` replaces the `"Star"` that was passed at both `Logic.AddCategory` call sites.
+- Fix: An imported location naming a category the package never defined left that category pointing at nothing - the name sat on the location while the Custom Categories list stayed empty. `Impex.SweepCategoryNames` collects the names off the locations and passes them to `Logic.MergeCustomCategories`, which already skips anything that exists as a default or a custom. It runs **after** the package's own definitions are merged, so a category that arrived with a real icon keeps it and only the undefined ones fall back to `IMPORTED_CATEGORY_ICON`. A category name that survived expansion as a number is not a name and is not swept.
+- Fix: `Impex.LoadPresets` needed the sweep separately. It carries its own import loop - ID match, position conflict, self-healing resync - and never calls `ProcessImportDataArray`, so fixing only the string path would have left every preset untouched.
+- Note: The export side needed no change. `GetUsedCustomCategories` has emitted definitions since 1.1.0, but it reads `Logic.settings.customCategories`, so a category that was never created there was dropped on every re-export. Creating it on import is what closes the round trip.
+- Fix: The Manual Coordinates modal clipped its Cancel button. Four action buttons share one row inside a window pinned to 420 px with `NoResize`, so a row wider than that lost the last one with no way for the user to widen the window. The width is now measured from the button labels, and `MANUAL_ACTION_LABELS` is read by both the measurement and the buttons so the two cannot drift apart.
+- Note: The same modal re-applies its auto-fit height every frame (`ImGuiCond.Always`, height 0) rather than once on appear, so it grows when the icon picker opens inside it. The pinned width is unaffected.
+
 ## v1.6.0
 
 - Feature: Time & Weather - a location can store a time of day and a weather state. Opt-in per location via a "Save time and weather" section in the Edit modal, with a "Use current" button. Applied by **right-clicking** the teleport button; left click teleports without touching either. The gesture is the control, so there is no on/off setting - only a weather transition slider in Settings.

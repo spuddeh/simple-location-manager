@@ -1,6 +1,10 @@
 # Simple Location Manager — Nexus Changelogs
 
 ### [Unreleased - v1.7.0]
+- New: An import button on the Locations tab, next to "Add current location" - importing no longer means a trip to Settings. It opens the same window.
+- New: Pick an icon for a category as you create it. Type a new category name in the Edit or Manual Coordinates window and the symbol beside the box becomes a button; click it and choose. Categories you already have keep the icon set in the Category Manager.
+- Fix: Importing locations that use a category you do not have now creates that category, whatever the string was made by. The category name was applied to the locations but never appeared in your Custom Categories list, and it was then dropped again if you re-exported those locations.
+- Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
 
 ### [Unreleased - v1.6.0]
 - New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
@@ -84,6 +88,10 @@ When that ships, **both sections go up together**: the GitHub Release body must 
 skipped straight from 1.5.0 to 1.7.0 never saw the 1.6.0 entries.
 
 The stickied-comment BBCode needs the same treatment - two version blocks in the newest post, not one.
+
+**Comment 1 cannot hold both.** It stands at 4713 of 5000 characters carrying 1.6.0 alone, and the
+1.7.0 entries written so far add 831. A re-split is required before 1.7.0 is posted, and the BBCode
+below is regenerated once 1.7.0's entries are final rather than after each one.
 
 ---
 ## Stickied Comment BBCode
