@@ -93,10 +93,11 @@ local editingCategoryOriginalName = nil -- Stores original name when editing to 
 local tempName = ""
 local tempDesc = ""
 local tempCategory = "Misc"
-local tempEnvEnabled = false -- "Save time and weather with this location"
+local tempEnvEnabled = false     -- "Save time and weather with this location"
+local tempEnvTimeEnabled = true  -- Off leaves the time of day alone
 local tempEnvHour = 12
 local tempEnvMinute = 0
-local tempEnvWeather = ""    -- Weather state id, "" for time only
+local tempEnvWeather = ""        -- Weather state id, "" leaves the weather alone
 
 -- Manual Coordinates Modal State
 local showManualModal = false       -- Flag for the Manual Coordinates modal
@@ -294,6 +295,7 @@ local function SeedEnvBuffers(loc)
     local env = loc and loc.env
 
     tempEnvEnabled = env ~= nil
+    tempEnvTimeEnabled = (env == nil) or (env.time ~= nil)
     tempEnvWeather = (env and env.weather) or ""
 
     local time = (env and env.time) or Env.GetCurrentTime()
@@ -306,13 +308,18 @@ local function SeedEnvBuffers(loc)
 end
 
 --- Build the env block the buffers describe, or nil when the section is switched off.
+--- Time and weather are independent, so a location can carry either alone. With both
+--- switched off there is nothing to record and the result is nil, not an empty block -
+--- an empty one would show a padlock row that does nothing.
 ---@return table|nil
 local function BuildEnvFromBuffers()
     if not tempEnvEnabled then return nil end
+    if not tempEnvTimeEnabled and tempEnvWeather == "" then return nil end
 
-    local env = {
-        time = { h = tempEnvHour, m = tempEnvMinute, s = 0 }
-    }
+    local env = {}
+    if tempEnvTimeEnabled then
+        env.time = { h = tempEnvHour, m = tempEnvMinute, s = 0 }
+    end
     if tempEnvWeather ~= "" then
         env.weather = tempEnvWeather
     end
@@ -330,10 +337,19 @@ local function DrawEnvSection()
 
     ImGui.Indent(20)
 
-    -- Time
+    -- Time. The checkbox is the counterpart of the weather picker's "Leave as is":
+    -- either half can be saved without the other.
+    tempEnvTimeEnabled = ImGui.Checkbox("##envTimeOn", tempEnvTimeEnabled)
+    if ImGui.IsItemHovered() then
+        ImGui.SetTooltip("Off leaves the time of day alone")
+    end
+    ImGui.SameLine()
+
     ImGui.AlignTextToFramePadding()
     ImGui.Text("Time:")
     ImGui.SameLine()
+
+    ImGui.BeginDisabled(not tempEnvTimeEnabled)
     ImGui.SetNextItemWidth(80)
     tempEnvHour = ImGui.SliderInt("##envHour", tempEnvHour, 0, 23)
     ImGui.SameLine()
@@ -341,6 +357,12 @@ local function DrawEnvSection()
     ImGui.SameLine()
     ImGui.SetNextItemWidth(80)
     tempEnvMinute = ImGui.SliderInt("##envMinute", tempEnvMinute, 0, 59)
+    ImGui.EndDisabled()
+
+    if not tempEnvTimeEnabled then
+        ImGui.SameLine()
+        ImGui.TextColored(0.6, 0.6, 0.6, 1.0, "Leave as is")
+    end
 
     -- Weather
     local weatherAvailable = Env.IsWeatherAvailable()
@@ -379,12 +401,21 @@ local function DrawEnvSection()
     if ImGui.Button(IconGlyphs.MapClock .. " Use current") then
         local now = Env.Capture()
         if now then
+            tempEnvTimeEnabled = true
             tempEnvHour = now.time.h
             tempEnvMinute = now.time.m
             tempEnvWeather = now.weather or ""
         end
     end
     if ImGui.IsItemHovered() then ImGui.SetTooltip("Copy the game's current time and weather") end
+
+    -- Both halves off records nothing, so say so rather than saving an empty block.
+    if not tempEnvTimeEnabled and tempEnvWeather == "" then
+        ImGui.PushTextWrapPos(0.0)
+        ImGui.TextColored(1.0, 0.7, 0.3, 1.0,
+            "Nothing selected - this location will not change the time or the weather.")
+        ImGui.PopTextWrapPos()
+    end
 
     ImGui.Unindent(20)
 end
