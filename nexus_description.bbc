@@ -7,29 +7,21 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 
 [b]Simple Location Manager[/b] is designed for organisation first. It automatically detects your location, identifying the District and sub-district, and organises your locations into a clean, collapsible hierarchy.
 
-[color=#ffff00][size=4][b]New in v1.7.0[/b][/size][/color]
-[list]
-[*][b]Export Selected:[/b] a button in Settings opens a tick-box list of every location. Pick any set, filter to narrow it down, and copy one export string for the lot. Paste it into a .txt and you have a preset to share.
-[*][b]Quieter by default:[/b] a [b]Console Logging[/b] setting. SLM used to write a line to the CET console for every location it loaded, which with a few presets installed meant dozens on every load. It now speaks up only about problems, and you can turn it back up when you need it.
-[*][b]Pick a category icon as you create it:[/b] type a new category name in the Edit or Manual Coordinates window and click the symbol beside the box to choose its icon.
-[*][b]Import without leaving the list:[/b] an import button on the Locations tab, next to Add.
-[*][b]Time & Weather:[/b] a location can remember a time of day and a weather state. Turn it on per location in the Edit window, or hit [b]Use current[/b] to copy whatever the game is doing right now. [b]Left-click[/b] a teleport button to just teleport; [b]right-click[/b] to teleport and set that location's time and weather.
-[*][b]Custom Weather:[/b] anything a weather mod adds shows up in the picker on its own. Save a location using a modded weather, remove that mod later, and the location still works - you get the time, the sky is set to sunny, and the weather comes back if you reinstall.
-[*][b]Restore Natural Weather:[/b] a button in Settings unlocks the weather cycle, or right-click the padlock in the footer.
-[*][b]Window Utils Support:[/b] with [url=https://www.nexusmods.com/cyberpunk2077/mods/26589]Window Utils[/url] installed, the SLM window snaps to that mod's grid, animates, and can be arranged alongside your other mod windows. Without it, nothing changes.
-[/list]
 [color=#ffff00][size=5][b]Key Features[/b][/size][/color]
 [list]
 [*][b]Save Anywhere:[/b] Instantly record your position. Add custom names, descriptions, or let the mod auto-timestamp them.
 [*][b]Smart Organisation:[/b] Locations are automatically grouped by [b]District[/b] or [b]Category[/b], or shown as a flat [b]A-Z[/b] list.
 [*][b]Manual Coordinates:[/b] Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a console command. Pastes CET teleport commands and AMM JSON too.
 [*][b]Favorites:[/b] Keep your most-used spots at the top of the list for instant access.
-[*][b]Custom Categories:[/b] Create your own categories (e.g., "Stunts", "Photos") and assign them unique icons.
+[*][b]Custom Categories:[/b] Create your own categories (e.g., "Stunts", "Photos") and give them their own icons. Type a new category name while adding a location and click the symbol beside the box to pick its icon there and then.
 [*][b]AMM Support:[/b] Import existing locations created for Appearance Menu Mod. [i]AMM is [b]not[/b] required for this to work.[/i]
 [*][b]Powerful Search:[/b] Filter by name, district, or description in real-time.
 [*][b]Import / Export:[/b] Share locations with your choombas! Copy a single spot, a whole district, a set you pick yourself, or your entire database to the clipboard as a text string.
 [*][b]Navigation:[/b] One-click to set a [b]Custom Map Pin[/b] to any saved location. [i]Works great with Autodrive![/i]
-[*][b]Time & Weather:[/b] Store a time of day and a weather state on a location. Left-click a teleport button to just teleport, right-click to teleport and set them. Off by default, and set per location. [i]If another weather mod is holding a locked weather state, clear that lock first - it overrides everything.[/i]
+[*][b]Time & Weather:[/b] Store a time of day and a weather state on a location. Left-click a teleport button to just teleport, right-click to teleport and set them. Off by default, and set per location. Hit [b]Use current[/b] in the Edit window to copy whatever the game is doing right now. [i]If another weather mod is holding a locked weather state, clear that lock first - it overrides everything.[/i]
+[*][b]Custom Weather States:[/b] Anything a weather mod adds shows up in the picker on its own. Save a location using a modded weather, remove that mod later, and the location still works - you get the time, the sky is set to sunny, and the weather comes back if you reinstall.
+[*][b]Unlock the Weather Cycle:[/b] Setting a weather state stops the game changing it. A button in Settings unlocks it again, or right-click the padlock in the footer readout.
+[*][b]Window Utils Support:[/b] With [url=https://www.nexusmods.com/cyberpunk2077/mods/26589]Window Utils[/url] installed, the SLM window snaps to that mod's grid, animates, and can be arranged alongside your other mod windows. Without it, nothing changes.
 [*][b]Lazy Mode (Teleport):[/b] Optional feature to instantly teleport to any saved spot (Disabled by default).
 [*][b]Customizable:[/b]
 [list]
