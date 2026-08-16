@@ -1818,7 +1818,7 @@ local function DrawSettingsTab()
             end
         end
         if ImGui.IsItemHovered() then
-            ImGui.SetTooltip("Hand weather back to the game's own cycle.\n" ..
+            ImGui.SetTooltip("Unlock the game's own weather cycle.\n" ..
                 "A weather mod holding its own locked state overrides this - clear that lock first.")
         end
     else
@@ -2684,7 +2684,7 @@ function UI.Draw()
                 end
                 if envReadout.status == "held" then
                     tip = tip .. "\n\nSLM is holding this state, so the weather cycle is stopped." ..
-                        "\nRight-click to hand it back."
+                        "\nRight-click to unlock the weather cycle."
                 elseif envReadout.status == "overridden" then
                     tip = tip .. "\n\nSLM set " .. Env.GetWeatherLabel(envReadout.forcedState) ..
                         " and another mod replaced it." ..

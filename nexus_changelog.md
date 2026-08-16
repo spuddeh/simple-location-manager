@@ -20,10 +20,10 @@
 - New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
 - New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
 - New: A weather state SLM sets is held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
-- New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to hand the weather back. Amber while held, red once something else has replaced it.
-- New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this hands it back.
+- New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to unlock the weather cycle. Amber while held, red once something else has replaced it.
+- New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this unlocks it.
 - New: A setting for how long the weather takes to change.
-- New: Optional Window Utils support. With it installed the SLM window snaps to the grid, animates, and appears in the Window Utils panel.
+- New: Optional Window Utils support. With it installed the SLM window snaps to that mod's grid, animates as it opens and closes, and can be arranged alongside your other mod windows.
 - New: Codeware is now required. It is what makes setting the weather possible.
 - Fix: Exporting several locations sharing a custom category repeated that category once per location in the string.
 - Minor code improvements
@@ -137,17 +137,17 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [*]New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
 [*]New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
 [*]New: A weather state SLM sets is held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
-[*]New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to hand the weather back. Amber while held, red once something else has replaced it.
-[*]New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this hands it back.
+[*]New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to unlock the weather cycle. Amber while held, red once something else has replaced it.
+[*]New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this unlocks it.
 [*]New: A setting for how long the weather takes to change.
-[*]New: Optional Window Utils support. With it installed the SLM window snaps to the grid, animates, and appears in the Window Utils panel.
+[*]New: Optional Window Utils support. With it installed the SLM window snaps to that mod's grid, animates as it opens and closes, and can be arranged alongside your other mod windows.
 [*]New: Codeware is now required. It is what makes setting the weather possible.
 [*]Fix: Exporting several locations sharing a custom category repeated that category once per location in the string.
 [*]Minor code improvements
 [/list][/spoiler]
 ```
 
-> Character count: 3806 / 5000
+> Character count: 3851 / 5000
 
 ### Comment 2 - older versions
 
