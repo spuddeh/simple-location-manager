@@ -87,16 +87,25 @@ local updateConfirmId = nil      -- ID of the location pending a position update
 local groupDebugFrames = 0
 local groupDebugLines = {}
 
---- Called BEFORE groupOpenState is written, so `prev` is the previous frame's stored value.
+--- Called BEFORE groupOpenState is written, so `prev` is the previous frame's stored value,
+--- and while the header is still the current item, so IsItemHovered refers to it.
 local function DebugGroupState(key, isOpen)
     if groupDebugFrames <= 0 then return end
+
+    -- Read while the header is the current item, whether or not this frame gets reported.
+    local hovered = ImGui.IsItemHovered()
+    local mx, my = ImGui.GetMousePos()
+
     local prev = groupOpenState[key]
     if prev == isOpen then return end
     table.insert(groupDebugLines, string.format(
-        "  f%-4d %-28s %-5s -> %-5s  presentLast=%-5s fExp=%-5s fCol=%-5s q='%s' lastQ='%s' delModal=%s",
+        "  f%-4d %-28s %-5s -> %-5s  HOVERED=%-5s click=%-5s down=%-5s released=%-5s mouse=(%.0f,%.0f) " ..
+        "presentLast=%-5s fExp=%-5s fCol=%-5s q='%s' delModal=%s",
         groupDebugFrames, key, tostring(prev), tostring(isOpen),
+        tostring(hovered), tostring(ImGui.IsMouseClicked(0)), tostring(ImGui.IsMouseDown(0)),
+        tostring(ImGui.IsMouseReleased(0)), mx, my,
         tostring(groupPresentLastFrame[key] or false),
-        tostring(forceExpand), tostring(forceCollapse), tostring(searchQuery), tostring(lastSearchQuery),
+        tostring(forceExpand), tostring(forceCollapse), tostring(searchQuery),
         tostring(confirmDeleteId ~= nil)))
 end
 
