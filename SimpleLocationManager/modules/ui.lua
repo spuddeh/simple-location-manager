@@ -2179,13 +2179,36 @@ local function DrawDeleteCategoryConfirmModal()
     })
 end
 
+-- The modal's action buttons, in the order they are drawn. They share one row, and the
+-- window is sized from these same strings, so the two cannot drift apart.
+local MANUAL_ACTION_LABELS = {
+    IconGlyphs.ContentSave .. " Save",
+    IconGlyphs.ContentSaveMove .. " Save & Teleport",
+    IconGlyphs.RunFast .. " Teleport",
+    IconGlyphs.Cancel .. " Cancel",
+}
+
 --- Draw the Manual Coordinates modal (save/teleport to typed or pasted XYZ)
 local function DrawManualModal()
     local shouldOpen = showManualModal
     -- Fixed width with NoResize: AlwaysAutoResize collapses the window onto its content
     -- (the -1 width fields). The width is pinned; the 0 height auto-fits, and it is re-applied
     -- every frame so the window grows when the icon picker opens inside it.
-    if shouldOpen then ImGui.SetNextWindowSize(420, 0, ImGuiCond.Always) end
+    --
+    -- The width has to hold the four action buttons on one row, and NoResize means a window
+    -- too narrow for them clips the last one with no way for the user to widen it. Measuring
+    -- the labels keeps that true whatever the font does to their width.
+    if shouldOpen then
+        local style = ImGui.GetStyle()
+        local buttonsW = 0
+        for _, label in ipairs(MANUAL_ACTION_LABELS) do
+            buttonsW = buttonsW + ImGui.CalcTextSize(label) + (style.FramePadding.x * 2)
+        end
+        buttonsW = buttonsW + (style.ItemSpacing.x * (#MANUAL_ACTION_LABELS - 1))
+            + (style.WindowPadding.x * 2)
+
+        ImGui.SetNextWindowSize(math.max(420, math.ceil(buttonsW) + 4), 0, ImGuiCond.Always)
+    end
 
     UI.WrapperModal("Manual Coordinates", shouldOpen, ImGuiWindowFlags.NoResize, function()
         -- Smart paste box (source of truth): any change re-syncs the coordinate fields below.
@@ -2311,7 +2334,7 @@ local function DrawManualModal()
         end
 
         -- Action buttons
-        if ImGui.Button(IconGlyphs.ContentSave .. " Save") then
+        if ImGui.Button(MANUAL_ACTION_LABELS[1]) then
             if allZero() then
                 Utils.NotifyWarning("Enter coordinates first (X/Y/Z are all 0).")
             else
@@ -2322,7 +2345,7 @@ local function DrawManualModal()
             end
         end
         ImGui.SameLine()
-        if ImGui.Button(IconGlyphs.ContentSaveMove .. " Save & Teleport") then
+        if ImGui.Button(MANUAL_ACTION_LABELS[2]) then
             if allZero() then
                 Utils.NotifyWarning("Enter coordinates first (X/Y/Z are all 0).")
             else
@@ -2334,7 +2357,7 @@ local function DrawManualModal()
             end
         end
         ImGui.SameLine()
-        if ImGui.Button(IconGlyphs.RunFast .. " Teleport") then
+        if ImGui.Button(MANUAL_ACTION_LABELS[3]) then
             if allZero() then
                 Utils.NotifyWarning("Enter coordinates first (X/Y/Z are all 0).")
             else
@@ -2343,7 +2366,7 @@ local function DrawManualModal()
             end
         end
         ImGui.SameLine()
-        if ImGui.Button(IconGlyphs.Cancel .. " Cancel") then
+        if ImGui.Button(MANUAL_ACTION_LABELS[4]) then
             close()
         end
     end, {
