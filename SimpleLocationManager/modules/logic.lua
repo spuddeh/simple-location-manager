@@ -14,7 +14,7 @@ local Logic = {}
 -- The weather hold is checked on onDraw frames rather than on a Cron timer. Cron ticks
 -- from onUpdate, and onUpdate stops while the CET overlay is open - which is exactly
 -- when a teleport happens. onDraw is on the render path and runs either way.
-local WEATHER_CHECK_FRAMES = 60
+local WEATHER_CHECK_FRAMES = 10
 
 -- Consecutive corrections before giving up. The count resets the moment the state
 -- holds, so this only trips against something re-forcing every frame - a fight this
@@ -566,16 +566,37 @@ end
 --- A weather state the current game does not have is skipped, and the time still lands.
 ---@param loc table
 function Logic.ApplyLocationEnv(loc)
-    if not loc or not loc.env then return end
+    if not loc or not loc.env then
+        Logic.ReleaseWeatherHold()
+        return
+    end
 
     local report = Env.Apply(loc.env, Logic.settings.envBlendTime)
 
     if report.missingWeather then
         Utils.NotifyWarning("Weather \"" .. Env.GetWeatherLabel(report.missingWeather) ..
             "\" is not installed - time only")
+        Logic.ReleaseWeatherHold()
         return
     end
 
+    -- No weather on this location, or the picker left it alone: the sky is not this
+    -- location's business, so it goes back to the game rather than keeping the last
+    -- location's state.
+    if not report.weatherApplied then
+        Logic.ReleaseWeatherHold()
+    end
+end
+
+--- Hand the weather back to the game's cycle, but only where this mod is holding it.
+--- Another mod's forced weather is not this mod's to undo.
+function Logic.ReleaseWeatherHold()
+    if not Env.GetForcedState() then return end
+
+    if Env.ResetWeather(Logic.settings.envBlendTime) then
+        print(Utils.ConsolePrefix .. " Weather returned to the game's cycle.")
+    end
+    weatherCorrections = 0
 end
 
 --- Keep the weather on the state this mod last forced.
@@ -590,7 +611,8 @@ end
 --- something re-forcing every frame can exhaust it, and against that the hold is
 --- released rather than thrashing the sky between two mods.
 function Logic.Tick()
-    if not Env.GetForcedState() then
+    local status, forced = Env.GetHoldStatus()
+    if status ~= "held" or not forced then
         weatherFrames = 0
         weatherCorrections = 0
         return
@@ -600,12 +622,10 @@ function Logic.Tick()
     if weatherFrames < WEATHER_CHECK_FRAMES then return end
     weatherFrames = 0
 
-    local status, forced = Env.GetHoldStatus()
-    if status == "held" then
+    if Env.GetCurrentWeather() == forced then
         weatherCorrections = 0
         return
     end
-    if not forced then return end
 
     if weatherCorrections < WEATHER_MAX_CORRECTIONS then
         weatherCorrections = weatherCorrections + 1
@@ -620,7 +640,7 @@ function Logic.Tick()
         ", game is in " .. tostring(actual) ..
         ". Another mod is re-forcing the weather every frame - clear its lock first.")
 
-    Env.ReleaseHold()
+    Env.MarkHoldLost()
     weatherCorrections = 0
 end
 

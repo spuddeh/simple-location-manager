@@ -5,6 +5,7 @@
 - New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
 - New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 - New: Saving the time is now optional, the same way the weather already was. A location can set the weather and leave the time of day alone, or the other way round.
+- New: Teleporting to a location that has no weather set hands the sky back to the game's own cycle, so the last location's weather does not follow you around. Only SLM's own hold is released - if another weather mod set the weather, SLM leaves it alone.
 - New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
 - New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 - New: A setting for how long the weather takes to change.
@@ -97,6 +98,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
 [*]New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 [*]New: Saving the time is now optional, the same way the weather already was. A location can set the weather and leave the time of day alone, or the other way round.
+[*]New: Teleporting to a location that has no weather set hands the sky back to the game's own cycle, so the last location's weather does not follow you around. Only SLM's own hold is released - if another weather mod set the weather, SLM leaves it alone.
 [*]New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
 [*]New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 [*]New: A setting for how long the weather takes to change.
@@ -126,7 +128,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 4322 / 5000
+> Character count: 4578 / 5000
 
 ### Comment 2 - older versions
 

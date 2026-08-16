@@ -35,6 +35,11 @@ local stateById = nil
 -- SLM did, which is the one thing it can state truthfully.
 local forcedId = nil
 
+-- Set only where the hold has been given up. Transient drift is not this: the state is
+-- put back within a few frames, and reporting every wobble would flash a warning at the
+-- user for something the mod is already fixing.
+local holdLost = false
+
 --- Turn a raw state id into something readable.
 --- "24h_weather_fog_heavy" becomes "Fog Heavy".
 ---@param id string
@@ -205,6 +210,7 @@ function Env.SetWeather(id, blendTime)
     local applied = sys:SetWeather(id, blendTime or DEFAULT_BLEND, WEATHER_PRIORITY) == true
     if applied then
         forcedId = id
+        holdLost = false
     end
     return applied
 end
@@ -234,6 +240,7 @@ function Env.ResetWeather(blendTime)
     local released = sys:ResetWeather(false, blendTime or DEFAULT_BLEND) == true
     if released then
         forcedId = nil
+        holdLost = false
     end
     return released
 end
@@ -245,10 +252,16 @@ function Env.GetForcedState()
 end
 
 --- Stop holding the weather without touching the game.
---- Used where the hold has been lost to another mod: calling ResetWeather there would
---- hand the cycle back on top of that mod's own forced state.
 function Env.ReleaseHold()
     forcedId = nil
+    holdLost = false
+end
+
+--- Record that the hold could not be kept. Calling ResetWeather here would hand the
+--- cycle back on top of whatever took the weather, so the state is left alone and only
+--- the claim to be holding it is dropped.
+function Env.MarkHoldLost()
+    holdLost = true
 end
 
 --- What this mod is doing to the weather right now.
@@ -259,9 +272,9 @@ end
 ---@return string|nil status
 ---@return string|nil forcedState The id SLM asked for
 function Env.GetHoldStatus()
-    if not forcedId then return nil, nil end
-    if Env.GetCurrentWeather() == forcedId then return "held", forcedId end
-    return "overridden", forcedId
+    if holdLost then return "overridden", forcedId end
+    if forcedId then return "held", forcedId end
+    return nil, nil
 end
 
 --- A live readout of the time and weather, for the footer.
