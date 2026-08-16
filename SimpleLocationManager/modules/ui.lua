@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Simple Location Manager UI module.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
@@ -14,8 +14,11 @@ local IconPicker = require("modules/icon_picker")
 local Env = require("modules/env")
 
 local MOD_NAME = "Simple Location Manager"
-local MOD_VERSION = "1.6.0"
+local MOD_VERSION = "1.7.0"
 local MODAL_PREFIX = "SLM - "
+
+-- Icon a category gets when it is created without one being picked.
+local DEFAULT_NEW_CATEGORY_ICON = "Star"
 
 -- Window Utils is optional. Where it is absent, `wu` is ImGui itself and the window
 -- behaves exactly as it does without the library, so nothing here is a dependency.
@@ -93,6 +96,8 @@ local editingCategoryOriginalName = nil -- Stores original name when editing to 
 local tempName = ""
 local tempDesc = ""
 local tempCategory = "Misc"
+local tempCategoryIcon = nil     -- Icon chosen for a category being typed for the first time
+local showTempCatPicker = false  -- Inline icon picker open, in the Edit modal
 local tempEnvEnabled = false     -- "Save time and weather with this location"
 local tempEnvTimeEnabled = true  -- Off leaves the time of day alone
 local tempEnvHour = 12
@@ -109,6 +114,8 @@ local manualZ = 0.0
 local manualYaw = 0.0
 local manualName = "Manual Location"
 local manualCategory = "Misc"
+local manualCategoryIcon = nil      -- Icon chosen for a category being typed for the first time
+local showManualCatPicker = false   -- Inline icon picker open, in the Manual Coordinates modal
 
 
 
@@ -456,18 +463,33 @@ local function DrawEditModal()
         -- Category
         ImGui.Text("Category:")
         ImGui.SameLine()
-        -- Fetch icon for tempCategory
-        local currentCatIcon = "Help"
+        -- Fetch icon for tempCategory. A name that matches no category is one the user is
+        -- typing now, and its icon is theirs to choose.
+        local currentCatIcon = nil
         for _, c in ipairs(Logic.GetCategories()) do
             if c.name == tempCategory then
                 currentCatIcon = c.icon
                 break
             end
         end
-        local glyph = IconGlyphs[currentCatIcon] or IconGlyphs.Help
+        local isNewCategory = (currentCatIcon == nil and tempCategory ~= "")
+        if isNewCategory then
+            currentCatIcon = tempCategoryIcon or DEFAULT_NEW_CATEGORY_ICON
+        end
+        local glyph = IconGlyphs[currentCatIcon or "Help"] or IconGlyphs.Help
 
         ImGui.AlignTextToFramePadding()
-        ImGui.Text(glyph .. " ")
+        if isNewCategory then
+            -- Existing categories own their icon: it is changed in the Category Manager, not here.
+            if ImGui.Button(glyph .. "##catIconBtn") then
+                showTempCatPicker = not showTempCatPicker
+                IconPicker.ClearSearch()
+            end
+            if ImGui.IsItemHovered() then ImGui.SetTooltip("Choose an icon for \"" .. tempCategory .. "\"") end
+        else
+            ImGui.Text(glyph .. " ")
+            showTempCatPicker = false
+        end
         ImGui.SameLine()
 
         ImGui.SetNextItemWidth(200)
@@ -483,11 +505,21 @@ local function DrawEditModal()
                 local icon = IconGlyphs[c.icon] or IconGlyphs.Help
                 if ImGui.Selectable(icon .. " " .. c.name, false) then
                     tempCategory = c.name
+                    tempCategoryIcon = nil
+                    showTempCatPicker = false
                 end
             end
             ImGui.EndCombo()
         end
         if ImGui.IsItemHovered() then ImGui.SetTooltip("Select existing category") end
+
+        if isNewCategory and showTempCatPicker then
+            IconPicker.Draw(currentCatIcon, function(iconName)
+                tempCategoryIcon = iconName
+                showTempCatPicker = false
+                IconPicker.ClearSearch()
+            end, 200)
+        end
 
         ImGui.Separator()
 
@@ -530,7 +562,7 @@ local function DrawEditModal()
                 end
             end
             if not exists and tempCategory ~= "" then
-                Logic.AddCategory(tempCategory, "Star")
+                Logic.AddCategory(tempCategory, tempCategoryIcon or DEFAULT_NEW_CATEGORY_ICON)
             end
 
             if editingId then
@@ -639,6 +671,8 @@ local function OpenEditModal(loc)
     tempName = loc.name
     tempDesc = loc.description or ""
     tempCategory = loc.category or "Misc"
+    tempCategoryIcon = nil
+    showTempCatPicker = false
     SeedEnvBuffers(loc)
 end
 
@@ -649,6 +683,8 @@ local function OpenCreateModal(locData)
     tempName = locData.name
     tempDesc = locData.description or ""
     tempCategory = locData.category or "Misc"
+    tempCategoryIcon = nil
+    showTempCatPicker = false
     SeedEnvBuffers(locData)
 end
 
@@ -659,6 +695,8 @@ local function OpenManualModal()
     manualX, manualY, manualZ, manualYaw = 0.0, 0.0, 0.0, 0.0
     manualName = "Manual Location"
     manualCategory = "Misc"
+    manualCategoryIcon = nil
+    showManualCatPicker = false
     showManualModal = true
 end
 
@@ -930,6 +968,13 @@ local function DrawLocationsTab()
             OpenManualModal()
         end
         if ImGui.IsItemHovered() then ImGui.SetTooltip("Add location from manual coordinates") end
+
+        -- Import Button (same modal the Settings tab opens; the flag is read in the main draw)
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.Download) then
+            showImportRed = true
+        end
+        if ImGui.IsItemHovered() then ImGui.SetTooltip("Import locations") end
 
         -- Right Align Expand/Collapse + Sort Combo
         ImGui.SameLine()
@@ -2138,8 +2183,9 @@ end
 local function DrawManualModal()
     local shouldOpen = showManualModal
     -- Fixed width with NoResize: AlwaysAutoResize collapses the window onto its content
-    -- (the -1 width fields). The width is pinned; the height auto-fits on appear.
-    if shouldOpen then ImGui.SetNextWindowSize(420, 0, ImGuiCond.Appearing) end
+    -- (the -1 width fields). The width is pinned; the 0 height auto-fits, and it is re-applied
+    -- every frame so the window grows when the icon picker opens inside it.
+    if shouldOpen then ImGui.SetNextWindowSize(420, 0, ImGuiCond.Always) end
 
     UI.WrapperModal("Manual Coordinates", shouldOpen, ImGuiWindowFlags.NoResize, function()
         -- Smart paste box (source of truth): any change re-syncs the coordinate fields below.
@@ -2193,16 +2239,29 @@ local function DrawManualModal()
         -- Category (same input + dropdown pattern as the Edit modal)
         ImGui.Text("Category:")
         ImGui.SameLine()
-        local currentCatIcon = "Help"
+        local currentCatIcon = nil
         for _, c in ipairs(Logic.GetCategories()) do
             if c.name == manualCategory then
                 currentCatIcon = c.icon
                 break
             end
         end
-        local glyph = IconGlyphs[currentCatIcon] or IconGlyphs.Help
+        local isNewCategory = (currentCatIcon == nil and manualCategory ~= "")
+        if isNewCategory then
+            currentCatIcon = manualCategoryIcon or DEFAULT_NEW_CATEGORY_ICON
+        end
+        local glyph = IconGlyphs[currentCatIcon or "Help"] or IconGlyphs.Help
         ImGui.AlignTextToFramePadding()
-        ImGui.Text(glyph .. " ")
+        if isNewCategory then
+            if ImGui.Button(glyph .. "##manualCatIconBtn") then
+                showManualCatPicker = not showManualCatPicker
+                IconPicker.ClearSearch()
+            end
+            if ImGui.IsItemHovered() then ImGui.SetTooltip("Choose an icon for \"" .. manualCategory .. "\"") end
+        else
+            ImGui.Text(glyph .. " ")
+            showManualCatPicker = false
+        end
         ImGui.SameLine()
         ImGui.SetNextItemWidth(200)
         manualCategory = ImGui.InputText("##manualCatInput", manualCategory, 50)
@@ -2214,9 +2273,19 @@ local function DrawManualModal()
                 local icon = IconGlyphs[c.icon] or IconGlyphs.Help
                 if ImGui.Selectable(icon .. " " .. c.name, false) then
                     manualCategory = c.name
+                    manualCategoryIcon = nil
+                    showManualCatPicker = false
                 end
             end
             ImGui.EndCombo()
+        end
+
+        if isNewCategory and showManualCatPicker then
+            IconPicker.Draw(currentCatIcon, function(iconName)
+                manualCategoryIcon = iconName
+                showManualCatPicker = false
+                IconPicker.ClearSearch()
+            end, 200)
         end
 
         ImGui.Separator()
@@ -2229,7 +2298,9 @@ local function DrawManualModal()
             for _, c in ipairs(Logic.GetCategories()) do
                 if c.name == manualCategory then return end
             end
-            if manualCategory ~= "" then Logic.AddCategory(manualCategory, "Star") end
+            if manualCategory ~= "" then
+                Logic.AddCategory(manualCategory, manualCategoryIcon or DEFAULT_NEW_CATEGORY_ICON)
+            end
         end
         local function buildLoc()
             return Logic.CreateManualLocationData(manualX, manualY, manualZ, manualYaw, manualName, manualCategory)
