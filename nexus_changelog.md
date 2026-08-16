@@ -1,31 +1,31 @@
 # Simple Location Manager — Nexus Changelogs
 
 ### [Unreleased - v1.7.0]
-- New: An import button on the Locations tab, next to "Add current location" - importing no longer means a trip to Settings. It opens the same window.
-- New: Pick an icon for a category as you create it. Type a new category name in the Edit or Manual Coordinates window and the symbol beside the box becomes a button; click it and choose. Categories you already have keep the icon set in the Category Manager.
-- Fix: Importing locations that use a category you do not have now creates that category, whatever the string was made by. The category name was applied to the locations but never appeared in your Custom Categories list, and it was then dropped again if you re-exported those locations.
+- New: An import button on the Locations tab, so importing no longer means a trip to Settings.
+- New: Pick an icon for a category as you create it - type a new name in the Edit or Manual Coordinates window and click the symbol beside the box. Existing categories keep the icon set in the Category Manager.
+- New: Export Selected - a button in Settings opens a tick-box list of every location. Pick any set, filter to narrow it down, and copy one export string for the lot. Paste it into a .txt to share as a preset.
+- New: A "Console Logging" setting. SLM wrote a console line per location loaded - dozens on every load with presets installed. It is now quiet by default and speaks up only about problems. Info shows what it is doing, Debug restores every line. Dumps and export confirmations always print.
+- New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when replaced or cleared.
+- New: Setting a map pin over an existing waypoint now says so. An SLM pin takes over the tracked waypoint, so the minimap route follows the pin.
+- Fix: Importing locations that use a category you do not have now creates it. The name reached the locations but never your Custom Categories list, and was lost again on re-export.
+- Fix: Clearing an SLM map pin could clear your own waypoint too. It now only releases the tracked waypoint when that waypoint is SLM's.
+- Fix: Map pins are cleared when the mod shuts down or CET reloads. One left behind that way could not be removed for the rest of the session.
+- Fix: Deleting a location could collapse its group when the default group state is Collapsed. Groups now stay as you left them.
 - Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
-- New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when it is replaced or cleared.
-- Fix: Clearing an SLM map pin could clear your own waypoint along with it. It now only lets go of the tracked waypoint when the waypoint being tracked is the one SLM set.
-- Fix: Map pins are cleaned up when the mod shuts down or CET is reloaded. A pin left behind that way could not be removed for the rest of the session, by SLM or by anything else.
-- New: Export Selected - a new button in Settings opens a list of every location with a tick box beside it. Pick the ones you want, filter to narrow the list down, and copy one export string covering the lot. Paste that into a .txt file and you have a preset to share.
-- New: A "Console Logging" setting, in Settings. SLM used to write a line to the CET console for every location it loaded, which with a few presets installed meant dozens of lines every time you loaded a game. It is now quiet by default and only speaks up about problems. Turn it up to Info to see what it is doing, or Debug to get every line back. Coordinate dumps and export confirmations always print, whatever the setting.
-- Fix: Deleting a location could collapse the group it was in, if your default group state is set to Collapsed. Groups now stay exactly as you left them.
-- New: Setting a map pin over a waypoint you already had now tells you it replaced it. An SLM map pin takes over the tracked waypoint, so the route on your minimap follows the pin.
 
 ### [Unreleased - v1.6.0]
-- New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
-- New: Left-click a teleport button to teleport as always - and it releases any weather SLM was holding, so a plain teleport never leaves a previous location's sky behind. Right-click to teleport AND set that location's saved time and weather. Right click is the only gesture that touches either.
-- New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
-- New: Saving the time is now optional, the same way the weather already was. A location can set the weather and leave the time of day alone, or the other way round.
-- New: Teleporting to a location that has no weather set hands the sky back to the game's own cycle, so the last location's weather does not follow you around. Only SLM's own hold is released - if another weather mod set the weather, SLM leaves it alone.
-- New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
-- New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
+- New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies what the game is doing now.
+- New: Right-click a teleport button to teleport and apply that location's saved time and weather. Left-click teleports as always, and releases any weather SLM was holding.
+- New: Saving the time is optional, as the weather already was. A location can set one and leave the other alone.
+- New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
+- New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
+- New: A held weather state stays held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
+- New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to hand the weather back. Amber while held, red once something else has replaced it.
+- New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this hands it back.
 - New: A setting for how long the weather takes to change.
-- New: A held weather state stays held. The game knocks the weather off a forced state on its own - teleporting is enough to do it - so SLM now puts it back whenever that happens, with the overlay open or closed. If something keeps taking it, which means another weather mod is holding a locked state, SLM says so and lets go rather than fighting. Clear that mod's lock first.
-- New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
+- New: Optional Window Utils support. With it installed the SLM window snaps to the grid, animates, and appears in the Window Utils panel.
 - New: Codeware is now required. It is what makes setting the weather possible.
-- Fix: Exporting several locations that share a custom category repeated that category once per location in the export string.
+- Fix: Exporting several locations sharing a custom category repeated that category once per location in the string.
 - Minor code improvements
 
 ### 1.5.0
@@ -96,14 +96,16 @@ skipped straight from 1.5.0 to 1.7.0 never saw the 1.6.0 entries.
 
 The stickied-comment BBCode needs the same treatment - two version blocks in the newest post, not one.
 
-**The newest post has 21 characters spare.** 1.7.0 is 2361 characters of BBCode and 1.6.0 is 2561;
-with the header that is 4979 of the 5000 allowed, and the two have to share a post. **Editing any
-1.7.0 or 1.6.0 entry means regenerating and re-checking the count**, and a few added words will not
-fit. Two ways out if it comes to that: tighten the wording in those two sections, or let 1.6.0 move
-into the second post and accept that the newest post names only 1.7.0.
+**The newest post carries both, at 3824 of the 5000 allowed.** 1.7.0 is 1819 characters of BBCode and
+1.6.0 is 1947. Entries are written a line at a time and kept to a line: the first draft of these two
+sections came to 4980 together, which left twenty characters spare and no room to edit anything.
 
-Every older version is packed to stop at 4500 rather than 5000, so those posts have room to absorb
-an edit without a re-split. Only the newest is tight, and only because of what it has to carry.
+**Editing a 1.7.0 or 1.6.0 entry means regenerating the BBCode and re-checking the count.** If the
+newest post ever stops fitting, tighten the wording first; moving 1.6.0 into the second post is the
+fallback, and it costs a reader who skipped 1.5.0 to 1.7.0 the entries they never saw.
+
+Older versions pack to a 4500 ceiling rather than 5000, so those posts absorb an edit without
+forcing another re-split.
 
 ---
 ## Stickied Comment BBCode
@@ -116,36 +118,36 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
 
 [b][size=3]Version 1.7.0[/size][/b]
-[list][*]New: An import button on the Locations tab, next to "Add current location" - importing no longer means a trip to Settings. It opens the same window.
-[*]New: Pick an icon for a category as you create it. Type a new category name in the Edit or Manual Coordinates window and the symbol beside the box becomes a button; click it and choose. Categories you already have keep the icon set in the Category Manager.
-[*]Fix: Importing locations that use a category you do not have now creates that category, whatever the string was made by. The category name was applied to the locations but never appeared in your Custom Categories list, and it was then dropped again if you re-exported those locations.
+[list][*]New: An import button on the Locations tab, so importing no longer means a trip to Settings.
+[*]New: Pick an icon for a category as you create it - type a new name in the Edit or Manual Coordinates window and click the symbol beside the box. Existing categories keep the icon set in the Category Manager.
+[*]New: Export Selected - a button in Settings opens a tick-box list of every location. Pick any set, filter to narrow it down, and copy one export string for the lot. Paste it into a .txt to share as a preset.
+[*]New: A "Console Logging" setting. SLM wrote a console line per location loaded - dozens on every load with presets installed. It is now quiet by default and speaks up only about problems. Info shows what it is doing, Debug restores every line. Dumps and export confirmations always print.
+[*]New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when replaced or cleared.
+[*]New: Setting a map pin over an existing waypoint now says so. An SLM pin takes over the tracked waypoint, so the minimap route follows the pin.
+[*]Fix: Importing locations that use a category you do not have now creates it. The name reached the locations but never your Custom Categories list, and was lost again on re-export.
+[*]Fix: Clearing an SLM map pin could clear your own waypoint too. It now only releases the tracked waypoint when that waypoint is SLM's.
+[*]Fix: Map pins are cleared when the mod shuts down or CET reloads. One left behind that way could not be removed for the rest of the session.
+[*]Fix: Deleting a location could collapse its group when the default group state is Collapsed. Groups now stay as you left them.
 [*]Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
-[*]New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when it is replaced or cleared.
-[*]Fix: Clearing an SLM map pin could clear your own waypoint along with it. It now only lets go of the tracked waypoint when the waypoint being tracked is the one SLM set.
-[*]Fix: Map pins are cleaned up when the mod shuts down or CET is reloaded. A pin left behind that way could not be removed for the rest of the session, by SLM or by anything else.
-[*]New: Export Selected - a new button in Settings opens a list of every location with a tick box beside it. Pick the ones you want, filter to narrow the list down, and copy one export string covering the lot. Paste that into a .txt file and you have a preset to share.
-[*]New: A "Console Logging" setting, in Settings. SLM used to write a line to the CET console for every location it loaded, which with a few presets installed meant dozens of lines every time you loaded a game. It is now quiet by default and only speaks up about problems. Turn it up to Info to see what it is doing, or Debug to get every line back. Coordinate dumps and export confirmations always print, whatever the setting.
-[*]Fix: Deleting a location could collapse the group it was in, if your default group state is set to Collapsed. Groups now stay exactly as you left them.
-[*]New: Setting a map pin over a waypoint you already had now tells you it replaced it. An SLM map pin takes over the tracked waypoint, so the route on your minimap follows the pin.
 [/list]
 [b][size=3]Version 1.6.0[/size][/b]
-[spoiler][list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
-[*]New: Left-click a teleport button to teleport as always - and it releases any weather SLM was holding, so a plain teleport never leaves a previous location's sky behind. Right-click to teleport AND set that location's saved time and weather. Right click is the only gesture that touches either.
-[*]New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
-[*]New: Saving the time is now optional, the same way the weather already was. A location can set the weather and leave the time of day alone, or the other way round.
-[*]New: Teleporting to a location that has no weather set hands the sky back to the game's own cycle, so the last location's weather does not follow you around. Only SLM's own hold is released - if another weather mod set the weather, SLM leaves it alone.
-[*]New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
-[*]New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
+[spoiler][list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies what the game is doing now.
+[*]New: Right-click a teleport button to teleport and apply that location's saved time and weather. Left-click teleports as always, and releases any weather SLM was holding.
+[*]New: Saving the time is optional, as the weather already was. A location can set one and leave the other alone.
+[*]New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
+[*]New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
+[*]New: A held weather state stays held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
+[*]New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to hand the weather back. Amber while held, red once something else has replaced it.
+[*]New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this hands it back.
 [*]New: A setting for how long the weather takes to change.
-[*]New: A held weather state stays held. The game knocks the weather off a forced state on its own - teleporting is enough to do it - so SLM now puts it back whenever that happens, with the overlay open or closed. If something keeps taking it, which means another weather mod is holding a locked state, SLM says so and lets go rather than fighting. Clear that mod's lock first.
-[*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
+[*]New: Optional Window Utils support. With it installed the SLM window snaps to the grid, animates, and appears in the Window Utils panel.
 [*]New: Codeware is now required. It is what makes setting the weather possible.
-[*]Fix: Exporting several locations that share a custom category repeated that category once per location in the export string.
+[*]Fix: Exporting several locations sharing a custom category repeated that category once per location in the string.
 [*]Minor code improvements
 [/list][/spoiler]
 ```
 
-> Character count: 4980 / 5000
+> Character count: 3824 / 5000
 
 ### Comment 2 - older versions
 
