@@ -1,13 +1,23 @@
-"""Generate the stickied-comment BBCode for the Nexus page from nexus_changelog.md.
+"""Generate the two derived Nexus blocks from nexus_changelog.md.
+
+Both destinations take a format that cannot be eyeballed from the prose above them, which is
+why each gets a generated block rather than a hand-edit:
+
+  ## Release body            pasted into the GitHub Release. The v3 changelog endpoint splits
+                             the text on NEWLINES, one line to one bullet, so the entries are
+                             emitted unwrapped and without a leading "- ". Markdown does not
+                             survive: a dash renders inside the bullet.
+
+  ## Stickied Comment BBCode posted by hand as comments on the mod page.
 
 The Nexus comment box holds 5000 characters and the history no longer fits in one, so the
 output is split across numbered posts. Splitting by hand is what let a post cross the limit
 twice, unnoticed until Nexus rejected it, so the count is computed rather than estimated.
 
-    python scripts/build-stickied-bbcode.py
+    python scripts/build-nexus-blocks.py
 
-Reads and rewrites the "## Stickied Comment BBCode" section of nexus_changelog.md in place;
-everything above that section is left alone. Run it after ANY edit to a changelog entry.
+Reads and rewrites both sections of nexus_changelog.md in place; the prose above them is left
+alone. Run it after ANY edit to a changelog entry.
 
 Two rules are encoded here rather than left to whoever is editing:
 
@@ -36,9 +46,24 @@ KEEP_TOGETHER = 2
 
 HEADER = "[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]\n\n"
 CONT = "[i](Continued - older versions)[/i]\n\n"
-MARKER = "\n---\n## Stickied Comment BBCode"
+BODY_MARKER = "\n---\n## Release body"
+BBC_MARKER = "\n---\n## Stickied Comment BBCode"
 
 SKIP = {"1.0.0joker", "1.0.0kp", "1.0.0apartments"}
+
+# The file description field, capped by Nexus at 255 characters. The workflow truncates at a
+# word boundary and warns, so overrunning is quiet rather than loud.
+FILE_DESCRIPTION = (
+    "Requires Codeware and Map Waypoint Bug Fixes (new this release). Window Utils is optional. "
+    "Read the changelog and the stickied comment: this release carries both v1.7.0 and v1.6.0, "
+    "as v1.6.0 was never uploaded on its own."
+)
+DESCRIPTION_LIMIT = 255
+
+# How many of the newest versions go into the release body. 1.6.0 never went up alone, so it
+# ships with 1.7.0; the second one is labelled, since a heading would arrive as a bare bullet.
+BODY_VERSIONS = 2
+CARRIED_LABEL = "Also included, from v1.6.0, which was never released on its own:"
 
 
 def read_sections(body):
@@ -88,7 +113,34 @@ def main():
 
     comments = pack(blocks)
 
-    out = [MARKER + "\n"]
+    # ---- Release body ----------------------------------------------------------------
+    # One line per entry, unwrapped, no leading dash: the changelog endpoint splits on
+    # newlines and renders a dash inside the bullet.
+    body = [FILE_DESCRIPTION, "<!-- nexus-description-end -->"]
+    for i, (version, bullets) in enumerate(sections[:BODY_VERSIONS]):
+        if i > 0:
+            body.append(CARRIED_LABEL)
+        body.extend(bullets)
+    body_text = "\n".join(body) + "\n"
+
+    over = len(FILE_DESCRIPTION) - DESCRIPTION_LIMIT
+    print("file description: %d / %d %s"
+          % (len(FILE_DESCRIPTION), DESCRIPTION_LIMIT, "OK" if over <= 0 else "OVER by %d" % over))
+    print("release body: %d entries from %s"
+          % (len(body) - 2 - (BODY_VERSIONS - 1),
+             ", ".join(v for v, _ in sections[:BODY_VERSIONS])))
+    if over > 0:
+        raise SystemExit("file description is over %d characters; nothing written" % DESCRIPTION_LIMIT)
+
+    out = [BODY_MARKER + "\n"]
+    out.append(
+        "\nPaste this whole block into the GitHub Release body. Everything above the marker becomes"
+        " the Nexus **file description**; everything below is appended to the page **changelog**,"
+        " which splits on newlines - so the lines stay unwrapped and carry no `- ` prefix.\n"
+    )
+    out.append("\n```\n%s```\n" % body_text)
+
+    out.append(BBC_MARKER + "\n")
     if len(comments) > 1:
         out.append(
             "\nThe history no longer fits one Nexus comment (5000 char limit), so it is %d posts. "
@@ -107,7 +159,7 @@ def main():
     if failed:
         raise SystemExit("a comment is over the %d character limit; nothing written" % LIMIT)
 
-    io.open(CHANGELOG, "w", encoding="utf-8", newline="").write(s.split(MARKER)[0] + "".join(out))
+    io.open(CHANGELOG, "w", encoding="utf-8", newline="").write(s.split(BODY_MARKER)[0] + "".join(out))
     print("versions included:", ", ".join(v for v, _ in sections))
     print("written:", os.path.normpath(CHANGELOG))
 

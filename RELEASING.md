@@ -78,16 +78,20 @@ at the zip root exactly as the game expects.
    neither the page version nor the page changelog. Page 26454 belongs to `slm` and page 26743 to
    `jnve`; a preset's `1.0.0kp`-style version is a file version and nothing more.
 
-5. **The stickied comment on the mod page is manual, and it is not the same text as the
-   changelog the workflow posts.** Regenerate it from `nexus_changelog.md`:
+5. **Both Nexus-bound blocks are generated, not hand-written.** Run this after **any** changelog
+   wording change, not only at release:
    ```pwsh
-   python scripts/build-stickied-bbcode.py
+   python scripts/build-nexus-blocks.py
    ```
-   It rewrites the `## Stickied Comment BBCode` section in place and **refuses to write if any
-   post would exceed the 5000-character limit**, which is what splitting by hand kept missing.
-   The history spans more than one comment: post the last one first and work back, so the
-   newest sits at the top of the thread. Run it after **any** changelog wording change, not
-   only at release.
+   It rewrites two sections of `nexus_changelog.md` in place, and refuses to write if either
+   overruns its limit:
+   - **`## Release body`** - paste it whole into the GitHub Release. The changelog endpoint
+     **splits on newlines**, one line to one bullet, so entries are emitted unwrapped and with
+     no `- ` prefix; a dash would render inside the bullet. It carries the newest two versions,
+     because 1.6.0 was never uploaded on its own.
+   - **`## Stickied Comment BBCode`** - posted by hand as comments on the mod page, split across
+     posts to stay under the 5000-character limit. Post the last one first and work back, so the
+     newest sits at the top of the thread.
 
 You can also run it manually from the **Actions** tab (workflow_dispatch) with `artifact` +
 `version` inputs (and an optional existing `tag` to attach the zip to).
