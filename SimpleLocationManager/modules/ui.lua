@@ -811,7 +811,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
                 ImGui.SetTooltip("Teleport instantly\nRight-click: teleport and set " ..
                     Env.Describe(loc.env))
             else
-                ImGui.SetTooltip("Teleport instantly")
+                ImGui.SetTooltip("Teleport instantly, releasing any held weather")
             end
         end
         ImGui.SameLine()

@@ -559,6 +559,11 @@ function Logic.TeleportTo(loc, applyEnv)
 
     if applyEnv then
         Logic.ApplyLocationEnv(loc)
+    else
+        -- A plain teleport is a request for this mod to stay out of the time and the
+        -- weather. Leaving an earlier hold in place would carry one location's sky to
+        -- every location reached without asking for it.
+        Logic.ReleaseWeatherHold()
     end
 end
 

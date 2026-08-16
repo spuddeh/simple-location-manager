@@ -2,7 +2,7 @@
 
 ### [Unreleased - v1.6.0]
 - New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
-- New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
+- New: Left-click a teleport button to teleport as always - and it releases any weather SLM was holding, so a plain teleport never leaves a previous location's sky behind. Right-click to teleport AND set that location's saved time and weather. Right click is the only gesture that touches either.
 - New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 - New: Saving the time is now optional, the same way the weather already was. A location can set the weather and leave the time of day alone, or the other way round.
 - New: Teleporting to a location that has no weather set hands the sky back to the game's own cycle, so the last location's weather does not follow you around. Only SLM's own hold is released - if another weather mod set the weather, SLM leaves it alone.
@@ -95,7 +95,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 
 [b][size=3]Version 1.6.0[/size][/b]
 [list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
-[*]New: Left-click a teleport button to teleport as always. Right-click it to teleport AND set that location's saved time and weather, so you choose per teleport.
+[*]New: Left-click a teleport button to teleport as always - and it releases any weather SLM was holding, so a plain teleport never leaves a previous location's sky behind. Right-click to teleport AND set that location's saved time and weather. Right click is the only gesture that touches either.
 [*]New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 [*]New: Saving the time is now optional, the same way the weather already was. A location can set the weather and leave the time of day alone, or the other way round.
 [*]New: Teleporting to a location that has no weather set hands the sky back to the game's own cycle, so the last location's weather does not follow you around. Only SLM's own hold is released - if another weather mod set the weather, SLM leaves it alone.
@@ -128,7 +128,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 4578 / 5000
+> Character count: 4713 / 5000
 
 ### Comment 2 - older versions
 
