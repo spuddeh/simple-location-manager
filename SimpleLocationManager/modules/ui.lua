@@ -228,8 +228,8 @@ local function OpenExport(title, dataStr)
     Utils.Notify("Copied to clipboard: " .. title)
 
     -- Verbose Console Log
-    print(Utils.ConsolePrefix .. " " .. title)
-    print(Utils.ConsolePrefix .. " Export string copied to clipboard.")
+    Utils.Print(title)
+    Utils.Print("Export string copied to clipboard.")
 end
 
 local importOpenCount = 0
@@ -1695,6 +1695,40 @@ local function DrawSettingsTab()
         ImGui.SetTooltip("Default state for location groups (Expanded or Collapsed).\nRight-click to reset.")
     end
 
+    -- Console Logging
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.Text("Console Logging")
+    ImGui.PopTextWrapPos()
+
+    ImGui.SetNextItemWidth(-1)
+    local currentLogLevel = Logic.settings.logLevel or Utils.DEFAULT_LOG_LEVEL
+    if ImGui.BeginCombo("##LogLevel", currentLogLevel) then
+        for _, level in ipairs(Utils.LOG_LEVELS) do
+            if ImGui.Selectable(level, currentLogLevel == level) then
+                Logic.settings.logLevel = level
+                Utils.SetLogLevel(level)
+                Logic.Save()
+            end
+        end
+        ImGui.EndCombo()
+    end
+    if ImGui.IsItemClicked(1) then
+        Logic.settings.logLevel = Utils.DEFAULT_LOG_LEVEL
+        Utils.SetLogLevel(Utils.DEFAULT_LOG_LEVEL)
+        Logic.Save()
+        Utils.Notify("Reset 'Console Logging'")
+    end
+    if ImGui.IsItemHovered() then
+        ImGui.SetTooltip(
+            "How much this mod writes to the CET console and its log file.\n\n" ..
+            "Off - nothing\n" ..
+            "Error - only failures, such as a save that did not write\n" ..
+            "Warn - failures plus problems worth knowing about (default)\n" ..
+            "Info - what the mod is doing, one line per action\n" ..
+            "Debug - everything, including one line per imported location\n\n" ..
+            "Dumps and export confirmations always print.\nRight-click to reset.")
+    end
+
     ImGui.NextColumn()
 
     -- Col 2: Lazy Mode
@@ -1864,7 +1898,7 @@ local function DrawSettingsTab()
     -- Col 2: Debugging
     if ImGui.Button(IconGlyphs.Console .. " Dump Coordinates") then
         local info = Utils.GetDebugInfoString()
-        print(Utils.ConsolePrefix .. " Coordinates\n" .. info)
+        Utils.Print("Coordinates\n" .. info)
         lastDebugInfo = info
         ImGui.SetClipboardText(info)
         Utils.Notify("Coordinates copied to clipboard.")

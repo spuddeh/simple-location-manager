@@ -612,7 +612,7 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
         if catCount > 0 then
             local msg = "[INFO] Added " .. catCount .. " new custom categories."
             table.insert(report.logs, msg)
-            print(Utils.ConsolePrefix .. " " .. msg)
+            Utils.Info(msg)
         end
     end
 
@@ -621,7 +621,7 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
         if not loc.pos or not loc.name then
             local msg = "[SKIP] Invalid Data: Missing pos or name."
             table.insert(report.logs, msg)
-            print(Utils.ConsolePrefix .. " " .. msg) -- Verbose Console
+            Utils.Warn(msg)
             report.skipped = report.skipped + 1
         else
             -- Default "Misc" or None to "Imported"
@@ -637,7 +637,7 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
                     msg = msg .. " - matches \"" .. (existingLoc.name or "Unnamed") .. "\""
                 end
                 table.insert(report.logs, msg)
-                print(Utils.ConsolePrefix .. " " .. msg) -- Verbose Console
+                Utils.Debug(msg)
                 report.skipped = report.skipped + 1
             else
                 -- Import (Pass true for preserveId to allow updates)
@@ -646,7 +646,7 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
                 local districtStr = (loc.district or "Unknown") .. " \\ " .. (loc.subDistrict or "Unknown")
                 local msg = "[OK] Imported: " .. districtStr .. " \\ " .. loc.name
                 table.insert(report.logs, msg)
-                print(Utils.ConsolePrefix .. " " .. msg) -- Verbose Console
+                Utils.Debug(msg)
                 report.imported = report.imported + 1
             end
         end
@@ -657,15 +657,14 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
     if sweptCount > 0 then
         local msg = "[INFO] Created " .. sweptCount .. " categories named by the imported locations."
         table.insert(report.logs, msg)
-        print(Utils.ConsolePrefix .. " " .. msg)
+        Utils.Info(msg)
     end
 
     if report.imported > 0 then
         Logic.Save()
     end
 
-    print(Utils.ConsolePrefix ..
-        " Import Processed: " ..
+    Utils.Info("Import Processed: " ..
         report.imported .. " imported, " .. report.skipped .. " skipped.")
 
     return report
@@ -678,7 +677,7 @@ function Impex.LoadPresets()
     if not files then return end
 
     local count = 0
-    print(Utils.ConsolePrefix .. " Scanning presets...")
+    Utils.Debug("Scanning presets...")
 
     for _, fileInfo in ipairs(files) do
         if string.find(fileInfo.name, "%.txt$") then
@@ -740,8 +739,8 @@ function Impex.LoadPresets()
                                     -- UPDATE
                                     -- Check Protection
                                     if existing.sourceType and string.find(existing.sourceType, "%(Edited%)") then
-                                        print(Utils.ConsolePrefix ..
-                                            " [SKIP] Protected User-Edited Location: " .. existing.name)
+                                        Utils.Info("[SKIP] Protected User-Edited Location: " ..
+                                            existing.name)
                                     else
                                         Logic.ImportLocation(pLoc, true, "SLM Preset", fileInfo.name)
                                         count = count + 1
@@ -760,19 +759,17 @@ function Impex.LoadPresets()
                                     string.find(conflictLoc.sourceType, "Preset")
 
                                     if isEdited then
-                                        print(Utils.ConsolePrefix ..
-                                            " [SKIP] Protected User-Edited Location (Conflict): " .. conflictLoc.name)
+                                        Utils.Info("[SKIP] Protected User-Edited Location (Conflict): " ..
+                                            conflictLoc.name)
                                     elseif not isSimpatia then
                                         -- It's a Manual Input or AMM Import at the same spot. Do not overwrite.
-                                        print(Utils.ConsolePrefix ..
-                                            " [SKIP] Conflict: Position match with " ..
+                                        Utils.Info("[SKIP] Conflict: Position match with " ..
                                             (conflictLoc.sourceType or "Unknown") .. " location: " .. conflictLoc.name)
                                     else
                                         -- ** SELF HEALING **
                                         -- IDs differ, position matches, and the user has not edited it.
                                         -- The existing ID is restored to the Preset ID, then updated.
-                                        print(Utils.ConsolePrefix ..
-                                            " [FIX] Resyncing ID for location: " .. conflictLoc.name)
+                                        Utils.Info("[FIX] Resyncing ID for location: " .. conflictLoc.name)
 
                                         conflictLoc.id = pLoc.id                                      -- Restore Link
                                         Logic.ImportLocation(pLoc, true, "SLM Preset", fileInfo.name) -- Now performs valid update
@@ -792,7 +789,7 @@ function Impex.LoadPresets()
     end
 
     if count > 0 then
-        print(Utils.ConsolePrefix .. " Loaded " .. count .. " preset locations.")
+        Utils.Info("Loaded " .. count .. " preset locations.")
     end
 end
 

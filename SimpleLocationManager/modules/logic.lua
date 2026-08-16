@@ -43,6 +43,7 @@ Logic.defaultSettings = {
     groupBy = "District",           -- "District" or "Category"
     showSourceInfo = true,          -- Show source/conflict info
     envBlendTime = 5.0,             -- Weather transition length in seconds
+    logLevel = Utils.DEFAULT_LOG_LEVEL, -- Off / Error / Warn / Info / Debug
     customCategories = {}           -- List of {name="X", icon="Y"}
 }
 
@@ -91,6 +92,10 @@ function Logic.Init()
     end
 
     Logic.Load()
+
+    -- Utils owns the level and cannot read it back from here: logic requires utils, so the
+    -- reverse would be a cycle. The setting is pushed instead, here and wherever it changes.
+    Utils.SetLogLevel(Logic.settings.logLevel)
 end
 
 --- Load data from JSON
@@ -131,7 +136,7 @@ function Logic.Load()
 
                 -- MIGRATION: Check for legacy settings in locations.json
                 if data.settings then
-                    print(Utils.ConsolePrefix .. " Migrating settings from locations.json to settings.json...")
+                    Utils.Info("Migrating settings from locations.json to settings.json...")
                     local savedSettings = data.settings
                     for k, v in pairs(Logic.defaultSettings) do
                         if savedSettings[k] ~= nil then
@@ -159,7 +164,7 @@ function Logic.Save()
         sFile:write(json.encode(settingsToSave))
         sFile:close()
     else
-        print(Utils.ConsolePrefix .. " Failed to save settings.")
+        Utils.Error("Failed to save settings.")
     end
 
     -- 2. Save Locations (Clean, no settings)
@@ -172,7 +177,7 @@ function Logic.Save()
         lFile:write(json.encode(lData))
         lFile:close()
     else
-        print(Utils.ConsolePrefix .. " Failed to save locations.")
+        Utils.Error("Failed to save locations.")
     end
 end
 
@@ -370,7 +375,7 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
         if existing then
             -- 1b. User Edit Protection
             if existing.sourceType and string.find(existing.sourceType, "%(Edited%)") then
-                print(Utils.ConsolePrefix .. " [SKIP] Protected User-Edited Location: " .. existing.name)
+                Utils.Info("[SKIP] Protected User-Edited Location: " .. existing.name)
                 return existing
             end
 
@@ -389,7 +394,7 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
             existing.sourceDetail = sourceDetail
 
             Logic.Save()
-            print(Utils.ConsolePrefix .. " Synced Preset Location: " .. existing.name)
+            Utils.Debug("Synced Preset Location: " .. existing.name)
             return existing
         end
     end
@@ -416,7 +421,7 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
     }
     table.insert(Logic.locations, loc)
     Logic.Save()
-    print(Utils.ConsolePrefix .. " Imported Location: " .. loc.name)
+    Utils.Debug("Imported Location: " .. loc.name)
     return loc
 end
 
@@ -442,7 +447,7 @@ function Logic.QuickSaveLocation()
     if result then
         Utils.Notify("Quick Saved Current Location")
         Utils.PlaySound("ui_hacking_access_granted")
-        print(Utils.ConsolePrefix .. " Quick Saved current location.")
+        Utils.Info("Quick Saved current location.")
     end
 end
 
@@ -515,8 +520,9 @@ function Logic.ResetSettings()
         Logic.settings[k] = v
     end
 
+    Utils.SetLogLevel(Logic.settings.logLevel)
     Logic.Save()
-    print(Utils.ConsolePrefix .. " Settings reset to defaults.")
+    Utils.Info("Settings reset to defaults.")
 end
 
 --- Update only the position/district data of a location (Refresh)
@@ -534,7 +540,7 @@ function Logic.UpdateLocationPosition(id)
             Logic.MarkPresetEdited(loc)
 
             Logic.Save()
-            print(Utils.ConsolePrefix .. " Updated position for location: " .. loc.name)
+            Utils.Info("Updated position for location: " .. loc.name)
             break
         end
     end
@@ -559,7 +565,7 @@ function Logic.TeleportTo(loc, applyEnv)
     local rot = EulerAngles.new(loc.rot.roll, loc.rot.pitch, loc.rot.yaw)
 
     Game.GetTeleportationFacility():Teleport(player, pos, rot)
-    print(Utils.ConsolePrefix .. " Teleported to " .. loc.name)
+    Utils.Debug("Teleported to " .. loc.name)
 
     if applyEnv then
         Logic.ApplyLocationEnv(loc)
@@ -603,7 +609,7 @@ function Logic.ReleaseWeatherHold()
     if not Env.GetForcedState() then return end
 
     if Env.ResetWeather(Logic.settings.envBlendTime) then
-        print(Utils.ConsolePrefix .. " Weather returned to the game's cycle.")
+        Utils.Info("Weather returned to the game's cycle.")
     end
     weatherCorrections = 0
 end
@@ -645,7 +651,7 @@ function Logic.Tick()
     local actual = Env.GetCurrentWeather()
     Utils.NotifyWarning("Weather was overridden by another mod (now " ..
         Env.GetWeatherLabel(actual) .. ")")
-    print(Utils.ConsolePrefix .. " Gave up holding " .. forced ..
+    Utils.Warn("Gave up holding " .. forced ..
         ", game is in " .. tostring(actual) ..
         ". Another mod is re-forcing the weather every frame - clear its lock first.")
 
@@ -721,7 +727,7 @@ function Logic.SetMappin(loc)
     local pos = Vector4.new(loc.pos.x, loc.pos.y, loc.pos.z, loc.pos.w)
 
     Logic.currentMappinID = Game.GetMappinSystem():RegisterMappin(mappinData, pos)
-    print(Utils.ConsolePrefix .. " Mappin set for " .. loc.name)
+    Utils.Debug("Mappin set for " .. loc.name)
 
     if replacedTracked then
         Utils.Notify("Waypoint replaced by " .. loc.name)
@@ -747,7 +753,7 @@ function Logic.ClearMappin()
 
     sys:UnregisterMappin(Logic.currentMappinID)
     Logic.currentMappinID = nil
-    print(Utils.ConsolePrefix .. " Mappin cleared.")
+    Utils.Debug("Mappin cleared.")
 end
 
 --- Drops the handle to a pin that no longer exists.
@@ -829,7 +835,7 @@ function Logic.MergeCustomCategories(importCats)
 
     if changed then
         Logic.Save()
-        print(Utils.ConsolePrefix .. " Merged " .. count .. " new custom categories.")
+        Utils.Info("Merged " .. count .. " new custom categories.")
     end
 
     return count

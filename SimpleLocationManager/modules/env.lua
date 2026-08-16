@@ -325,7 +325,7 @@ function Env.Apply(env, blendTime)
             -- The state was saved by a playthrough that had a weather mod this one
             -- does not. Skipping it leaves the rest of the teleport intact.
             report.missingWeather = env.weather
-            print(Utils.ConsolePrefix .. " Weather state not present in this game: " .. env.weather)
+            Utils.Warn("Weather state not present in this game: " .. env.weather)
         else
             report.weatherApplied = Env.SetWeather(env.weather, blendTime)
             if not report.weatherApplied then

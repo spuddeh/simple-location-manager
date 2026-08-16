@@ -178,17 +178,71 @@ function Utils.GetLocationData(currPos)
     return data
 end
 
---- Log to both Console and File (spdlog) through Utils
+-- Log levels, quietest first. A message is emitted when its own level is at or below the
+-- setting, so "Warn" shows errors and warnings and nothing else.
+Utils.LOG_LEVELS = { "Off", "Error", "Warn", "Info", "Debug" }
+
+local LEVEL_VALUE = { Off = 0, Error = 1, Warn = 2, Info = 3, Debug = 4 }
+
+-- What a fresh install gets. A normal load is silent at this level.
+Utils.DEFAULT_LOG_LEVEL = "Warn"
+
+local currentLevel = LEVEL_VALUE[Utils.DEFAULT_LOG_LEVEL]
+
+--- Set the level by name. An unknown name falls back to the default rather than silencing
+--- the mod, because a typo in a config file must not be the thing that hides an error.
+---@param name string
+function Utils.SetLogLevel(name)
+    currentLevel = LEVEL_VALUE[name] or LEVEL_VALUE[Utils.DEFAULT_LOG_LEVEL]
+end
+
+--- The level currently in force, by name.
+---@return string
+function Utils.GetLogLevel()
+    for name, value in pairs(LEVEL_VALUE) do
+        if value == currentLevel then return name end
+    end
+    return Utils.DEFAULT_LOG_LEVEL
+end
+
+-- print() reaches the CET console and the CET log; spdlog reaches the mod's own log. Both
+-- follow the level, so one setting governs everything this mod writes.
+local function Emit(tag, msg)
+    local line = Utils.ConsolePrefix .. " " .. tag .. tostring(msg)
+    print(line)
+    spdlog.info(line)
+end
+
 ---@param msg string
-function Utils.Log(msg)
-    -- Normalize message
-    local str = tostring(msg)
+function Utils.Error(msg)
+    if currentLevel >= LEVEL_VALUE.Error then Emit("[ERROR] ", msg) end
+end
 
-    -- print() goes to the CET console and the CET log; spdlog goes to the mod-specific log.
-    print(str)
+---@param msg string
+function Utils.Warn(msg)
+    if currentLevel >= LEVEL_VALUE.Warn then Emit("[WARN] ", msg) end
+end
 
-    -- Log to spdlog (mod log)
-    spdlog.info(str)
+---@param msg string
+function Utils.Info(msg)
+    if currentLevel >= LEVEL_VALUE.Info then Emit("", msg) end
+end
+
+---@param msg string
+function Utils.Debug(msg)
+    if currentLevel >= LEVEL_VALUE.Debug then Emit("[DEBUG] ", msg) end
+end
+
+--- Output the user asked for by pressing a button - a coordinate dump, a district dump, the
+--- confirmation that an export reached the clipboard.
+---
+--- **Never gated by the level.** A dump that prints nothing reads as a broken button, not as a
+--- quiet one, and the person who pressed it is already looking at the console.
+---@param msg string
+function Utils.Print(msg)
+    local line = Utils.ConsolePrefix .. " " .. tostring(msg)
+    print(line)
+    spdlog.info(line)
 end
 
 --- Builds district info body (without markers) for both logging and preview display
@@ -252,9 +306,9 @@ end
 
 --- Dumps full district info to the log for debugging
 function Utils.DumpDistrictInfo()
-    Utils.Log(" ====== District Debug Dump ======")
-    Utils.Log(_buildDistrictBody())
-    Utils.Log(" ====== End Dump ======")
+    Utils.Print(" ====== District Debug Dump ======")
+    Utils.Print(_buildDistrictBody())
+    Utils.Print(" ====== End Dump ======")
 end
 
 --- Returns formatted district info string for preview display

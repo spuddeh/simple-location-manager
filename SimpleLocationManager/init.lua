@@ -13,16 +13,15 @@ local Env = require("modules/env")
 
 -- Load the saved locations and settings
 registerForEvent("onInit", function()
-    print(Utils.ConsolePrefix .. " Initializing...")
+    Utils.Info("Initializing...")
 
     -- Codeware is required: weather has no vanilla scripted setter. Everything else
     -- keeps working without it, so this reports rather than stops.
     local codewareVersion = Env.GetCodewareVersion()
     if codewareVersion then
-        print(Utils.ConsolePrefix .. " Codeware " .. codewareVersion .. " found.")
+        Utils.Info("Codeware " .. codewareVersion .. " found.")
     else
-        print(Utils.ConsolePrefix ..
-            " Codeware not found. Saved weather will be skipped; time of day still applies.")
+        Utils.Warn("Codeware not found. Saved weather will be skipped; time of day still applies.")
     end
 
     -- Initialize Logic (Load Data)
@@ -41,7 +40,7 @@ registerForEvent("onInit", function()
         Logic.InvalidateMappin()
     end)
 
-    print(Utils.ConsolePrefix .. " Ready.")
+    Utils.Info("Ready.")
 end)
 
 -- A map pin outlives this mod's Lua state. Reloading CET rebuilds the state with no handle
