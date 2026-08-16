@@ -21,9 +21,9 @@ alone. Run it after ANY edit to a changelog entry.
 
 Two rules are encoded here rather than left to whoever is editing:
 
-  KEEP_TOGETHER  1.6.0 was never uploaded, so it ships with 1.7.0 and both belong in the
-                 newest post. Without this the packer would put 1.6.0 in the second post and
-                 a reader who went 1.5.0 -> 1.7.0 would never see it.
+  KEEP_TOGETHER  how many of the newest versions must share the first post, whatever the
+                 packer would otherwise decide. Raise it when a release carries a version that
+                 was never uploaded on its own.
 
   PACK           Packing stops at 4500, not 5000. A post that fits exactly today is one
                  wording tweak away from not fitting, and the limit is only discovered at
@@ -42,7 +42,7 @@ CHANGELOG = os.path.join(HERE, os.pardir, "nexus_changelog.md")
 
 LIMIT = 5000
 PACK = 4500
-KEEP_TOGETHER = 2
+KEEP_TOGETHER = 1
 
 HEADER = "[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]\n\n"
 CONT = "[i](Continued - older versions)[/i]\n\n"
@@ -55,15 +55,15 @@ SKIP = {"1.0.0joker", "1.0.0kp", "1.0.0apartments"}
 # word boundary and warns, so overrunning is quiet rather than loud.
 FILE_DESCRIPTION = (
     "Requires Codeware and Map Waypoint Bug Fixes (new this release). Window Utils is optional. "
-    "Read the changelog and the stickied comment: this release carries both v1.7.0 and v1.6.0, "
-    "as v1.6.0 was never uploaded on its own."
+    "Read the changelog and the stickied comment for everything that is new."
 )
 DESCRIPTION_LIMIT = 255
 
-# How many of the newest versions go into the release body. 1.6.0 never went up alone, so it
-# ships with 1.7.0; the second one is labelled, since a heading would arrive as a bare bullet.
-BODY_VERSIONS = 2
-CARRIED_LABEL = "Also included, from v1.6.0, which was never released on its own:"
+# How many of the newest versions go into the release body. Nexus groups by the version field
+# it is posted under, so one is the norm; raise it only if a version ships that never went up
+# on its own, and label the extras - a heading arrives as a bare bullet.
+BODY_VERSIONS = 1
+CARRIED_LABEL = None
 
 
 def read_sections(body):
@@ -118,7 +118,7 @@ def main():
     # newlines and renders a dash inside the bullet.
     body = [FILE_DESCRIPTION, "<!-- nexus-description-end -->"]
     for i, (version, bullets) in enumerate(sections[:BODY_VERSIONS]):
-        if i > 0:
+        if i > 0 and CARRIED_LABEL:
             body.append(CARRIED_LABEL)
         body.extend(bullets)
     body_text = "\n".join(body) + "\n"
