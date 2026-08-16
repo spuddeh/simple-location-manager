@@ -96,22 +96,40 @@ skipped straight from 1.5.0 to 1.7.0 never saw the 1.6.0 entries.
 
 The stickied-comment BBCode needs the same treatment - two version blocks in the newest post, not one.
 
-**Comment 1 cannot hold both.** It stands at 4713 of 5000 characters carrying 1.6.0 alone, and the
-1.7.0 entries written so far add 831. A re-split is required before 1.7.0 is posted, and the BBCode
-below is regenerated once 1.7.0's entries are final rather than after each one.
+**The newest post has 21 characters spare.** 1.7.0 is 2361 characters of BBCode and 1.6.0 is 2561;
+with the header that is 4979 of the 5000 allowed, and the two have to share a post. **Editing any
+1.7.0 or 1.6.0 entry means regenerating and re-checking the count**, and a few added words will not
+fit. Two ways out if it comes to that: tighten the wording in those two sections, or let 1.6.0 move
+into the second post and accept that the newest post names only 1.7.0.
+
+Every older version is packed to stop at 4500 rather than 5000, so those posts have room to absorb
+an edit without a re-split. Only the newest is tight, and only because of what it has to carry.
 
 ---
 ## Stickied Comment BBCode
 
-The history no longer fits one Nexus comment (5000 char limit), so it is two posts. Post the second one first, then the first, so the newest sits at the top of the thread.
+The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts. Post the last one first and work back, so the newest sits at the top of the thread.
 
 ### Comment 1 - current
 
 ```
 [color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
 
+[b][size=3]Version 1.7.0[/size][/b]
+[list][*]New: An import button on the Locations tab, next to "Add current location" - importing no longer means a trip to Settings. It opens the same window.
+[*]New: Pick an icon for a category as you create it. Type a new category name in the Edit or Manual Coordinates window and the symbol beside the box becomes a button; click it and choose. Categories you already have keep the icon set in the Category Manager.
+[*]Fix: Importing locations that use a category you do not have now creates that category, whatever the string was made by. The category name was applied to the locations but never appeared in your Custom Categories list, and it was then dropped again if you re-exported those locations.
+[*]Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
+[*]New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when it is replaced or cleared.
+[*]Fix: Clearing an SLM map pin could clear your own waypoint along with it. It now only lets go of the tracked waypoint when the waypoint being tracked is the one SLM set.
+[*]Fix: Map pins are cleaned up when the mod shuts down or CET is reloaded. A pin left behind that way could not be removed for the rest of the session, by SLM or by anything else.
+[*]New: Export Selected - a new button in Settings opens a list of every location with a tick box beside it. Pick the ones you want, filter to narrow the list down, and copy one export string covering the lot. Paste that into a .txt file and you have a preset to share.
+[*]New: A "Console Logging" setting, in Settings. SLM used to write a line to the CET console for every location it loaded, which with a few presets installed meant dozens of lines every time you loaded a game. It is now quiet by default and only speaks up about problems. Turn it up to Info to see what it is doing, or Debug to get every line back. Coordinate dumps and export confirmations always print, whatever the setting.
+[*]Fix: Deleting a location could collapse the group it was in, if your default group state is set to Collapsed. Groups now stay exactly as you left them.
+[*]New: Setting a map pin over a waypoint you already had now tells you it replaced it. An SLM map pin takes over the tracked waypoint, so the route on your minimap follows the pin.
+[/list]
 [b][size=3]Version 1.6.0[/size][/b]
-[list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
+[spoiler][list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
 [*]New: Left-click a teleport button to teleport as always - and it releases any weather SLM was holding, so a plain teleport never leaves a previous location's sky behind. Right-click to teleport AND set that location's saved time and weather. Right click is the only gesture that touches either.
 [*]New: Custom weather states are supported. Anything a weather mod adds shows up in the picker automatically. If you save a location using a modded weather and later remove that mod, the location still works - the time is applied and the weather is skipped, and it comes back if you reinstall the mod.
 [*]New: Saving the time is now optional, the same way the weather already was. A location can set the weather and leave the time of day alone, or the other way round.
@@ -124,12 +142,23 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]New: Codeware is now required. It is what makes setting the weather possible.
 [*]Fix: Exporting several locations that share a custom category repeated that category once per location in the export string.
 [*]Minor code improvements
-[/list]
+[/list][/spoiler]
+```
+
+> Character count: 4980 / 5000
+
+### Comment 2 - older versions
+
+```
+[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
+
+[i](Continued - older versions)[/i]
+
 [b][size=3]Version 1.5.0[/size][/b]
 [spoiler][list][*]Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
-[*]Feature: SmartPaste™ - the Manual Coordinates box understands labelled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. Always double-check the auto-filled values before saving or teleporting.
+[*]Feature: SmartPaste™ - the Manual Coordinates box understands labeled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. It drives the fields and has a clear button. Always double-check the auto-filled values before saving or teleporting.
 [*]Feature: A-Z View - a third sort mode that lists every location in one flat alphabetical list, with no district or category grouping.
-[*]Fix: Renamed the mod's window titles to the "SLM - " prefix to prevent a conflict with other CET mods.
+[*]Fix: Renamed the mod's window titles from "[SLM]" to "SLM - " to prevent a conflict with other CET mods.
 [/list][/spoiler]
 [b][size=3]Version 1.4.0[/size][/b]
 [spoiler][list][*]QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
@@ -143,17 +172,6 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]Feature: User Edit Protection - Manual edits to Preset locations now prevent future preset updates from overwriting your changes.
 [*]Feature: Smart Conflict Resolution - "Conflict" skips now respect Manual Input locations, preventing accidental overwrites by the Self-Healing logic.
 [/list][/spoiler]
-```
-
-> Character count: 4713 / 5000
-
-### Comment 2 - older versions
-
-```
-[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
-
-[i](Continued - older versions)[/i]
-
 [b][size=3]Version 1.3.0[/size][/b]
 [spoiler][list][*]QOL: Export Filtered - Added a copy button next to the search bar to export only the locations matching your current search.
 [*]QOL: Improved Footer - Now displays filtered counts when searching (e.g., "Locations: 5 / 20").
@@ -181,15 +199,6 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [b][size=3]Version 1.0.0[/size][/b]
 [spoiler][list][*]Initial Upload
 [/list][/spoiler]
-[b][size=3]Version 1.0.0apartments[/size][/b]
-[spoiler][list][*]Initial upload of the Vanilla/DLC apartments preset
-[/list][/spoiler]
-[b][size=3]Version 1.0.0kp[/size][/b]
-[spoiler][list][*]Initial upload of the Konpeki Plaza SLM preset
-[/list][/spoiler]
-[b][size=3]Version 1.0.0joker[/size][/b]
-[spoiler][list][*]Initial upload of the Balatro / Jim B Joker SLM preset
-[/list][/spoiler]
 ```
 
-> Character count: 2652 / 5000
+> Character count: 4426 / 5000
