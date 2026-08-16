@@ -78,6 +78,17 @@ at the zip root exactly as the game expects.
    neither the page version nor the page changelog. Page 26454 belongs to `slm` and page 26743 to
    `jnve`; a preset's `1.0.0kp`-style version is a file version and nothing more.
 
+5. **The stickied comment on the mod page is manual, and it is not the same text as the
+   changelog the workflow posts.** Regenerate it from `nexus_changelog.md`:
+   ```pwsh
+   python scripts/build-stickied-bbcode.py
+   ```
+   It rewrites the `## Stickied Comment BBCode` section in place and **refuses to write if any
+   post would exceed the 5000-character limit**, which is what splitting by hand kept missing.
+   The history spans more than one comment: post the last one first and work back, so the
+   newest sits at the top of the thread. Run it after **any** changelog wording change, not
+   only at release.
+
 You can also run it manually from the **Actions** tab (workflow_dispatch) with `artifact` +
 `version` inputs (and an optional existing `tag` to attach the zip to).
 
