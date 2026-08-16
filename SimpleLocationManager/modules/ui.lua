@@ -64,8 +64,25 @@ local envReadout = nil
 local groupOpenState = {}           -- Last known open/closed state per group key
 local groupPresentLastFrame = {}    -- Set of group keys rendered in previous frame
 local groupPresentThisFrame = {}    -- Set of group keys rendered in current frame
+
 local forceExpand = false           -- Expand every group on the next frame, then clears
 local forceCollapse = false         -- Collapse every group on the next frame, then clears
+
+-- Group-state diagnostic. Armed for a few frames by an action under suspicion, it records the
+-- inputs each group's open/closed decision is made from and what the header returned. It reads
+-- the decision rather than taking part in it, so the behaviour under test is untouched.
+-- Declared below every value it reads, so those are upvalues rather than globals.
+local groupDebugFrames = 0
+local groupDebugLines = {}
+
+local function DebugGroupState(key, isOpen)
+    if groupDebugFrames <= 0 then return end
+    table.insert(groupDebugLines, string.format(
+        "  %-30s isOpen=%-5s saved=%-5s presentLast=%-5s fExp=%-5s fCol=%-5s q='%s' lastQ='%s'",
+        key, tostring(isOpen), tostring(groupOpenState[key]),
+        tostring(groupPresentLastFrame[key] or false),
+        tostring(forceExpand), tostring(forceCollapse), tostring(searchQuery), tostring(lastSearchQuery)))
+end
 
 -- Modal Flags & State
 local editingId = nil            -- ID of the location currently being edited (Edit Modal)
@@ -649,6 +666,11 @@ local function DrawDeleteConfirmModal()
         ImGui.Spacing()
 
         if ImGui.Button(IconGlyphs.Delete .. " Yes, Delete") then
+            -- Arm the group-state diagnostic across the frames either side of the delete.
+            groupDebugFrames = 4
+            groupDebugLines = {}
+            print(Utils.ConsolePrefix .. " [GROUPDBG] === delete confirmed ===")
+
             Logic.DeleteLocation(confirmDeleteId)
             confirmDeleteId = nil
             ImGui.CloseCurrentPopup()
@@ -1118,6 +1140,7 @@ local function DrawLocationsTab()
 
         local favOpen = ImGui.CollapsingHeader(IconGlyphs.Star .. " Favorites (" .. #filteredFavorites .. ")##fav", headerFlags)
         if searchQuery == "" then groupOpenState["fav"] = favOpen end
+        DebugGroupState("fav", favOpen)
         groupPresentThisFrame["fav"] = true
         if favOpen then
             ImGui.PopStyleColor(4) -- +1 for the Gold Text pushed above
@@ -1175,6 +1198,7 @@ local function DrawLocationsTab()
                 local isOpen = ImGui.CollapsingHeader(iconStr .. " " .. catInfo.name .. " (" .. #catLocs .. ")##cat_" .. catInfo.name,
                     headerFlags)
                 if searchQuery == "" then groupOpenState[catKey] = isOpen end
+                DebugGroupState(catKey, isOpen)
                 groupPresentThisFrame[catKey] = true
                 ImGui.PopStyleColor(3)
 
@@ -1274,6 +1298,7 @@ local function DrawLocationsTab()
 
             local isOpen = ImGui.CollapsingHeader(dName .. " (" .. count .. ")##dist_" .. dName, headerFlags)
             if searchQuery == "" then groupOpenState[distKey] = isOpen end
+            DebugGroupState(distKey, isOpen)
             groupPresentThisFrame[distKey] = true
             ImGui.PopStyleColor(3)
 
@@ -1344,6 +1369,7 @@ local function DrawLocationsTab()
 
                         local subOpen = ImGui.CollapsingHeader(headerText .. " (" .. #locs .. ")##" .. dName .. sName, subHeaderFlags)
                         if searchQuery == "" then groupOpenState[subKey] = subOpen end
+                        DebugGroupState(subKey, subOpen)
                         groupPresentThisFrame[subKey] = true
                         if subOpen then
                             ImGui.PopStyleColor(3)
@@ -1364,6 +1390,19 @@ local function DrawLocationsTab()
                 ImGui.Unindent(10)
             end
         end
+    end
+
+    -- Flush before groupPresentLastFrame is overwritten, so the dump shows the value the
+    -- decision was actually made from.
+    if groupDebugFrames > 0 then
+        print(Utils.ConsolePrefix .. " [GROUPDBG] frame " .. groupDebugFrames ..
+            " - defaultGroupState=" .. tostring(Logic.settings.defaultGroupState) ..
+            ", locations=" .. tostring(#Logic.locations))
+        for _, line in ipairs(groupDebugLines) do
+            print(line)
+        end
+        groupDebugLines = {}
+        groupDebugFrames = groupDebugFrames - 1
     end
 
     groupPresentLastFrame = groupPresentThisFrame
