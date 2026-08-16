@@ -19,7 +19,7 @@
 - Fix: Importing locations that use a category you do not have now creates it. The name reached the locations but never your Custom Categories list, and was lost again on re-export.
 - Fix: Exporting several locations sharing a custom category repeated that category once per location in the string.
 - Fix: Deleting a location could collapse its group when the default group state is Collapsed. Groups now stay as you left them.
-- Fix: A map pin left behind when the mod shut down, or when CET reloaded, could not be removed for the rest of the session.
+- Fix: Reloading CET left a map pin behind that nothing could remove for the rest of the session.
 - Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
 - Minor code improvements
 
@@ -117,7 +117,7 @@ New: Optional Window Utils support. With it installed the SLM window snaps to th
 Fix: Importing locations that use a category you do not have now creates it. The name reached the locations but never your Custom Categories list, and was lost again on re-export.
 Fix: Exporting several locations sharing a custom category repeated that category once per location in the string.
 Fix: Deleting a location could collapse its group when the default group state is Collapsed. Groups now stay as you left them.
-Fix: A map pin left behind when the mod shut down, or when CET reloaded, could not be removed for the rest of the session.
+Fix: Reloading CET left a map pin behind that nothing could remove for the rest of the session.
 Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
 Minor code improvements
 ```
@@ -151,7 +151,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [*]Fix: Importing locations that use a category you do not have now creates it. The name reached the locations but never your Custom Categories list, and was lost again on re-export.
 [*]Fix: Exporting several locations sharing a custom category repeated that category once per location in the string.
 [*]Fix: Deleting a location could collapse its group when the default group state is Collapsed. Groups now stay as you left them.
-[*]Fix: A map pin left behind when the mod shut down, or when CET reloaded, could not be removed for the rest of the session.
+[*]Fix: Reloading CET left a map pin behind that nothing could remove for the rest of the session.
 [*]Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
 [*]Minor code improvements
 [/list]
@@ -163,7 +163,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [/list][/spoiler]
 ```
 
-> Character count: 4318 / 5000
+> Character count: 4291 / 5000
 
 ### Comment 2 - older versions
 
