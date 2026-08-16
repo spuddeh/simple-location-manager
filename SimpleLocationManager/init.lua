@@ -34,7 +34,22 @@ registerForEvent("onInit", function()
     -- Initialize UI
     UI.Init(Logic)
 
+    -- A mappin id is per-session and does not survive a save/load, so the pin from the
+    -- previous session is gone and the stored handle addresses nothing. Dropping it here
+    -- stops a stale handle being used against whatever now holds that id.
+    Observe("PlayerPuppet", "OnGameAttached", function()
+        Logic.InvalidateMappin()
+    end)
+
     print(Utils.ConsolePrefix .. " Ready.")
+end)
+
+-- A map pin outlives this mod's Lua state. Reloading CET rebuilds the state with no handle
+-- to the pin, while the engine keeps it registered for the rest of the session - and
+-- UnregisterMappin is the only way to remove one, so a pin with no handle cannot be removed
+-- by anything at all. Clearing on shutdown is what stops that.
+registerForEvent("onShutdown", function()
+    Logic.ClearMappin()
 end)
 
 -- Register 'onOverlayOpen'

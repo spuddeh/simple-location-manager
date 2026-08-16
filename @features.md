@@ -7,7 +7,7 @@
 - [x] Import/export locations as JSON for sharing, reachable from the Locations tab as well as Settings. An imported location's category is created from its name where the string did not define one.
 - [x] Presets system: install location packs with auto-installing categories.
 - [x] AMM Support: import Appearance Menu Mod locations.
-- [x] Map pins for saved locations.
+- [x] Map pins for saved locations, tagged with the mod's own identity so its pin is distinguishable from the player's waypoint or another mod's, removed on replace, on clear and on shutdown, and released from the tracked waypoint slot only while that slot holds this mod's pin.
 - [x] Teleport to any saved location directly.
 - [x] Time of day and weather stored per location, opt-in, applied by right-clicking a teleport button.
 - [x] Custom weather states read from the loaded environment, so weather mods are picked up automatically and a missing state is skipped rather than failing the teleport.

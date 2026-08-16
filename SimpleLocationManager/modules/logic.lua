@@ -16,6 +16,10 @@ local Logic = {}
 -- when a teleport happens. onDraw is on the render path and runs either way.
 local WEATHER_CHECK_FRAMES = 10
 
+-- Written into every pin this mod registers, and read back with IMappin.GetDisplayName().
+-- debugCaption is the only identity channel a mappin has.
+local MAPPIN_TAG = "SLM|"
+
 -- Consecutive corrections before giving up. The count resets the moment the state
 -- holds, so this only trips against something re-forcing every frame - a fight this
 -- mod cannot win, and continuing it would leave two mods thrashing the sky.
@@ -666,6 +670,29 @@ function Logic.SetLocationEnv(id, env)
     return true
 end
 
+--- Reads the id sitting in the game's manually-tracked waypoint slot.
+--- A NewMappinID read inline off the call returns a heap pointer rather than the id, so the
+--- struct is bound to a local before the field is read.
+---@return number|nil value nil when nothing is tracked or the system is unavailable
+local function GetTrackedMappinValue()
+    local sys = Game.GetMappinSystem()
+    if not sys then return nil end
+
+    local id = sys:GetManuallyTrackedMappinID()
+    if not id then return nil end
+
+    local value = id.value
+    if not value or value == 0 then return nil end
+    return value
+end
+
+--- True while the tracked waypoint slot holds this mod's own pin.
+local function OwnsTrackedSlot()
+    if not Logic.currentMappinID then return false end
+    local tracked = GetTrackedMappinValue()
+    return tracked ~= nil and tracked == Logic.currentMappinID.value
+end
+
 --- Set a custom Map Pin
 function Logic.SetMappin(loc)
     Logic.ClearMappin() -- Clear existing first
@@ -677,19 +704,58 @@ function Logic.SetMappin(loc)
     mappinData.variant = gamedataMappinVariant.CustomPositionVariant
     mappinData.visibleThroughWalls = true
 
+    -- Identity. IMappin.GetDisplayName() reads this back, which is the only way a mod can
+    -- tell its own pin from the player's or another mod's. Guarded because a native field
+    -- rejected by the binding throws and would take the whole registration with it.
+    pcall(function()
+        mappinData.debugCaption = MAPPIN_TAG .. (loc.name or "")
+    end)
+
+    -- CustomPositionVariant means "this is the player's waypoint", so the game adopts the
+    -- newest routable one and the slot moves. Setting a pin is something the player asked
+    -- for, so the slot is taken rather than refused - but a waypoint that was already there
+    -- stops routing, and that is worth saying out loud. The check runs after ClearMappin,
+    -- so anything still tracked belongs to someone else.
+    local replacedTracked = GetTrackedMappinValue()
+
     local pos = Vector4.new(loc.pos.x, loc.pos.y, loc.pos.z, loc.pos.w)
 
     Logic.currentMappinID = Game.GetMappinSystem():RegisterMappin(mappinData, pos)
     print(Utils.ConsolePrefix .. " Mappin set for " .. loc.name)
+
+    if replacedTracked then
+        Utils.Notify("Waypoint replaced by " .. loc.name)
+    end
 end
 
 --- Clear the current Map Pin
 function Logic.ClearMappin()
-    if Logic.currentMappinID then
-        Game.GetMappinSystem():UnregisterMappin(Logic.currentMappinID)
+    if not Logic.currentMappinID then return end
+
+    local sys = Game.GetMappinSystem()
+    if not sys then
         Logic.currentMappinID = nil
-        print(Utils.ConsolePrefix .. " Mappin cleared.")
+        return
     end
+
+    -- UntrackMappin takes no argument and clears whatever is in the slot, so it is only
+    -- called once the slot is known to hold this mod's pin. Untracking anything else would
+    -- take the player's own route away.
+    if OwnsTrackedSlot() then
+        sys:UntrackMappin()
+    end
+
+    sys:UnregisterMappin(Logic.currentMappinID)
+    Logic.currentMappinID = nil
+    print(Utils.ConsolePrefix .. " Mappin cleared.")
+end
+
+--- Drops the handle to a pin that no longer exists.
+--- A NewMappinID is per-session: it does not survive a save/load, so the pin registered in
+--- the previous session is already gone and the stored handle addresses nothing. Nothing is
+--- unregistered here, because the id could by then belong to a pin this mod does not own.
+function Logic.InvalidateMappin()
+    Logic.currentMappinID = nil
 end
 
 --- Get all categories (Defaults + Custom) sorted alphabetically

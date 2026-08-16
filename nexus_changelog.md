@@ -5,6 +5,10 @@
 - New: Pick an icon for a category as you create it. Type a new category name in the Edit or Manual Coordinates window and the symbol beside the box becomes a button; click it and choose. Categories you already have keep the icon set in the Category Manager.
 - Fix: Importing locations that use a category you do not have now creates that category, whatever the string was made by. The category name was applied to the locations but never appeared in your Custom Categories list, and it was then dropped again if you re-exported those locations.
 - Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
+- New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when it is replaced or cleared.
+- Fix: Clearing an SLM map pin could clear your own waypoint along with it. It now only lets go of the tracked waypoint when the waypoint being tracked is the one SLM set.
+- Fix: Map pins are cleaned up when the mod shuts down or CET is reloaded. A pin left behind that way could not be removed for the rest of the session, by SLM or by anything else.
+- New: Setting a map pin over a waypoint you already had now tells you it replaced it. An SLM map pin takes over the tracked waypoint, so the route on your minimap follows the pin.
 
 ### [Unreleased - v1.6.0]
 - New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.

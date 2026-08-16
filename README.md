@@ -24,6 +24,8 @@
 
 * [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107) (latest version).
 * [Codeware](https://www.nexusmods.com/cyberpunk2077/mods/7780) - required to set the weather.
+* [Map Waypoint Bug Fixes](https://www.nexusmods.com/cyberpunk2077/mods/32175) - clears the HUD and
+  minimap marker a map pin leaves behind when it is replaced or cleared.
 
 ### Optional
 
