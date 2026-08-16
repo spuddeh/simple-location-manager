@@ -2026,7 +2026,9 @@ local function DrawSettingsTab()
     end
     if ImGui.IsItemHovered() then ImGui.SetTooltip("Backup all locations to Clipboard.") end
 
-    if ImGui.Button(IconGlyphs.CheckAll .. " Export Selected...") then
+    -- These buttons size to their label, and a label wider than the column is clipped at the
+    -- column edge, so a long one is a layout bug rather than a long button.
+    if ImGui.Button(IconGlyphs.CheckAll .. " Export Selected") then
         exportSelection = {}
         exportSelectSearch = ""
         showExportSelectModal = true
