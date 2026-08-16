@@ -52,9 +52,9 @@ local activeTab = "Locations"   -- Current active tab in the main window
 local lastDebugInfo = nil       -- Stores the last printed debug info string
 local lastDistrictInfo = nil    -- Stores the last dumped district info string
 
--- Footer readout, sampled in UI.Draw. A Cron timer cannot do this job: Cron ticks from
--- onUpdate, and onUpdate does not run while the CET overlay is open, which is the only
--- time the footer is on screen.
+-- Footer readout, sampled in UI.Draw. It has to be sampled where it is drawn: a timer
+-- driven by onUpdate would stop while the CET overlay is open, which is the only time
+-- the footer is on screen.
 local envReadout = nil
 
 -- Group expand/collapse persistence (survives search filtering)
@@ -2349,8 +2349,7 @@ function UI.Draw()
         ImGui.TextColored(0.5, 0.5, 0.5, 1.0, countText)
 
         -- Middle: live time and weather, so what the mod is doing to them is visible
-        -- without opening another mod's window. Sampled here rather than on a timer
-        -- because onUpdate, which drives Cron, is not running while the overlay is up.
+        -- without opening another mod's window.
         envReadout = Env.GetReadout()
         if envReadout then
             ImGui.SameLine()

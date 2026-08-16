@@ -8,18 +8,21 @@
 
 local Utils = require("modules/utils")
 local Env = require("modules/env")
-local Cron = require("modules/Cron")
 
 local Logic = {}
 
--- Long enough for the weather transition to start and for another mod's own update
--- loop to have re-forced its locked state, if it has one.
-local WEATHER_VERIFY_DELAY = 2.0
+-- The weather hold is checked on onDraw frames rather than on a Cron timer. Cron ticks
+-- from onUpdate, and onUpdate stops while the CET overlay is open - which is exactly
+-- when a teleport happens. onDraw is on the render path and runs either way.
+local WEATHER_CHECK_FRAMES = 60
 
--- Two applications at most. One re-apply beats a world reload that clobbered the first;
--- a second would be the start of a fight with a mod that re-forces every frame, and
--- that is a fight this mod cannot win and should not start.
-local WEATHER_MAX_ATTEMPTS = 2
+-- Consecutive corrections before giving up. The count resets the moment the state
+-- holds, so this only trips against something re-forcing every frame - a fight this
+-- mod cannot win, and continuing it would leave two mods thrashing the sky.
+local WEATHER_MAX_CORRECTIONS = 3
+
+local weatherFrames = 0
+local weatherCorrections = 0
 
 -- State
 Logic.locations = {}
@@ -573,52 +576,52 @@ function Logic.ApplyLocationEnv(loc)
         return
     end
 
-    if report.weatherApplied then
-        Logic.VerifyWeatherHeld(loc.env.weather)
-    end
 end
 
---- Check, once the transition has had time to run, that the requested weather is what
---- the game is actually in, and put it back once if it is not.
+--- Keep the weather on the state this mod last forced.
 ---
---- Two different things take the weather away, and one attempt separates them. A
---- teleport that reloads the world resets the state after SetWeather has already run,
---- which is a race: re-applying once the reload has settled wins. A mod holding its own
---- locked state re-forces that state on every change, so re-applying loses again, and
---- at that point the only honest move is to say so - the lock lives in that mod's Lua
---- state, not in the engine.
+--- Called every rendered frame, from onDraw, whether or not the CET overlay is open.
+--- The game moves the weather off a forced state on its own - a teleport is enough to
+--- do it, and the state it lands on is not the one that was asked for. A single set is
+--- therefore not a hold, which is what the padlock in the footer claims it is, so the
+--- state is put back whenever it drifts.
 ---
---- Cron runs off onUpdate, which does not tick while the CET overlay is open, so this
---- lands once the overlay is closed. The footer readout is what shows the same state
---- while the overlay is still up.
----@param requestedId string
----@param attempt number|nil 1 on the first call
-function Logic.VerifyWeatherHeld(requestedId, attempt)
-    if not requestedId or requestedId == "" then return end
-    attempt = attempt or 1
+--- Corrections are consecutive, and the count resets as soon as the state holds. Only
+--- something re-forcing every frame can exhaust it, and against that the hold is
+--- released rather than thrashing the sky between two mods.
+function Logic.Tick()
+    if not Env.GetForcedState() then
+        weatherFrames = 0
+        weatherCorrections = 0
+        return
+    end
 
-    Cron.After(WEATHER_VERIFY_DELAY, function()
-        local held, actual = Env.IsWeatherHeld(requestedId)
-        if held then return end
+    weatherFrames = weatherFrames + 1
+    if weatherFrames < WEATHER_CHECK_FRAMES then return end
+    weatherFrames = 0
 
-        if attempt < WEATHER_MAX_ATTEMPTS then
-            print(Utils.ConsolePrefix .. " Weather drifted to " .. tostring(actual) ..
-                ", re-applying " .. requestedId)
-            if Env.SetWeather(requestedId, Logic.settings.envBlendTime) then
-                Logic.VerifyWeatherHeld(requestedId, attempt + 1)
-                return
-            end
-        end
+    local status, forced = Env.GetHoldStatus()
+    if status == "held" then
+        weatherCorrections = 0
+        return
+    end
+    if not forced then return end
 
-        local msg = "Weather was overridden by another mod"
-        if actual then
-            msg = msg .. " (now " .. Env.GetWeatherLabel(actual) .. ")"
-        end
-        Utils.NotifyWarning(msg)
-        print(Utils.ConsolePrefix .. " Requested " .. requestedId ..
-            ", game is in " .. tostring(actual) ..
-            ". Another mod is holding the weather state - clear its lock first.")
-    end)
+    if weatherCorrections < WEATHER_MAX_CORRECTIONS then
+        weatherCorrections = weatherCorrections + 1
+        Env.SetWeather(forced, Logic.settings.envBlendTime)
+        return
+    end
+
+    local actual = Env.GetCurrentWeather()
+    Utils.NotifyWarning("Weather was overridden by another mod (now " ..
+        Env.GetWeatherLabel(actual) .. ")")
+    print(Utils.ConsolePrefix .. " Gave up holding " .. forced ..
+        ", game is in " .. tostring(actual) ..
+        ". Another mod is re-forcing the weather every frame - clear its lock first.")
+
+    Env.ReleaseHold()
+    weatherCorrections = 0
 end
 
 --- Set or clear a location's saved time and weather.

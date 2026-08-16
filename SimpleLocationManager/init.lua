@@ -10,7 +10,6 @@ local UI = require("modules/ui")
 local Utils = require("modules/utils")
 local Impex = require("modules/impex")
 local Env = require("modules/env")
-local Cron = require("modules/Cron")
 
 -- Load the saved locations and settings
 registerForEvent("onInit", function()
@@ -48,14 +47,12 @@ registerForEvent("onOverlayClose", function()
     UI.OnOverlayClose()
 end)
 
--- Draw the UI every frame
+-- onDraw is on the render path, so it runs whether or not the CET overlay is open.
+-- That is why the weather hold ticks here and not from onUpdate, which stops while the
+-- overlay is up - which is exactly when a teleport happens.
 registerForEvent("onDraw", function()
+    Logic.Tick()
     UI.Draw()
-end)
-
--- Ticks psiberx's Cron. No game logic lives here; the timers hold that.
-registerForEvent("onUpdate", function(delta)
-    Cron.Update(delta)
 end)
 
 -- Register Keybind for Quick Save

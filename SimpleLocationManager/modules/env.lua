@@ -238,6 +238,19 @@ function Env.ResetWeather(blendTime)
     return released
 end
 
+--- The state this mod is holding, or nil when it is holding nothing.
+---@return string|nil
+function Env.GetForcedState()
+    return forcedId
+end
+
+--- Stop holding the weather without touching the game.
+--- Used where the hold has been lost to another mod: calling ResetWeather there would
+--- hand the cycle back on top of that mod's own forced state.
+function Env.ReleaseHold()
+    forcedId = nil
+end
+
 --- What this mod is doing to the weather right now.
 --- "held"       - SLM forced a state and the game is still in it
 --- "overridden" - SLM forced a state and something else changed it

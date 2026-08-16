@@ -8,7 +8,7 @@
 - New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
 - New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 - New: A setting for how long the weather takes to change.
-- New: If a teleport knocks the weather off the one you saved, SLM puts it back once. If it gets taken again - which means another weather mod is holding a locked state - it tells you instead of silently doing nothing. Clear that mod's lock first.
+- New: A held weather state stays held. The game knocks the weather off a forced state on its own - teleporting is enough to do it - so SLM now puts it back whenever that happens, with the overlay open or closed. If something keeps taking it, which means another weather mod is holding a locked state, SLM says so and lets go rather than fighting. Clear that mod's lock first.
 - New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 - New: Codeware is now required. It is what makes setting the weather possible.
 - Fix: Exporting several locations that share a custom category repeated that category once per location in the export string.
@@ -100,7 +100,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
 [*]New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 [*]New: A setting for how long the weather takes to change.
-[*]New: If a teleport knocks the weather off the one you saved, SLM puts it back once. If it gets taken again - which means another weather mod is holding a locked state - it tells you instead of silently doing nothing. Clear that mod's lock first.
+[*]New: A held weather state stays held. The game knocks the weather off a forced state on its own - teleporting is enough to do it - so SLM now puts it back whenever that happens, with the overlay open or closed. If something keeps taking it, which means another weather mod is holding a locked state, SLM says so and lets go rather than fighting. Clear that mod's lock first.
 [*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 [*]New: Codeware is now required. It is what makes setting the weather possible.
 [*]Fix: Exporting several locations that share a custom category repeated that category once per location in the export string.
@@ -124,16 +124,9 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]Feature: User Edit Protection - Manual edits to Preset locations now prevent future preset updates from overwriting your changes.
 [*]Feature: Smart Conflict Resolution - "Conflict" skips now respect Manual Input locations, preventing accidental overwrites by the Self-Healing logic.
 [/list][/spoiler]
-[b][size=3]Version 1.3.0[/size][/b]
-[spoiler][list][*]QOL: Export Filtered - Added a copy button next to the search bar to export only the locations matching your current search.
-[*]QOL: Improved Footer - Now displays filtered counts when searching (e.g., "Locations: 5 / 20").
-[*]QOL: Better Descriptions - Increased input height to 3.5 lines and character limit to 500. Added a character counter.
-[*]Bug Fix: Clicking the New Location button no longer auto-saves. Locations are created only when you explicitly click "Save". Should reduce any accidental location creations.
-[*]Bug Fix: Resolved layout glitches in "Duplicate Warning" and "Edit Location" modals.
-[/list][/spoiler]
 ```
 
-> Character count: 4875 / 5000
+> Character count: 4322 / 5000
 
 ### Comment 2 - older versions
 
@@ -142,6 +135,13 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 
 [i](Continued - older versions)[/i]
 
+[b][size=3]Version 1.3.0[/size][/b]
+[spoiler][list][*]QOL: Export Filtered - Added a copy button next to the search bar to export only the locations matching your current search.
+[*]QOL: Improved Footer - Now displays filtered counts when searching (e.g., "Locations: 5 / 20").
+[*]QOL: Better Descriptions - Increased input height to 3.5 lines and character limit to 500. Added a character counter.
+[*]Bug Fix: Clicking the New Location button no longer auto-saves. Locations are created only when you explicitly click "Save". Should reduce any accidental location creations.
+[*]Bug Fix: Resolved layout glitches in "Duplicate Warning" and "Edit Location" modals.
+[/list][/spoiler]
 [b][size=3]Version 1.2.1[/size][/b]
 [spoiler][list][*]Added "V2" Export Compression (70% smaller strings). Old SLM strings will still import without issue.
 [/list][/spoiler]
@@ -173,4 +173,4 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 1970 / 5000
+> Character count: 2652 / 5000
