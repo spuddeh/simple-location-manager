@@ -49,7 +49,6 @@ end
 -- UI State
 local isOverlayOpen = false     -- Tracks if the CET overlay is currently visible
 local searchQuery = ""          -- Current search text in the main location list
-local lastSearchQuery = ""      -- Previous frame's search query (for detecting search clear)
 local filteredLocationCount = 0 -- QOL: Store filtered count for footer
 local activeTab = "Locations"   -- Current active tab in the main window
 local lastDebugInfo = nil       -- Stores the last printed debug info string
@@ -60,13 +59,50 @@ local lastDistrictInfo = nil    -- Stores the last dumped district info string
 -- the footer is on screen.
 local envReadout = nil
 
--- Group expand/collapse persistence (survives search filtering)
-local groupOpenState = {}           -- Last known open/closed state per group key
-local groupPresentLastFrame = {}    -- Set of group keys rendered in previous frame
-local groupPresentThisFrame = {}    -- Set of group keys rendered in current frame
+-- Group expand/collapse persistence (survives search filtering).
+--
+-- This table is AUTHORITATIVE. Every header is told its state with SetNextItemOpen on
+-- every frame rather than reading back whatever ImGui kept, and the returned value is
+-- written straight back here so a click by the user still lands. Left in ImGui's own
+-- storage, the state of a group that nothing had touched could come back collapsed.
+local groupOpenState = {}           -- Open/closed state per group key
 
 local forceExpand = false           -- Expand every group on the next frame, then clears
 local forceCollapse = false         -- Collapse every group on the next frame, then clears
+
+--- Assert a group's open state on the header that follows.
+---
+--- Precedence: an explicit Expand/Collapse All, then a live search, which opens every group so
+--- the matches are visible, then this group's remembered state, then the default for a group
+--- that has none.
+---@param key string
+local function ApplyGroupOpenState(key)
+    local state
+    if forceExpand then
+        state = true
+    elseif forceCollapse then
+        state = false
+    elseif searchQuery ~= "" then
+        state = true
+    elseif groupOpenState[key] ~= nil then
+        state = groupOpenState[key]
+    else
+        state = (Logic.settings.defaultGroupState ~= "Collapsed")
+    end
+
+    ImGui.SetNextItemOpen(state)
+end
+
+--- Record what the header returned, so a click by the user survives to the next frame.
+--- A searching frame is skipped: a group open because of the filter is not one the user
+--- opened, so clearing the search returns every group to the state it was left in.
+---@param key string
+---@param isOpen boolean
+local function RecordGroupOpenState(key, isOpen)
+    if searchQuery == "" then
+        groupOpenState[key] = isOpen
+    end
+end
 
 
 -- Modal Flags & State
@@ -84,30 +120,6 @@ local updateConfirmId = nil      -- ID of the location pending a position update
 -- which a group's open/closed state CHANGES, with the inputs the decision was made from. It
 -- reads the decision and takes no part in it, so the behaviour under test is unchanged.
 -- Declared below every value it reads, so those are upvalues rather than globals.
--- Always on while the overlay is up. Only state CHANGES print, so an idle window costs
--- nothing and a collapse is caught wherever it happens rather than only near a delete.
-local groupDebugFrame = 0
-local groupDebugLines = {}
-
---- Called BEFORE groupOpenState is written, so `prev` is the previous frame's stored value,
---- and while the header is still the current item, so IsItemHovered refers to it.
-local function DebugGroupState(key, isOpen)
-    -- Read while the header is the current item, whether or not this frame gets reported.
-    local hovered = ImGui.IsItemHovered()
-    local mx, my = ImGui.GetMousePos()
-
-    local prev = groupOpenState[key]
-    if prev == isOpen then return end
-    table.insert(groupDebugLines, string.format(
-        "  f%-4d %-28s %-5s -> %-5s  HOVERED=%-5s click=%-5s down=%-5s released=%-5s mouse=(%.0f,%.0f) " ..
-        "presentLast=%-5s fExp=%-5s fCol=%-5s q='%s' delModal=%s",
-        groupDebugFrame, key, tostring(prev), tostring(isOpen),
-        tostring(hovered), tostring(ImGui.IsMouseClicked(0)), tostring(ImGui.IsMouseDown(0)),
-        tostring(ImGui.IsMouseReleased(0)), mx, my,
-        tostring(groupPresentLastFrame[key] or false),
-        tostring(forceExpand), tostring(forceCollapse), tostring(searchQuery),
-        tostring(confirmDeleteId ~= nil)))
-end
 
 -- Import System State
 local showImportRed = false -- Flag for the Import Data modal
@@ -680,7 +692,6 @@ local function DrawDeleteConfirmModal()
         ImGui.Spacing()
 
         if ImGui.Button(IconGlyphs.Delete .. " Yes, Delete") then
-            print(Utils.ConsolePrefix .. " [GROUPDBG] === delete confirmed ===")
             Logic.DeleteLocation(confirmDeleteId)
             confirmDeleteId = nil
             ImGui.CloseCurrentPopup()
@@ -917,10 +928,6 @@ local function DrawLocationRow(loc, uniqueSuffix)
     ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.45, 0.1, 0.1, 1.0)
     if ImGui.Button(IconGlyphs.Delete) then
         confirmDeleteId = loc.id
-
-        print(Utils.ConsolePrefix .. " [GROUPDBG] === delete button clicked, " ..
-            tostring(#Logic.locations) .. " locations, groupBy=" ..
-            tostring(Logic.settings.groupBy) .. " ===")
     end
     ImGui.PopStyleColor(3)
     if ImGui.IsItemHovered() then ImGui.SetTooltip("Delete location") end
@@ -966,7 +973,6 @@ local function DrawLocationsTab()
 
     -- Reset filtered count each frame
     filteredLocationCount = 0
-    groupPresentThisFrame = {}
 
     -- 1. Pinned Header (Search & Global Actions)
     -- Calculate height dynamically based on font/frame size (2 rows + padding)
@@ -1139,23 +1145,14 @@ local function DrawLocationsTab()
     if #filteredFavorites > 0 then
         ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.84, 0.0, 1.0) -- Gold for header
 
-        local headerFlags = ImGuiTreeNodeFlags.DefaultOpen
-        if Logic.settings.defaultGroupState == "Collapsed" then headerFlags = ImGuiTreeNodeFlags.None end
-        if forceExpand then ImGui.SetNextItemOpen(true)
-        elseif forceCollapse then ImGui.SetNextItemOpen(false)
-        elseif searchQuery ~= "" then ImGui.SetNextItemOpen(true) -- Auto-expand during search
-        elseif lastSearchQuery ~= "" and searchQuery == "" and groupOpenState["fav"] ~= nil then ImGui.SetNextItemOpen(groupOpenState["fav"]) -- Restore when search clears
-        elseif groupOpenState["fav"] ~= nil and not groupPresentLastFrame["fav"] then ImGui.SetNextItemOpen(groupOpenState["fav"])
-        end
+        ApplyGroupOpenState("fav")
 
         ImGui.PushStyleColor(ImGuiCol.Header, 0, 0, 0, 0.0)
         ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
         ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
 
-        local favOpen = ImGui.CollapsingHeader(IconGlyphs.Star .. " Favorites (" .. #filteredFavorites .. ")##fav", headerFlags)
-        DebugGroupState("fav", favOpen)
-        if searchQuery == "" then groupOpenState["fav"] = favOpen end
-        groupPresentThisFrame["fav"] = true
+        local favOpen = ImGui.CollapsingHeader(IconGlyphs.Star .. " Favorites (" .. #filteredFavorites .. ")##fav")
+        RecordGroupOpenState("fav", favOpen)
         if favOpen then
             ImGui.PopStyleColor(4) -- +1 for the Gold Text pushed above
             ImGui.Indent(10)
@@ -1195,25 +1192,15 @@ local function DrawLocationsTab()
 
                 local iconStr = IconGlyphs[catInfo.icon] or IconGlyphs.Star
 
-                local headerFlags = ImGuiTreeNodeFlags.DefaultOpen
-                if Logic.settings.defaultGroupState == "Collapsed" then headerFlags = ImGuiTreeNodeFlags.None end
                 local catKey = "cat_" .. catInfo.name
-                if forceExpand then ImGui.SetNextItemOpen(true)
-                elseif forceCollapse then ImGui.SetNextItemOpen(false)
-                elseif searchQuery ~= "" then ImGui.SetNextItemOpen(true) -- Auto-expand during search
-                elseif lastSearchQuery ~= "" and searchQuery == "" and groupOpenState[catKey] ~= nil then ImGui.SetNextItemOpen(groupOpenState[catKey]) -- Restore when search clears
-                elseif groupOpenState[catKey] ~= nil and not groupPresentLastFrame[catKey] then ImGui.SetNextItemOpen(groupOpenState[catKey])
-                end
+                ApplyGroupOpenState(catKey)
 
                 ImGui.PushStyleColor(ImGuiCol.Header, 0, 0, 0, 0.0)
                 ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
                 ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
 
-                local isOpen = ImGui.CollapsingHeader(iconStr .. " " .. catInfo.name .. " (" .. #catLocs .. ")##cat_" .. catInfo.name,
-                    headerFlags)
-                DebugGroupState(catKey, isOpen)
-                if searchQuery == "" then groupOpenState[catKey] = isOpen end
-                groupPresentThisFrame[catKey] = true
+                local isOpen = ImGui.CollapsingHeader(iconStr .. " " .. catInfo.name .. " (" .. #catLocs .. ")##cat_" .. catInfo.name)
+                RecordGroupOpenState(catKey, isOpen)
                 ImGui.PopStyleColor(3)
 
                 -- Context Menu for Export (Must be outside the isOpen check)
@@ -1296,24 +1283,15 @@ local function DrawLocationsTab()
             local count = 0
             for _, group in pairs(subDistricts) do count = count + #group end
 
-            local headerFlags = ImGuiTreeNodeFlags.DefaultOpen
-            if Logic.settings.defaultGroupState == "Collapsed" then headerFlags = ImGuiTreeNodeFlags.None end
             local distKey = "dist_" .. dName
-            if forceExpand then ImGui.SetNextItemOpen(true)
-            elseif forceCollapse then ImGui.SetNextItemOpen(false)
-            elseif searchQuery ~= "" then ImGui.SetNextItemOpen(true) -- Auto-expand during search
-            elseif lastSearchQuery ~= "" and searchQuery == "" and groupOpenState[distKey] ~= nil then ImGui.SetNextItemOpen(groupOpenState[distKey]) -- Restore when search clears
-            elseif groupOpenState[distKey] ~= nil and not groupPresentLastFrame[distKey] then ImGui.SetNextItemOpen(groupOpenState[distKey])
-            end
+            ApplyGroupOpenState(distKey)
 
             ImGui.PushStyleColor(ImGuiCol.Header, 0, 0, 0, 0.0)
             ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
             ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
 
-            local isOpen = ImGui.CollapsingHeader(dName .. " (" .. count .. ")##dist_" .. dName, headerFlags)
-            DebugGroupState(distKey, isOpen)
-            if searchQuery == "" then groupOpenState[distKey] = isOpen end
-            groupPresentThisFrame[distKey] = true
+            local isOpen = ImGui.CollapsingHeader(dName .. " (" .. count .. ")##dist_" .. dName)
+            RecordGroupOpenState(distKey, isOpen)
             ImGui.PopStyleColor(3)
 
             -- Context Menu for Export (Must be outside the isOpen check to work when collapsed)
@@ -1367,24 +1345,15 @@ local function DrawLocationsTab()
 
                         -- One header per subdistrict.
                         local headerText = sName
-                        local subHeaderFlags = ImGuiTreeNodeFlags.DefaultOpen
-                        if Logic.settings.defaultGroupState == "Collapsed" then subHeaderFlags = ImGuiTreeNodeFlags.None end
                         local subKey = "sub_" .. dName .. "_" .. sName
-                        if forceExpand then ImGui.SetNextItemOpen(true)
-                        elseif forceCollapse then ImGui.SetNextItemOpen(false)
-                        elseif searchQuery ~= "" then ImGui.SetNextItemOpen(true) -- Auto-expand during search
-                        elseif lastSearchQuery ~= "" and searchQuery == "" and groupOpenState[subKey] ~= nil then ImGui.SetNextItemOpen(groupOpenState[subKey]) -- Restore when search clears
-                        elseif groupOpenState[subKey] ~= nil and not groupPresentLastFrame[subKey] then ImGui.SetNextItemOpen(groupOpenState[subKey])
-                        end
+                        ApplyGroupOpenState(subKey)
 
                         ImGui.PushStyleColor(ImGuiCol.Header, 0, 0, 0, 0.0)
                         ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
                         ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
 
-                        local subOpen = ImGui.CollapsingHeader(headerText .. " (" .. #locs .. ")##" .. dName .. sName, subHeaderFlags)
-                        DebugGroupState(subKey, subOpen)
-                        if searchQuery == "" then groupOpenState[subKey] = subOpen end
-                        groupPresentThisFrame[subKey] = true
+                        local subOpen = ImGui.CollapsingHeader(headerText .. " (" .. #locs .. ")##" .. dName .. sName)
+                        RecordGroupOpenState(subKey, subOpen)
                         if subOpen then
                             ImGui.PopStyleColor(3)
                             if ImGui.BeginTable("SubDistTable" .. dName .. sName, 1, ImGuiTableFlags.RowBg) then
@@ -1406,18 +1375,6 @@ local function DrawLocationsTab()
         end
     end
 
-    -- Flush before groupPresentLastFrame is overwritten, so the dump shows the value the
-    -- decision was actually made from.
-    groupDebugFrame = groupDebugFrame + 1
-    if #groupDebugLines > 0 then
-        for _, line in ipairs(groupDebugLines) do
-            print(line)
-        end
-        groupDebugLines = {}
-    end
-
-    groupPresentLastFrame = groupPresentThisFrame
-    lastSearchQuery = searchQuery
     forceExpand = false
     forceCollapse = false
     ImGui.EndChild()

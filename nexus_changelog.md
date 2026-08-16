@@ -8,6 +8,7 @@
 - New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when it is replaced or cleared.
 - Fix: Clearing an SLM map pin could clear your own waypoint along with it. It now only lets go of the tracked waypoint when the waypoint being tracked is the one SLM set.
 - Fix: Map pins are cleaned up when the mod shuts down or CET is reloaded. A pin left behind that way could not be removed for the rest of the session, by SLM or by anything else.
+- Fix: Deleting a location could collapse the group it was in, if your default group state is set to Collapsed. Groups now stay exactly as you left them.
 - New: Setting a map pin over a waypoint you already had now tells you it replaced it. An SLM map pin takes over the tracked waypoint, so the route on your minimap follows the pin.
 
 ### [Unreleased - v1.6.0]
