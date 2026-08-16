@@ -1532,7 +1532,7 @@ local function DrawSettingsTab()
 
     ImGui.Columns(2, "ConfigCols", false)
 
-    -- Col 1: Distance & List Settings
+    -- Col 1: list and display
     ImGui.PushTextWrapPos(0.0)
     ImGui.Text("Duplicate Warning Distance (m)")
     ImGui.PopTextWrapPos()
@@ -1618,6 +1618,37 @@ local function DrawSettingsTab()
 
     ImGui.Spacing()
 
+    -- Default Group State
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.Text("Default Group State")
+    ImGui.PopTextWrapPos()
+
+    ImGui.SetNextItemWidth(-1)
+    if ImGui.BeginCombo("##GroupState", (Logic.settings.defaultGroupState or "Expanded")) then
+        if ImGui.Selectable("Expanded", Logic.settings.defaultGroupState == "Expanded") then
+            Logic.settings.defaultGroupState = "Expanded"
+            Logic.Save()
+        end
+        if ImGui.Selectable("Collapsed", Logic.settings.defaultGroupState == "Collapsed") then
+            Logic.settings.defaultGroupState = "Collapsed"
+            Logic.Save()
+        end
+        ImGui.EndCombo()
+    end
+    if ImGui.IsItemClicked(1) then
+        Logic.settings.defaultGroupState = "Expanded"
+        Logic.Save()
+        Utils.Notify("Reset 'Default Group State'")
+    end
+    if ImGui.IsItemHovered() then
+        ImGui.SetTooltip("Default state for location groups (Expanded or Collapsed).\nRight-click to reset.")
+    end
+
+    ImGui.NextColumn()
+
+    -- Col 2: environment, logging, and the teleport buttons. The safety protocol button stays
+    -- last in this column, so anything added here goes above it.
+
     -- Time & Weather. There is no on/off setting: the teleport button's left and right
     -- click are the choice, so it is made per teleport rather than once here.
     ImGui.PushTextWrapPos(0.0)
@@ -1669,32 +1700,6 @@ local function DrawSettingsTab()
 
     ImGui.Spacing()
 
-    -- Default Group State
-    ImGui.PushTextWrapPos(0.0)
-    ImGui.Text("Default Group State")
-    ImGui.PopTextWrapPos()
-
-    ImGui.SetNextItemWidth(-1)
-    if ImGui.BeginCombo("##GroupState", (Logic.settings.defaultGroupState or "Expanded")) then
-        if ImGui.Selectable("Expanded", Logic.settings.defaultGroupState == "Expanded") then
-            Logic.settings.defaultGroupState = "Expanded"
-            Logic.Save()
-        end
-        if ImGui.Selectable("Collapsed", Logic.settings.defaultGroupState == "Collapsed") then
-            Logic.settings.defaultGroupState = "Collapsed"
-            Logic.Save()
-        end
-        ImGui.EndCombo()
-    end
-    if ImGui.IsItemClicked(1) then
-        Logic.settings.defaultGroupState = "Expanded"
-        Logic.Save()
-        Utils.Notify("Reset 'Default Group State'")
-    end
-    if ImGui.IsItemHovered() then
-        ImGui.SetTooltip("Default state for location groups (Expanded or Collapsed).\nRight-click to reset.")
-    end
-
     -- Console Logging
     ImGui.PushTextWrapPos(0.0)
     ImGui.Text("Console Logging")
@@ -1702,12 +1707,14 @@ local function DrawSettingsTab()
 
     ImGui.SetNextItemWidth(-1)
     local currentLogLevel = Logic.settings.logLevel or Utils.DEFAULT_LOG_LEVEL
+    local chosenLogLevel = nil
     if ImGui.BeginCombo("##LogLevel", currentLogLevel) then
         for _, level in ipairs(Utils.LOG_LEVELS) do
-            if ImGui.Selectable(level, currentLogLevel == level) then
-                Logic.settings.logLevel = level
-                Utils.SetLogLevel(level)
-                Logic.Save()
+            -- The choice is made after the loop, and a row naming the level already in force
+            -- is ignored. Acting inside the loop let a row drawn later overwrite the row the
+            -- user clicked, which put every level above the current one out of reach.
+            if ImGui.Selectable(level, currentLogLevel == level) and level ~= currentLogLevel then
+                chosenLogLevel = level
             end
         end
         ImGui.EndCombo()
@@ -1729,9 +1736,17 @@ local function DrawSettingsTab()
             "Dumps and export confirmations always print.\nRight-click to reset.")
     end
 
-    ImGui.NextColumn()
+    -- Applied after the item queries above, so IsItemClicked and IsItemHovered still refer
+    -- to the combo rather than to whatever came next.
+    if chosenLogLevel then
+        Logic.settings.logLevel = chosenLogLevel
+        Utils.SetLogLevel(chosenLogLevel)
+        Logic.Save()
+    end
 
-    -- Col 2: Lazy Mode
+    ImGui.Spacing()
+
+    -- Lazy Mode
     local lazy = Logic.settings.lazyMode or false
     local newLazy, changedLazy = ImGui.Checkbox("##lazy", lazy)
     if changedLazy then
