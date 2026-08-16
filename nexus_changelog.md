@@ -1,5 +1,7 @@
 # Simple Location Manager — Nexus Changelogs
 
+### [Unreleased - v1.7.0]
+
 ### [Unreleased - v1.6.0]
 - New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies whatever the game is doing right now.
 - New: Left-click a teleport button to teleport as always - and it releases any weather SLM was holding, so a plain teleport never leaves a previous location's sky behind. Right-click to teleport AND set that location's saved time and weather. Right click is the only gesture that touches either.

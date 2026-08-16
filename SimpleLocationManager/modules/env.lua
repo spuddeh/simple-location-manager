@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Reads and applies the game's time of day and weather state.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -- Credits: psiberx (CET Kit), psiberx (Codeware), community
 -------------------------------------------------------------------
 

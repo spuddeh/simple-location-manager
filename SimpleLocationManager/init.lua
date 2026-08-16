@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Entry point for the Simple Location Manager mod.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -------------------------------------------------------------------
 
 local Logic = require("modules/logic")
