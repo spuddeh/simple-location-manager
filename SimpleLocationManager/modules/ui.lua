@@ -121,6 +121,11 @@ local updateConfirmId = nil      -- ID of the location pending a position update
 -- reads the decision and takes no part in it, so the behaviour under test is unchanged.
 -- Declared below every value it reads, so those are upvalues rather than globals.
 
+-- Export Selection State
+local showExportSelectModal = false -- Flag for the "Export Selected" modal
+local exportSelection = {}          -- Set of selected location ids
+local exportSelectSearch = ""       -- Filter inside the modal, separate from the main search
+
 -- Import System State
 local showImportRed = false -- Flag for the Import Data modal
 local importReport = nil    -- Stores the result report of the last import operation
@@ -335,6 +340,137 @@ local function DrawImportModal()
             if not ImGui.IsPopupOpen(MODAL_PREFIX .. "Import Data") then
                 importOpenCount = importOpenCount + 1
             end
+        end
+    })
+end
+
+--- Helper: Sort Locations Alphabetically (Case-Insensitive)
+local function SortLocationByName(a, b)
+    local na = (a.name or ""):lower()
+    local nb = (b.name or ""):lower()
+    return na < nb
+end
+
+--- Locations matching the export modal's own filter, sorted by name.
+--- The filter reuses Logic.CheckSearch, so it matches on the same fields as the main list.
+---@return table
+local function GetExportCandidates()
+    local list = {}
+    for _, loc in ipairs(Logic.locations) do
+        if exportSelectSearch == "" or Logic.CheckSearch(loc, exportSelectSearch) then
+            table.insert(list, loc)
+        end
+    end
+    table.sort(list, SortLocationByName)
+    return list
+end
+
+--- Draw the "Export Selected" modal: pick locations, get one export string for the lot.
+local function DrawExportSelectModal()
+    local shouldOpen = showExportSelectModal
+    if shouldOpen then ImGui.SetNextWindowSize(560, 0, ImGuiCond.Always) end
+
+    UI.WrapperModal("Export Selected Locations", shouldOpen, ImGuiWindowFlags.NoResize, function()
+        local candidates = GetExportCandidates()
+
+        -- Filter
+        local style = ImGui.GetStyle()
+        local clearBtnW = ImGui.CalcTextSize(IconGlyphs.Eraser) + (style.FramePadding.x * 2)
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail() - clearBtnW - style.ItemSpacing.x)
+        exportSelectSearch = ImGui.InputTextWithHint("##exportSearch",
+            IconGlyphs.Magnify .. " Filter locations...", exportSelectSearch, 100)
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.Eraser) then exportSelectSearch = "" end
+        if ImGui.IsItemHovered() then ImGui.SetTooltip("Clear filter") end
+
+        -- Bulk actions apply to what the filter is showing, not to everything.
+        if ImGui.Button(IconGlyphs.CheckAll .. " Select shown") then
+            for _, loc in ipairs(candidates) do exportSelection[loc.id] = true end
+        end
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.CloseBoxMultipleOutline .. " Deselect shown") then
+            for _, loc in ipairs(candidates) do exportSelection[loc.id] = nil end
+        end
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.Eraser .. " Clear all") then
+            exportSelection = {}
+        end
+
+        ImGui.Separator()
+
+        if #candidates == 0 then
+            ImGui.TextColored(0.7, 0.7, 0.7, 1.0, "No locations match that filter.")
+        end
+
+        if ImGui.BeginChild("ExportSelectList", 0, 320, true, 0) then
+            for _, loc in ipairs(candidates) do
+                ImGui.PushID("exp_" .. loc.id)
+
+                local checked = exportSelection[loc.id] == true
+                local newChecked, changed = ImGui.Checkbox("##pick", checked)
+                if changed then
+                    exportSelection[loc.id] = newChecked or nil
+                end
+
+                ImGui.SameLine()
+                local catIcon = "DotsCircle"
+                for _, c in ipairs(Logic.GetCategories()) do
+                    if c.name == loc.category then
+                        catIcon = c.icon
+                        break
+                    end
+                end
+                ImGui.Text((IconGlyphs[catIcon] or IconGlyphs.Help) .. " " .. (loc.name or "Unnamed"))
+
+                local districtStr = (loc.district or "Unknown")
+                if loc.subDistrict and loc.subDistrict ~= "" then
+                    districtStr = districtStr .. " (" .. loc.subDistrict .. ")"
+                end
+                ImGui.SameLine()
+                ImGui.TextColored(0.5, 0.5, 0.5, 1.0, "- " .. districtStr)
+
+                ImGui.PopID()
+            end
+            ImGui.EndChild()
+        end
+
+        -- Count what is selected across the whole list, not just the filtered view, so
+        -- narrowing the filter cannot make a selection look smaller than it is.
+        local selectedList = {}
+        for _, loc in ipairs(Logic.locations) do
+            if exportSelection[loc.id] then table.insert(selectedList, loc) end
+        end
+
+        ImGui.Separator()
+        ImGui.AlignTextToFramePadding()
+        ImGui.Text(#selectedList .. " selected")
+        ImGui.SameLine()
+
+        ImGui.BeginDisabled(#selectedList == 0)
+        if ImGui.Button(IconGlyphs.ContentCopy .. " Copy export string") then
+            local data, count = Impex.ExportList(selectedList)
+            if data then
+                OpenExport("Export Selected (" .. count .. ")", data)
+                showExportSelectModal = false
+                ImGui.CloseCurrentPopup()
+            else
+                Utils.NotifyWarning("Nothing to export.")
+            end
+        end
+        ImGui.EndDisabled()
+        if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
+            ImGui.SetTooltip("Copy one export string covering every selected location.\n" ..
+                "Paste it into a .txt file to share it as a preset.")
+        end
+
+        ImGui.SameLine()
+        if ImGui.Button(IconGlyphs.Cancel .. " Cancel") then
+            showExportSelectModal = false
+            ImGui.CloseCurrentPopup()
+        end
+    end, {
+        onClose = function()
+            showExportSelectModal = false
         end
     })
 end
@@ -935,13 +1071,6 @@ local function DrawLocationRow(loc, uniqueSuffix)
     ImGui.EndGroup()
     ImGui.PopID()
     return true
-end
-
---- Helper: Sort Locations Alphabetically (Case-Insensitive)
-local function SortLocationByName(a, b)
-    local na = (a.name or ""):lower()
-    local nb = (b.name or ""):lower()
-    return na < nb
 end
 
 --- Draw the Locations Tab Content
@@ -1897,6 +2026,16 @@ local function DrawSettingsTab()
     end
     if ImGui.IsItemHovered() then ImGui.SetTooltip("Backup all locations to Clipboard.") end
 
+    if ImGui.Button(IconGlyphs.CheckAll .. " Export Selected...") then
+        exportSelection = {}
+        exportSelectSearch = ""
+        showExportSelectModal = true
+    end
+    if ImGui.IsItemHovered() then
+        ImGui.SetTooltip("Pick locations and copy one export string for them.\n" ..
+            "Paste it into a .txt file to share it as a preset.")
+    end
+
     if ImGui.Button(IconGlyphs.Download .. " Import Data") then
         showImportRed = true
     end
@@ -2588,6 +2727,10 @@ function UI.Draw()
 
         if showManualModal then
             DrawManualModal()
+        end
+
+        if showExportSelectModal then
+            DrawExportSelectModal()
         end
     end
 
