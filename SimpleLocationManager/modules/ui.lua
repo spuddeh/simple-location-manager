@@ -84,14 +84,14 @@ local updateConfirmId = nil      -- ID of the location pending a position update
 -- which a group's open/closed state CHANGES, with the inputs the decision was made from. It
 -- reads the decision and takes no part in it, so the behaviour under test is unchanged.
 -- Declared below every value it reads, so those are upvalues rather than globals.
-local groupDebugFrames = 0
+-- Always on while the overlay is up. Only state CHANGES print, so an idle window costs
+-- nothing and a collapse is caught wherever it happens rather than only near a delete.
+local groupDebugFrame = 0
 local groupDebugLines = {}
 
 --- Called BEFORE groupOpenState is written, so `prev` is the previous frame's stored value,
 --- and while the header is still the current item, so IsItemHovered refers to it.
 local function DebugGroupState(key, isOpen)
-    if groupDebugFrames <= 0 then return end
-
     -- Read while the header is the current item, whether or not this frame gets reported.
     local hovered = ImGui.IsItemHovered()
     local mx, my = ImGui.GetMousePos()
@@ -101,7 +101,7 @@ local function DebugGroupState(key, isOpen)
     table.insert(groupDebugLines, string.format(
         "  f%-4d %-28s %-5s -> %-5s  HOVERED=%-5s click=%-5s down=%-5s released=%-5s mouse=(%.0f,%.0f) " ..
         "presentLast=%-5s fExp=%-5s fCol=%-5s q='%s' delModal=%s",
-        groupDebugFrames, key, tostring(prev), tostring(isOpen),
+        groupDebugFrame, key, tostring(prev), tostring(isOpen),
         tostring(hovered), tostring(ImGui.IsMouseClicked(0)), tostring(ImGui.IsMouseDown(0)),
         tostring(ImGui.IsMouseReleased(0)), mx, my,
         tostring(groupPresentLastFrame[key] or false),
@@ -918,10 +918,6 @@ local function DrawLocationRow(loc, uniqueSuffix)
     if ImGui.Button(IconGlyphs.Delete) then
         confirmDeleteId = loc.id
 
-        -- Arm from the CLICK, not the confirm, so the frames while the modal is open are
-        -- captured. Only state changes print, so a long window stays cheap.
-        groupDebugFrames = 180
-        groupDebugLines = {}
         print(Utils.ConsolePrefix .. " [GROUPDBG] === delete button clicked, " ..
             tostring(#Logic.locations) .. " locations, groupBy=" ..
             tostring(Logic.settings.groupBy) .. " ===")
@@ -1412,16 +1408,12 @@ local function DrawLocationsTab()
 
     -- Flush before groupPresentLastFrame is overwritten, so the dump shows the value the
     -- decision was actually made from.
-    if groupDebugFrames > 0 then
+    groupDebugFrame = groupDebugFrame + 1
+    if #groupDebugLines > 0 then
         for _, line in ipairs(groupDebugLines) do
             print(line)
         end
         groupDebugLines = {}
-        groupDebugFrames = groupDebugFrames - 1
-        if groupDebugFrames == 0 then
-            print(Utils.ConsolePrefix .. " [GROUPDBG] === window closed, " ..
-                tostring(#Logic.locations) .. " locations ===")
-        end
     end
 
     groupPresentLastFrame = groupPresentThisFrame
