@@ -16,6 +16,11 @@ local Logic = {}
 -- loop to have re-forced its locked state, if it has one.
 local WEATHER_VERIFY_DELAY = 2.0
 
+-- Two applications at most. One re-apply beats a world reload that clobbered the first;
+-- a second would be the start of a fight with a mod that re-forces every frame, and
+-- that is a fight this mod cannot win and should not start.
+local WEATHER_MAX_ATTEMPTS = 2
+
 -- State
 Logic.locations = {}
 
@@ -574,20 +579,36 @@ function Logic.ApplyLocationEnv(loc)
 end
 
 --- Check, once the transition has had time to run, that the requested weather is what
---- the game is actually in. A mod holding its own locked state re-forces that state on
---- any change, so SetWeather reports success and the sky never changes. Reporting it is
---- all this mod can do: the lock lives in the other mod's Lua state, not in the engine.
+--- the game is actually in, and put it back once if it is not.
+---
+--- Two different things take the weather away, and one attempt separates them. A
+--- teleport that reloads the world resets the state after SetWeather has already run,
+--- which is a race: re-applying once the reload has settled wins. A mod holding its own
+--- locked state re-forces that state on every change, so re-applying loses again, and
+--- at that point the only honest move is to say so - the lock lives in that mod's Lua
+--- state, not in the engine.
 ---
 --- Cron runs off onUpdate, which does not tick while the CET overlay is open, so this
 --- lands once the overlay is closed. The footer readout is what shows the same state
 --- while the overlay is still up.
 ---@param requestedId string
-function Logic.VerifyWeatherHeld(requestedId)
+---@param attempt number|nil 1 on the first call
+function Logic.VerifyWeatherHeld(requestedId, attempt)
     if not requestedId or requestedId == "" then return end
+    attempt = attempt or 1
 
     Cron.After(WEATHER_VERIFY_DELAY, function()
         local held, actual = Env.IsWeatherHeld(requestedId)
         if held then return end
+
+        if attempt < WEATHER_MAX_ATTEMPTS then
+            print(Utils.ConsolePrefix .. " Weather drifted to " .. tostring(actual) ..
+                ", re-applying " .. requestedId)
+            if Env.SetWeather(requestedId, Logic.settings.envBlendTime) then
+                Logic.VerifyWeatherHeld(requestedId, attempt + 1)
+                return
+            end
+        end
 
         local msg = "Weather was overridden by another mod"
         if actual then

@@ -8,7 +8,7 @@
 - New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
 - New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 - New: A setting for how long the weather takes to change.
-- New: If another weather mod is holding a locked weather state, SLM now tells you instead of silently doing nothing. Clear that mod's lock first.
+- New: If a teleport knocks the weather off the one you saved, SLM puts it back once. If it gets taken again - which means another weather mod is holding a locked state - it tells you instead of silently doing nothing. Clear that mod's lock first.
 - New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 - New: Codeware is now required. It is what makes setting the weather possible.
 - Minor code improvements
@@ -99,7 +99,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]New: "Restore natural weather" button in Settings. Setting a weather state stops the game's weather cycle; this hands it back.
 [*]New: The footer shows the current game time and weather state, so you can see what SLM is doing to them without opening another mod. A padlock appears when SLM is holding the weather - right-click it to hand the weather back to the game. Amber while held, red if something else has replaced it.
 [*]New: A setting for how long the weather takes to change.
-[*]New: If another weather mod is holding a locked weather state, SLM now tells you instead of silently doing nothing. Clear that mod's lock first.
+[*]New: If a teleport knocks the weather off the one you saved, SLM puts it back once. If it gets taken again - which means another weather mod is holding a locked state - it tells you instead of silently doing nothing. Clear that mod's lock first.
 [*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 [*]New: Codeware is now required. It is what makes setting the weather possible.
 [*]Minor code improvements
@@ -134,7 +134,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 4820 / 5000
+> Character count: 4921 / 5000
 
 ### Comment 2 - older versions
 
