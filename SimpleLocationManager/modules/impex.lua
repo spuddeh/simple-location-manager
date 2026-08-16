@@ -277,6 +277,9 @@ local function GetUsedCustomCategories(locList)
     for _, loc in ipairs(locList) do
         local catName = loc.category
         if catName and customMap[catName] and not used[catName] then
+            -- Marking it is what makes `used` a dedup rather than a lookup that always
+            -- misses: without this a category is emitted once per location using it.
+            used[catName] = true
             table.insert(result, { name = catName, icon = customMap[catName] })
             hasAny = true
         end

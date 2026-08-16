@@ -11,6 +11,7 @@
 - New: If a teleport knocks the weather off the one you saved, SLM puts it back once. If it gets taken again - which means another weather mod is holding a locked state - it tells you instead of silently doing nothing. Clear that mod's lock first.
 - New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 - New: Codeware is now required. It is what makes setting the weather possible.
+- Fix: Exporting several locations that share a custom category repeated that category once per location in the export string.
 - Minor code improvements
 
 ### 1.5.0
@@ -102,6 +103,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]New: If a teleport knocks the weather off the one you saved, SLM puts it back once. If it gets taken again - which means another weather mod is holding a locked state - it tells you instead of silently doing nothing. Clear that mod's lock first.
 [*]New: Optional Window Utils support. With it installed, the SLM window snaps to the grid, animates, and can be managed from the Window Utils panel. Without it, nothing changes.
 [*]New: Codeware is now required. It is what makes setting the weather possible.
+[*]Fix: Exporting several locations that share a custom category repeated that category once per location in the export string.
 [*]Minor code improvements
 [/list]
 [b][size=3]Version 1.5.0[/size][/b]
@@ -129,12 +131,9 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [*]Bug Fix: Clicking the New Location button no longer auto-saves. Locations are created only when you explicitly click "Save". Should reduce any accidental location creations.
 [*]Bug Fix: Resolved layout glitches in "Duplicate Warning" and "Edit Location" modals.
 [/list][/spoiler]
-[b][size=3]Version 1.2.1[/size][/b]
-[spoiler][list][*]Added "V2" Export Compression (70% smaller strings). Old SLM strings will still import without issue.
-[/list][/spoiler]
 ```
 
-> Character count: 4921 / 5000
+> Character count: 4875 / 5000
 
 ### Comment 2 - older versions
 
@@ -143,6 +142,9 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 
 [i](Continued - older versions)[/i]
 
+[b][size=3]Version 1.2.1[/size][/b]
+[spoiler][list][*]Added "V2" Export Compression (70% smaller strings). Old SLM strings will still import without issue.
+[/list][/spoiler]
 [b][size=3]Version 1.1.0[/size][/b]
 [spoiler][list][*]Feature: Categories - Locations can now be assigned a Category (Icon + Name) for better organisation
 [*]Feature: Custom Category Portability - Exports and Imports now automatically include custom category definitions
@@ -171,4 +173,4 @@ The history no longer fits one Nexus comment (5000 char limit), so it is two pos
 [/list][/spoiler]
 ```
 
-> Character count: 1796 / 5000
+> Character count: 1970 / 5000
