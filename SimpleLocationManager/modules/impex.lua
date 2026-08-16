@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Import/Export module using Base64 encoded JSON strings.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 local Impex = {}
@@ -112,6 +112,10 @@ local SubDistrictMap = {
 }
 local SubDistrictMapRev = {}
 for k, v in pairs(SubDistrictMap) do SubDistrictMapRev[v] = k end
+
+-- Icon given to a category recovered from an imported location's name, where the package
+-- carried no definition for it.
+local IMPORTED_CATEGORY_ICON = "InboxArrowDown"
 
 local CategoryMap = {}
 local CategoryMapRev = {}
@@ -287,6 +291,34 @@ local function GetUsedCustomCategories(locList)
 
     if hasAny then return result end
     return nil
+end
+
+--- Creates any category named by a location that the package never defined: an export
+--- written before categories travelled with the string, an AMM import, or a hand-made file.
+--- The name is on the location either way, so the category is created from it rather than
+--- left pointing at nothing.
+---
+--- Call this AFTER merging the package's own definitions, so a category that arrived with a
+--- real icon keeps it and only the undefined ones fall back to the generic one.
+---@param locList table List of locations
+---@return number countAdded
+local function SweepCategoryNames(locList)
+    local swept = {}
+    local seen = {}
+
+    for _, loc in ipairs(locList) do
+        local catName = loc.category
+        -- A numeric id that no version of the category map knows survives expansion as a
+        -- number. It is not a name, so it is not swept.
+        if type(catName) == "string" and catName ~= "" and not seen[string.lower(catName)] then
+            seen[string.lower(catName)] = true
+            table.insert(swept, { name = catName, icon = IMPORTED_CATEGORY_ICON })
+        end
+    end
+
+    -- MergeCustomCategories skips any name that already exists as a default or a custom,
+    -- so passing every name is safe.
+    return Logic.MergeCustomCategories(swept)
 end
 
 --- Creates the export package structure
@@ -621,6 +653,13 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
     end
 
 
+    local sweptCount = SweepCategoryNames(dataArray)
+    if sweptCount > 0 then
+        local msg = "[INFO] Created " .. sweptCount .. " categories named by the imported locations."
+        table.insert(report.logs, msg)
+        print(Utils.ConsolePrefix .. " " .. msg)
+    end
+
     if report.imported > 0 then
         Logic.Save()
     end
@@ -661,6 +700,9 @@ function Impex.LoadPresets()
                         -- Handle Array or Single
                         local list = data
                         if not data[1] then list = { data } end
+
+                        -- After the package's own definitions, so an explicit icon wins.
+                        SweepCategoryNames(list)
 
                         for _, pLoc in ipairs(list) do
                             if pLoc.pos then
