@@ -7,8 +7,8 @@
 - New: A "Console Logging" setting. SLM wrote a console line per location loaded - dozens on every load with presets installed. It is now quiet by default and speaks up only about problems. Info shows what it is doing, Debug restores every line. Dumps and export confirmations always print.
 - New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when replaced or cleared.
 - New: Setting a map pin over an existing waypoint now says so. An SLM pin takes over the tracked waypoint, so the minimap route follows the pin.
+- New: Clearing an SLM map pin hands the route back to the waypoint you had set before it, instead of leaving you with none.
 - Fix: Importing locations that use a category you do not have now creates it. The name reached the locations but never your Custom Categories list, and was lost again on re-export.
-- Fix: Clearing an SLM map pin could clear your own waypoint too. It now only releases the tracked waypoint when that waypoint is SLM's.
 - Fix: Map pins are cleared when the mod shuts down or CET reloads. One left behind that way could not be removed for the rest of the session.
 - Fix: Deleting a location could collapse its group when the default group state is Collapsed. Groups now stay as you left them.
 - Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
@@ -16,10 +16,10 @@
 ### [Unreleased - v1.6.0]
 - New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies what the game is doing now.
 - New: Right-click a teleport button to teleport and apply that location's saved time and weather. Left-click teleports as always, and releases any weather SLM was holding.
-- New: Saving the time is optional, as the weather already was. A location can set one and leave the other alone.
+- New: The time and the weather are separately optional. A location can set one and leave the other alone.
 - New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
 - New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
-- New: A held weather state stays held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
+- New: A weather state SLM sets is held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
 - New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to hand the weather back. Amber while held, red once something else has replaced it.
 - New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this hands it back.
 - New: A setting for how long the weather takes to change.
@@ -124,8 +124,8 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [*]New: A "Console Logging" setting. SLM wrote a console line per location loaded - dozens on every load with presets installed. It is now quiet by default and speaks up only about problems. Info shows what it is doing, Debug restores every line. Dumps and export confirmations always print.
 [*]New: Map Waypoint Bug Fixes is now required. It clears the HUD and minimap marker a map pin leaves behind when replaced or cleared.
 [*]New: Setting a map pin over an existing waypoint now says so. An SLM pin takes over the tracked waypoint, so the minimap route follows the pin.
+[*]New: Clearing an SLM map pin hands the route back to the waypoint you had set before it, instead of leaving you with none.
 [*]Fix: Importing locations that use a category you do not have now creates it. The name reached the locations but never your Custom Categories list, and was lost again on re-export.
-[*]Fix: Clearing an SLM map pin could clear your own waypoint too. It now only releases the tracked waypoint when that waypoint is SLM's.
 [*]Fix: Map pins are cleared when the mod shuts down or CET reloads. One left behind that way could not be removed for the rest of the session.
 [*]Fix: Deleting a location could collapse its group when the default group state is Collapsed. Groups now stay as you left them.
 [*]Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
@@ -133,10 +133,10 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [b][size=3]Version 1.6.0[/size][/b]
 [spoiler][list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies what the game is doing now.
 [*]New: Right-click a teleport button to teleport and apply that location's saved time and weather. Left-click teleports as always, and releases any weather SLM was holding.
-[*]New: Saving the time is optional, as the weather already was. A location can set one and leave the other alone.
+[*]New: The time and the weather are separately optional. A location can set one and leave the other alone.
 [*]New: Custom weather states are supported - anything a weather mod adds appears in the picker. Remove that mod later and the location still works: the time applies, the weather is skipped, and it returns if you reinstall.
 [*]New: Teleporting to a location with no weather set hands the sky back to the game's cycle, so the last location's weather does not follow you. Only SLM's own hold is released.
-[*]New: A held weather state stays held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
+[*]New: A weather state SLM sets is held. The game knocks the weather off a forced state on its own, and teleporting is enough to do it, so SLM puts it back. If something keeps taking it, SLM says so and lets go - clear that mod's lock first.
 [*]New: The footer shows the current game time and weather state. A padlock appears while SLM is holding the weather - right-click it to hand the weather back. Amber while held, red once something else has replaced it.
 [*]New: "Restore natural weather" button in Settings. Forcing a weather state stops the game's cycle; this hands it back.
 [*]New: A setting for how long the weather takes to change.
@@ -147,7 +147,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [/list][/spoiler]
 ```
 
-> Character count: 3824 / 5000
+> Character count: 3806 / 5000
 
 ### Comment 2 - older versions
 
