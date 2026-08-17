@@ -371,9 +371,6 @@ local showExportSelectModal = false -- Flag for the "Export Selected" modal
 local exportSelection = {}          -- Set of selected location ids
 local exportSelectSearch = ""       -- Filter inside the modal, separate from the main search
 local exportSelectPreset = ""       -- Preset file whose locations are ticked, "" for none
--- Default on: an author re-exporting their own preset has usually edited it BECAUSE that edit is
--- the update they are publishing. Off re-exports the preset as it shipped.
-local exportSelectEdited = true     -- Include preset locations edited since they were imported
 local exportSelectGroupBy = "District" -- Grouping inside the modal, separate from the tab's
 
 -- Import System State
@@ -741,23 +738,31 @@ local function DrawExportSelectModal()
             end
             if ImGui.IsItemHovered() then ImGui.SetTooltip(L("exportSelect.presetTooltip")) end
 
-            ImGui.SameLine()
-            local newEdited, editedChanged =
-                ImGui.Checkbox(L("exportSelect.includeEdited"), exportSelectEdited)
-            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("exportSelect.includeEditedTooltip")) end
-
-            -- Applied after both item queries, so IsItemHovered still refers to the control it is
-            -- written under rather than to whatever came next.
-            if chosenPreset then exportSelectPreset = chosenPreset end
-            if editedChanged then exportSelectEdited = newEdited end
-
-            -- Re-applied whenever either changes, so the two controls cannot disagree with the
-            -- ticks below them.
-            if chosenPreset or (editedChanged and exportSelectPreset ~= "") then
+            -- Applied after the item query, so IsItemHovered still refers to the combo rather than
+            -- to whatever came next.
+            if chosenPreset then
+                exportSelectPreset = chosenPreset
                 exportSelection = {}
-                for _, loc in ipairs(Impex.GetPresetLocations(exportSelectPreset, exportSelectEdited)) do
+                for _, loc in ipairs(Impex.GetPresetLocations(exportSelectPreset)) do
                     exportSelection[loc.id] = true
                 end
+            end
+
+            -- A preset is a whole file: the export string REPLACES it. So every location it
+            -- brought in is ticked, edited or not - leaving one out would publish a preset that no
+            -- longer has it, which is a deletion rather than an unchanged location. SLM keeps no
+            -- copy of what a location looked like before the edit, so there is nothing else to
+            -- offer. Saying how many changed is the useful half.
+            local chosen = nil
+            for _, source in ipairs(presetSources) do
+                if source.file == exportSelectPreset then chosen = source end
+            end
+            if chosen and chosen.edited > 0 then
+                ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.7, 0.3, 1.0)
+                ImGui.PushTextWrapPos(0.0)
+                ImGui.TextWrapped(L("exportSelect.presetEditedNote", chosen.edited))
+                ImGui.PopTextWrapPos()
+                ImGui.PopStyleColor()
             end
         end
 

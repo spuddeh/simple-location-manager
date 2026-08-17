@@ -847,25 +847,25 @@ function Impex.GetPresetSources()
     return sources
 end
 
---- The locations one preset file brought in.
+--- The locations one preset file brought in, edited or not.
 ---
 --- An edited location is still attributable: `Logic.MarkPresetEdited` only appends to `sourceType`
---- and leaves `sourceDetail` alone. Whether to include it is the caller's choice, because it is a
---- question about intent rather than about the data - for an author updating their own preset the
---- edit usually IS the update, and for someone re-exporting a preset as it shipped it is not.
+--- and leaves `sourceDetail` alone.
+---
+--- **Edited ones are not optional, and offering the choice would be a trap.** An export string
+--- REPLACES the preset file, so a location left out of it is a location the preset no longer has -
+--- a deletion, not an unchanged entry. Nothing here can offer the alternative a caller would want,
+--- because SLM keeps no copy of what a location looked like before the edit.
 ---@param file string
----@param includeEdited boolean
 ---@return table locations
-function Impex.GetPresetLocations(file, includeEdited)
+function Impex.GetPresetLocations(file)
     local out = {}
     if not file or file == "" then return out end
 
     for _, loc in ipairs(Logic.locations) do
         if loc.sourceDetail == file and loc.sourceType
             and string.find(loc.sourceType, "SLM Preset") then
-            if includeEdited or not string.find(loc.sourceType, "%(Edited%)") then
-                table.insert(out, loc)
-            end
+            table.insert(out, loc)
         end
     end
     return out

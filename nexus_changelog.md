@@ -12,7 +12,7 @@
 - Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
 - Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now uses the one you already have, and says which under the box as you type. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
 - Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
-- New: Export Selected gains a **Preset** dropdown. Pick a preset file and every location it brought in is ticked, ready to re-export as an update. **Include edited** decides whether locations you have changed since installing it come along - on by default, since that change is usually the update.
+- New: Export Selected gains a **Preset** dropdown. Pick a preset file and every location it brought in is ticked, ready to re-export as an update. Locations you have changed since installing it are included and counted for you, because the export replaces the preset file whole - anything left out would be dropped from it.
 - Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 - Minor code improvements
 
@@ -126,7 +126,7 @@ New: Picking a category and naming a new one are two separate controls now, in b
 Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
 Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now uses the one you already have, and says which under the box as you type. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
 Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
-New: Export Selected gains a **Preset** dropdown. Pick a preset file and every location it brought in is ticked, ready to re-export as an update. **Include edited** decides whether locations you have changed since installing it come along - on by default, since that change is usually the update.
+New: Export Selected gains a **Preset** dropdown. Pick a preset file and every location it brought in is ticked, ready to re-export as an update. Locations you have changed since installing it are included and counted for you, because the export replaces the preset file whole - anything left out would be dropped from it.
 Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 Minor code improvements
 ```
@@ -153,13 +153,13 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [*]Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
 [*]Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now uses the one you already have, and says which under the box as you type. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
 [*]Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
-[*]New: Export Selected gains a **Preset** dropdown. Pick a preset file and every location it brought in is ticked, ready to re-export as an update. **Include edited** decides whether locations you have changed since installing it come along - on by default, since that change is usually the update.
+[*]New: Export Selected gains a **Preset** dropdown. Pick a preset file and every location it brought in is ticked, ready to re-export as an update. Locations you have changed since installing it are included and counted for you, because the export replaces the preset file whole - anything left out would be dropped from it.
 [*]Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 [*]Minor code improvements
 [/list]
 ```
 
-> Character count: 3414 / 5000
+> Character count: 3440 / 5000
 
 ### Comment 2 - older versions
 
