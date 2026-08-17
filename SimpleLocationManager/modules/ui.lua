@@ -274,7 +274,7 @@ local function OpenExport(title, dataStr)
     ImGui.SetClipboardText(dataStr)
 
     -- Notifications
-    Utils.Notify("Copied to clipboard: " .. title)
+    Utils.Notify(L("export.copiedToClipboard", title))
 
     -- Verbose Console Log
     Utils.Print(title)
@@ -285,7 +285,10 @@ local importOpenCount = 0
 
 --- Draw Import Modal
 local function DrawImportModal()
-    UI.WrapperModal("Import Data", showImportRed, ImGuiWindowFlags.AlwaysAutoResize, function()
+    -- Held in a local because onPreOpen below has to name the same popup, and a
+    -- second copy of the title would drift from this one the moment it is translated.
+    local title = L("import.importData")
+    UI.WrapperModal(title, showImportRed, ImGuiWindowFlags.AlwaysAutoResize, function()
         if ImGui.BeginTabBar("ImportTabs" .. importOpenCount) then
             -- TAB 1: String Import (Paste)
             if ImGui.BeginTabItem(L("import.stringImport")) then
@@ -348,7 +351,7 @@ local function DrawImportModal()
         -- Report Area (Shared)
         if importReport then
             ImGui.TextColored(0.0, 1.0, 0.0, 1.0,
-                string.format(L("import.importedSkipped"), importReport.imported, importReport.skipped))
+                L("import.importedSkipped", importReport.imported, importReport.skipped))
 
             if ImGui.BeginChild("ImportLog", 0, 200, true) then
                 for _, log in ipairs(importReport.logs) do
@@ -381,7 +384,7 @@ local function DrawImportModal()
             importReport = nil
         end,
         onPreOpen = function()
-            if not ImGui.IsPopupOpen(MODAL_PREFIX .. "Import Data") then
+            if not ImGui.IsPopupOpen(MODAL_PREFIX .. title) then
                 importOpenCount = importOpenCount + 1
             end
         end
@@ -414,7 +417,7 @@ local function DrawExportSelectModal()
     local shouldOpen = showExportSelectModal
     if shouldOpen then ImGui.SetNextWindowSize(560, 0, ImGuiCond.Always) end
 
-    UI.WrapperModal("Export Selected Locations", shouldOpen, ImGuiWindowFlags.NoResize, function()
+    UI.WrapperModal(L("exportSelect.title"), shouldOpen, ImGuiWindowFlags.NoResize, function()
         local candidates = GetExportCandidates()
 
         -- Filter
@@ -471,7 +474,7 @@ local function DrawExportSelectModal()
                     districtStr = districtStr .. " (" .. loc.subDistrict .. ")"
                 end
                 ImGui.SameLine()
-                ImGui.TextColored(0.5, 0.5, 0.5, 1.0, "- " .. districtStr)
+                ImGui.TextColored(0.5, 0.5, 0.5, 1.0, L("exportSelect.districtLine", districtStr))
 
                 ImGui.PopID()
             end
@@ -487,14 +490,14 @@ local function DrawExportSelectModal()
 
         ImGui.Separator()
         ImGui.AlignTextToFramePadding()
-        ImGui.Text(#selectedList .. " selected")
+        ImGui.Text(L("exportSelect.selectedCount", #selectedList))
         ImGui.SameLine()
 
         ImGui.BeginDisabled(#selectedList == 0)
         if ImGui.Button(IconGlyphs.ContentCopy .. L("exportSelect.copyExportString")) then
             local data, count = Impex.ExportList(selectedList)
             if data then
-                OpenExport("Export Selected (" .. count .. ")", data)
+                OpenExport(L("exportSelect.exportSelectedTitle", count), data)
                 showExportSelectModal = false
                 ImGui.CloseCurrentPopup()
             else
@@ -657,7 +660,7 @@ local function DrawEditModal()
     -- SetNextWindowSize pins the initial width so AlwaysAutoResize cannot run away.
     if shouldOpen then ImGui.SetNextWindowSize(500, 0, ImGuiCond.Appearing) end
 
-    UI.WrapperModal("Edit Location", shouldOpen, ImGuiWindowFlags.AlwaysAutoResize, function()
+    UI.WrapperModal(L("edit.title"), shouldOpen, ImGuiWindowFlags.AlwaysAutoResize, function()
         ImGui.Text(L("edit.name"))
         tempName = ImGui.InputText("##name", tempName, 100)
 
@@ -708,7 +711,7 @@ local function DrawEditModal()
                 showTempCatPicker = not showTempCatPicker
                 IconPicker.ClearSearch()
             end
-            if ImGui.IsItemHovered() then ImGui.SetTooltip("Choose an icon for \"" .. tempCategory .. "\"") end
+            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("category.chooseIconFor", tempCategory)) end
         else
             ImGui.Text(glyph .. " ")
             showTempCatPicker = false
@@ -760,7 +763,7 @@ local function DrawEditModal()
                     ImGui.TextColored(0.7, 0.7, 0.7, 1.0, loc.district)
                     if loc.subDistrict and loc.subDistrict ~= "" then
                         ImGui.SameLine()
-                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, "(" .. loc.subDistrict .. ")")
+                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, L("common.parenthesised", loc.subDistrict))
                     end
                 end
                 if loc.pos then
@@ -797,7 +800,7 @@ local function DrawEditModal()
                         pendingNewLocation.category = tempCategory
                         pendingNewLocation.env = BuildEnvFromBuffers()
                         Logic.AddLocation(pendingNewLocation) -- Save to DB
-                        Utils.Notify("Saved new location: " .. tempName)
+                        Utils.Notify(L("edit.savedNewLocation", tempName))
                     end
                 else
                     Logic.UpdateLocation(editingId, tempName, tempDesc, nil, tempCategory)
@@ -825,16 +828,17 @@ end
 local function DrawUpdateConfirmModal()
     local shouldOpen = (updateConfirmId ~= nil)
     UI.WrapperModal(L("updateConfirm.updatePosition"), shouldOpen, ImGuiWindowFlags.AlwaysAutoResize, function()
-        ImGui.Text(L("updateConfirm.updateLocationPositionToCurrent")      ImGui.TextColored(0.7, 0.7, 0.7, 1.0, L("updateConfirm.nameAndDescriptionWillBe")))
+        ImGui.Text(L("updateConfirm.updateLocationPositionToCurrent"))
+        ImGui.TextColored(0.7, 0.7, 0.7, 1.0, L("updateConfirm.nameAndDescriptionWillBe"))
         ImGui.Spacing()
 
-        if ImGui.Button(L("updateConfirm.yesUpdate")irm.yesUpdate")) then
+        if ImGui.Button(L("updateConfirm.yesUpdate")) then
             Logic.UpdateLocationPosition(updateConfirmId)
             updateConfirmId = nil
             ImGui.CloseCurrentPopup()
         end
         ImGui.SameLine()
-        if ImGui.Button(IconGlyphs.Cancel .. L("exportSelect.cancel")Select.cancel")) then
+        if ImGui.Button(IconGlyphs.Cancel .. L("exportSelect.cancel")) then
             updateConfirmId = nil
             ImGui.CloseCurrentPopup()
         end
@@ -848,7 +852,7 @@ end
 --- Draw Delete Confirmation Modal
 local function DrawDeleteConfirmModal()
     local shouldOpen = (confirmDeleteId ~= nil)
-    UI.WrapperModal("Delete Location?", shouldOpen, ImGuiWindowFlags.AlwaysAutoResize, function()
+    UI.WrapperModal(L("deleteConfirm.title"), shouldOpen, ImGuiWindowFlags.AlwaysAutoResize, function()
         if not confirmDeleteId then return end
         local loc = Logic.GetLocation(confirmDeleteId)
         ImGui.Text(L("deleteConfirm.areYouSureYouWant"))
@@ -961,7 +965,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
         local glyph = IconGlyphs[catIcon] or IconGlyphs.Help
         -- Category: Medium Purple (0.6, 0.4, 0.9) - Readable "Middle Ground"
         ImGui.PushStyleColor(ImGuiCol.Text, 0.6, 0.4, 0.9, 1.0)
-        ImGui.Text("Category: " .. glyph .. " " .. catName)
+        ImGui.Text(L("locationRow.categoryLine", glyph, catName))
         ImGui.PopStyleColor()
     end
 
@@ -972,7 +976,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
 
         -- District: Electric Blue (0.2, 0.85, 1.0) - Tech/Hologram feel
         ImGui.PushStyleColor(ImGuiCol.Text, 0.2, 0.85, 1.0, 1.0)
-        ImGui.Text("District: " .. districtName)
+        ImGui.Text(L("locationRow.districtLine", districtName))
         ImGui.PopStyleColor()
 
         -- Sub-District (Darker Blue), inline if exists
@@ -985,7 +989,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
 
             -- Darker Blue for Sub-District (0.4, 0.6, 0.75)
             ImGui.PushStyleColor(ImGuiCol.Text, 0.4, 0.6, 0.75, 1.0)
-            ImGui.Text("Sub-District: " .. subDistrictName)
+            ImGui.Text(L("locationRow.subDistrictLine", subDistrictName))
             ImGui.PopStyleColor()
         end
     end
@@ -1067,8 +1071,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
     ImGui.PopStyleColor(3)
     if ImGui.IsItemHovered() then
         if loc.env then
-            ImGui.SetTooltip("Teleport instantly\nRight-click: teleport and set " ..
-                Env.Describe(loc.env))
+            ImGui.SetTooltip(L("locationRow.teleportWithEnv", Env.Describe(loc.env)))
         else
             ImGui.SetTooltip(L("locationRow.teleportInstantlyReleasingAnyHeld"))
         end
@@ -1271,7 +1274,7 @@ local function DrawLocationsTab()
             if list and #list > 0 then
                 local b64, count = Impex.ExportList(list)
                 if b64 then
-                    OpenExport("Export Filtered (" .. count .. ")", b64)
+                    OpenExport(L("locations.exportFilteredTitle", count), b64)
                 end
             else
                 Utils.NotifyWarning(L("checkSearch.noLocationsToExport"))
@@ -1311,7 +1314,7 @@ local function DrawLocationsTab()
         ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
         ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
 
-        local favOpen = ImGui.CollapsingHeader(IconGlyphs.Star .. " Favorites (" .. #filteredFavorites .. ")##fav")
+        local favOpen = ImGui.CollapsingHeader(IconGlyphs.Star .. L("locations.favoritesHeader", #filteredFavorites) .. "##fav")
         RecordGroupOpenState("fav", favOpen)
         if favOpen then
             ImGui.PopStyleColor(4) -- +1 for the Gold Text pushed above
@@ -1368,7 +1371,7 @@ local function DrawLocationsTab()
                     if ImGui.MenuItem(IconGlyphs.ContentCopy .. L("checkSearch.exportCategory")) then
                         local data, c = Impex.ExportCategory(catInfo.name)
                         if data then
-                            OpenExport("Export Category: " .. catInfo.name .. " (" .. c .. ")", data)
+                            OpenExport(L("locations.exportCategoryTitle", catInfo.name, c), data)
                         else
                             Utils.NotifyWarning(L("checkSearch.noLocationsToExport2"))
                         end
@@ -1459,7 +1462,7 @@ local function DrawLocationsTab()
                 if ImGui.MenuItem(IconGlyphs.ContentCopy .. L("checkSearch.exportDistrict")) then
                     local data, c = Impex.ExportDistrict(dName)
                     if data then
-                        OpenExport("Export District: " .. dName .. " (" .. c .. ")", data)
+                        OpenExport(L("locations.exportDistrictTitle", dName, c), data)
                     else
                         Utils.NotifyWarning(L("checkSearch.noLocationsToExport2"))
                     end
@@ -2076,7 +2079,7 @@ local function DrawSettingsTab()
     if ImGui.Button(IconGlyphs.ContentCopy .. L("resetTooltip.exportAllData")) then
         local data, count = Impex.ExportAll()
         if data then
-            OpenExport("Export All Data (" .. count .. ")", data)
+            OpenExport(L("settings.exportAllDataTitle", count), data)
         else
             Utils.NotifyWarning(L("resetTooltip.noDataToExport"))
         end
@@ -2184,9 +2187,11 @@ local function DrawSettingsTab()
     ImGui.NextColumn()
 
     -- Col 2
+    -- WrapperModal opens the popup itself from the flag. Naming the title again here
+    -- would key OpenPopup to the English string while the modal drew under its
+    -- translation, and the two would no longer be the same popup.
     if ImGui.Button(IconGlyphs.Refresh .. L("resetTooltip.resetSettings")) then
         showResetConfirm = true
-        ImGui.OpenPopup(MODAL_PREFIX .. "Reset Settings?")
     end
     if ImGui.IsItemHovered() then ImGui.SetTooltip(L("resetTooltip.resetAllSettingsToDefault")) end
 
@@ -2214,24 +2219,21 @@ local function DrawSettingsTab()
 
     ImGui.EndChild()
 
-    -- Confirmation Modal for "Delete All"
-    if confirmDeleteAll then
-        if not ImGui.IsPopupOpen(MODAL_PREFIX .. "Delete All Data?") then
-            ImGui.OpenPopup(MODAL_PREFIX .. "Delete All Data?")
-        end
-    end
-
+    -- Confirmation Modal for "Delete All". WrapperModal opens it from the flag; repeating
+    -- the title here would key OpenPopup to English while the modal drew under its
+    -- translation, leaving a modal nothing could open.
     UI.WrapperModal(L("resetTooltip.deleteAllData"), confirmDeleteAll, ImGuiWindowFlags.AlwaysAutoResize, function()
-        ImGui.Text(L("resetTooltip.areYouSureYouWant")ui.TextColored(1.0, 0.4, 0.4, 1.0, L("resetTooltip.thisActionCannotBeUndone")tBeUndone"))
+        ImGui.Text(L("resetTooltip.areYouSureYouWant"))
+        ImGui.TextColored(1.0, 0.4, 0.4, 1.0, L("resetTooltip.thisActionCannotBeUndone"))
         ImGui.Spacing()
 
-        if ImGui.Button(IconGlyphs.Delete .. L("resetTooltip.yesDeleteEverything")Everything")) then
+        if ImGui.Button(IconGlyphs.Delete .. L("resetTooltip.yesDeleteEverything")) then
             Logic.DeleteAllLocations()
             confirmDeleteAll = false
             ImGui.CloseCurrentPopup()
         end
         ImGui.SameLine()
-        if ImGui.Button(IconGlyphs.Cancel .. L("exportSelect.cancel")Select.cancel")) then
+        if ImGui.Button(IconGlyphs.Cancel .. L("exportSelect.cancel")) then
             confirmDeleteAll = false
             ImGui.CloseCurrentPopup()
         end
@@ -2247,7 +2249,7 @@ end
 -- re-imports itself on the next load, so offering to delete its locations would promise a
 -- removal that undoes itself.
 local function DrawPresetCleanupModal()
-    UI.WrapperModal("Remove Preset Locations", showPresetCleanupModal, ImGuiWindowFlags.AlwaysAutoResize,
+    UI.WrapperModal(L("presetCleanup.title"), showPresetCleanupModal, ImGuiWindowFlags.AlwaysAutoResize,
         function()
             if #presetOrphans == 0 then
                 ImGui.Text(L("presetCleanup.everyPresetYourLocationsCame"))
@@ -2282,7 +2284,8 @@ local function DrawPresetCleanupModal()
                 ImGui.Text(orphan.file)
                 ImGui.SameLine()
 
-                local detail = orphan.total .. (orphan.total == 1 and " location" or " locations")
+                local detail = L(orphan.total == 1 and "presetCleanup.oneLocation" or "presetCleanup.manyLocations",
+                    orphan.total)
                 if orphan.edited > 0 then
                     detail = detail .. ", " .. orphan.edited .. " edited"
                 end
@@ -2308,7 +2311,7 @@ local function DrawPresetCleanupModal()
                 end
                 ImGui.SameLine()
                 ImGui.PushTextWrapPos(0.0)
-                ImGui.Text("Also delete the " .. editedSelected .. " location(s) you have edited")
+                ImGui.Text(L("presetCleanup.alsoDeleteEdited", editedSelected))
                 ImGui.PopTextWrapPos()
 
                 ImGui.PushStyleColor(ImGuiCol.Text, 0.7, 0.7, 0.7, 1.0)
@@ -2381,18 +2384,19 @@ end
 -- Reset Settings Confirmation Modal
 local function DrawResetSettingsConfirmModal()
     UI.WrapperModal(L("resetSettingsConfirm.resetSettings"), showResetConfirm, ImGuiWindowFlags.AlwaysAutoResize, function()
-        ImGui.Text(L("resetSettingsConfirm.areYouSureYouWant")       ImGui.TextColored(1.0, 0.4, 0.4, 1.0, L("resetSettingsConfirm.thisWillAlsoRemoveAll")))
+        ImGui.Text(L("resetSettingsConfirm.areYouSureYouWant"))
+        ImGui.TextColored(1.0, 0.4, 0.4, 1.0, L("resetSettingsConfirm.thisWillAlsoRemoveAll"))
         ImGui.Spacing()
-        ImGui.Text(L("resetSettingsConfirm.locationsWillNotBeDeleted")sWillNotBeDeleted"))
+        ImGui.Text(L("resetSettingsConfirm.locationsWillNotBeDeleted"))
         ImGui.Spacing()
 
-        if ImGui.Button(IconGlyphs.Refresh .. L("resetSettingsConfirm.yesResetEverything")yesResetEverything")) then
+        if ImGui.Button(IconGlyphs.Refresh .. L("resetSettingsConfirm.yesResetEverything")) then
             Logic.ResetSettings()
             showResetConfirm = false
             ImGui.CloseCurrentPopup()
         end
         ImGui.SameLine()
-        if ImGui.Button(IconGlyphs.Cancel .. L("exportSelect.cancel")Select.cancel")) then
+        if ImGui.Button(IconGlyphs.Cancel .. L("exportSelect.cancel")) then
             showResetConfirm = false
             ImGui.CloseCurrentPopup()
         end
@@ -2407,18 +2411,21 @@ end
 -- Duplicate Popup
 local function DrawDuplicateWarningModal()
     UI.WrapperModal(L("duplicateWarning.duplicateWarning2"), showDuplicateModal, ImGuiWindowFlags.AlwaysAutoResize, function()
-        ImGui.TextColored(1.0, 0.4, 0.4, 1.0, IconGlyphs.Alert .. L("duplicateWarning.duplicateWarning")duplicateWarning"))
+        ImGui.TextColored(1.0, 0.4, 0.4, 1.0, IconGlyphs.Alert .. L("duplicateWarning.duplicateWarning"))
         ImGui.Spacing()
-        ImGui.Text(L("duplicateWarning.youAreVeryCloseTo")    ImGui.Text("'" .. (duplicateWarningName or L("duplicateWarning.unknown")ateWarning.unknown")) .. "'")
+        ImGui.Text(L("duplicateWarning.youAreVeryCloseTo"))
+        ImGui.Text(L("duplicateWarning.nameQuoted", duplicateWarningName or L("duplicateWarning.unknown")))
         ImGui.Spacing()
-        ImGui.Text(L("duplicateWarning.doYouWantToUpdate")ui.Spacing()
+        ImGui.Text(L("duplicateWarning.doYouWantToUpdate"))
+        ImGui.Spacing()
         ImGui.Separator()
         ImGui.Spacing()
 
-        if ImGui.Button(IconGlyphs.ContentSave .. L("duplicateWarning.repositionExistingLocation")xistingLocation")) then
+        if ImGui.Button(IconGlyphs.ContentSave .. L("duplicateWarning.repositionExistingLocation")) then
             if duplicateWarningId then
                 Logic.UpdateLocationPosition(duplicateWarningId) -- Use Position Update logic
-                Utils.Notify(L("duplicateWarning.locationUpdated")locationUpdated") .. (duplicateWarningName or L("duplicateWarning.unknown")ateWarning.unknown")))
+                Utils.Notify(L("duplicateWarning.locationUpdated",
+                    duplicateWarningName or L("duplicateWarning.unknown")))
             end
             showDuplicateModal = false
             ImGui.CloseCurrentPopup()
@@ -2426,7 +2433,7 @@ local function DrawDuplicateWarningModal()
 
         ImGui.SameLine()
 
-        if ImGui.Button(IconGlyphs.Pencil .. L("duplicateWarning.editExisting")ing.editExisting")) then
+        if ImGui.Button(IconGlyphs.Pencil .. L("duplicateWarning.editExisting")) then
             if duplicateWarningId then
                 local existingLoc = Logic.GetLocation(duplicateWarningId)
                 if existingLoc then
@@ -2439,7 +2446,7 @@ local function DrawDuplicateWarningModal()
 
         ImGui.SameLine()
 
-        if ImGui.Button(L("duplicateWarning.cancel")cateWarning.cancel")) then
+        if ImGui.Button(L("duplicateWarning.cancel")) then
             showDuplicateModal = false
             ImGui.CloseCurrentPopup()
         end
@@ -2550,7 +2557,7 @@ end
 
 ---- Draws the Delete Category Confirmation Modal
 local function DrawDeleteCategoryConfirmModal()
-    UI.WrapperModal("Delete Category?", showDeleteCategoryModal, ImGuiWindowFlags.AlwaysAutoResize, function()
+    UI.WrapperModal(L("deleteCategoryConfirm.title"), showDeleteCategoryModal, ImGuiWindowFlags.AlwaysAutoResize, function()
         ImGui.Text(L("deleteCategoryConfirm.areYouSureYouWant") .. (categoryToDelete or L("duplicateWarning.unknown")) .. "'?")
         ImGui.Spacing()
         ImGui.TextColored(1.0, 0.6, 0.0, 1.0,
@@ -2614,7 +2621,7 @@ local function DrawManualModal()
         ImGui.SetNextWindowSize(math.max(420, math.ceil(buttonsW) + 4), 0, ImGuiCond.Always)
     end
 
-    UI.WrapperModal("Manual Coordinates", shouldOpen, ImGuiWindowFlags.NoResize, function()
+    UI.WrapperModal(L("manual.title"), shouldOpen, ImGuiWindowFlags.NoResize, function()
         -- Smart paste box (source of truth): any change re-syncs the coordinate fields below.
         ImGui.Text(L("manual.pasteCoordinatesOptional"))
 

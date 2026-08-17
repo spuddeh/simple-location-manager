@@ -54,8 +54,9 @@ SKIP = {"1.0.0joker", "1.0.0kp", "1.0.0apartments"}
 # The file description field, capped by Nexus at 255 characters. The workflow truncates at a
 # word boundary and warns, so overrunning is quiet rather than loud.
 FILE_DESCRIPTION = (
-    "Requires Codeware and Map Waypoint Bug Fixes (new this release). Window Utils is optional. "
-    "Read the changelog and the stickied comment for everything that is new."
+    "Adds translations and a cleanup for locations left behind by an uninstalled preset. "
+    "Lazy Mode is gone - teleport is always available. Requires Codeware and Map Waypoint "
+    "Bug Fixes; Window Utils is optional."
 )
 DESCRIPTION_LIMIT = 255
 

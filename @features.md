@@ -15,6 +15,7 @@
 - [x] Custom weather states read from the loaded environment, so weather mods are picked up automatically and a missing state is skipped rather than failing the teleport.
 - [x] Footer readout of the live game time and weather state, with a padlock when SLM is holding it (right-click to release) and a warning glyph when another mod has replaced it.
 - [x] In-game UI via Cyber Engine Tweaks overlay.
+- [x] Translations: interface strings live in `lang/<code>.json` and the language follows the game's own setting unless the player pins one in Settings. The folder is scanned at startup, so a language file added after release needs no change here. A partial translation falls back to English key by key, and a translation carrying a bad format specifier renders unformatted rather than throwing from the draw.
 - [x] Console logging at a chosen level (Off, Error, Warn, Info, Debug), covering both the CET console and the mod's own log file. Output the user asked for by pressing a button is never suppressed.
 - [x] Optional Window Utils integration: grid snapping, animation and window management when the library is installed.
 - [x] Per-save persistence.

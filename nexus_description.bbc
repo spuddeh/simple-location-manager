@@ -24,6 +24,7 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [*][b]Window Utils Support:[/b] With [url=https://www.nexusmods.com/cyberpunk2077/mods/26589]Window Utils[/url] installed, the SLM window snaps to that mod's grid, animates, and can be arranged alongside your other mod windows. Without it, nothing changes.
 [*][b]Teleport:[/b] Instantly teleport to any saved spot.
 [*][b]Remove Preset Locations:[/b] Uninstalled a preset? A button in Settings lists the presets whose file is gone and clears out the locations they left behind, one preset at a time. Any location you had edited yourself is kept and becomes your own, unless you tick the box to delete those too.
+[*][b]Translations:[/b] The mod follows your game's language, or one you pick in [b]Settings[/b]. Anything not yet translated shows in English. Adding a language takes one file - see the [b]Translating[/b] article. [i]Cyrillic, Polish, Chinese, Japanese and Korean also need CET's own [font=Courier New]font[/font] > [font=Courier New]language[/font] setting, because CET draws this window and loads one alphabet at a time.[/i]
 [*][b]Customizable:[/b]
 [list]
 [*]Adjust duplicate warning distance.

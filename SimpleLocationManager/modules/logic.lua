@@ -590,8 +590,7 @@ function Logic.ApplyLocationEnv(loc)
     local report = Env.Apply(loc.env, Logic.settings.envBlendTime)
 
     if report.missingWeather then
-        Utils.NotifyWarning("Weather \"" .. Env.GetWeatherLabel(report.missingWeather) ..
-            "\" is not installed - time only")
+        Utils.NotifyWarning(L("weather.notInstalled", Env.GetWeatherLabel(report.missingWeather)))
         Logic.ReleaseWeatherHold()
         return
     end
@@ -650,8 +649,7 @@ function Logic.Tick()
     end
 
     local actual = Env.GetCurrentWeather()
-    Utils.NotifyWarning("Weather was overridden by another mod (now " ..
-        Env.GetWeatherLabel(actual) .. ")")
+    Utils.NotifyWarning(L("weather.overriddenByAnotherMod", Env.GetWeatherLabel(actual)))
     Utils.Warn("Gave up holding " .. forced ..
         ", game is in " .. tostring(actual) ..
         ". Another mod is re-forcing the weather every frame - clear its lock first.")
@@ -731,7 +729,7 @@ function Logic.SetMappin(loc)
     Utils.Debug("Mappin set for " .. loc.name)
 
     if replacedTracked then
-        Utils.Notify("Waypoint replaced by " .. loc.name)
+        Utils.Notify(L("mappin.waypointReplacedBy", loc.name))
     end
 end
 

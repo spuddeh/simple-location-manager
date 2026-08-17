@@ -48,7 +48,7 @@ function IconPicker.Draw(currentIconName, onSelectCallback, height)
 
     -- Stats
     local count = filteredIcons and #filteredIcons or #cachedIcons
-    ImGui.TextDisabled(string.format(L("ui.totalIcons"), count))
+    ImGui.TextDisabled(L("ui.totalIcons", count))
     ImGui.Separator()
 
     -- Search Bar with Clear Button
