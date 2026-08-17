@@ -52,31 +52,122 @@ Logic.defaultSettings = {
 Logic.Env = Env
 
 -- Default Categories (Hardcoded)
+--
+-- `name` is the stored value - it is written into every location, compared in code, and sent
+-- in an export - so it is never translated. `key` is what the player reads, and it hangs off
+-- the record beside the id rather than being derived from the name, so renaming a default
+-- moves no translator's work.
+--
+-- `id` is the export code and MUST NOT CHANGE once released.
 Logic.defaultCategories = {
-    { name = "Apartment",   icon = "Home",                 id = 1 },
-    { name = "Bar",         icon = "GlassWine",            id = 2 },
-    { name = "Cityscape",   icon = "City",                 id = 3 },
-    { name = "Clothing",    icon = "TshirtCrew",           id = 4 },
-    { name = "Coffee",      icon = "Coffee",               id = 5 },
-    { name = "Destination", icon = "MapMarkerStar",        id = 6 },
-    { name = "Enemy",       icon = "Skull",                id = 7 },
-    { name = "Food",        icon = "FoodTakeoutBox",       id = 8 },
-    { name = "Imported",    icon = "InboxArrowDown",       id = 9 },
-    { name = "Hidden Gem",  icon = "DiamondStone",         id = 10 },
-    { name = "Loot",        icon = "TreasureChest",        id = 11 },
-    { name = "Misc",        icon = "Help",                 id = 12 },
-    { name = "NPC",         icon = "Human",                id = 13 },
-    { name = "Photo Spot",  icon = "Camera",               id = 14 },
-    { name = "Quest",       icon = "ExclamationThick",     id = 15 },
-    { name = "Restaurant",  icon = "SilverwareForkKnife",  id = 16 },
-    { name = "Saved",       icon = "ContentSave",          id = 17 },
-    { name = "Vehicle",     icon = "CarSide",              id = 18 },
-    { name = "Vendor",      icon = "CurrencyUsd",          id = 19 },
-    { name = "Vista",       icon = "ImageFilterHdr",       id = 20 },
-    { name = "Weapon",      icon = "Pistol",               id = 21 },
-    { name = "POI",         icon = "MapMarkerStarOutline", id = 22 },
-    { name = "Garage",      icon = "GarageVariant",        id = 23 }
+    { name = "Apartment",   icon = "Home",                 id = 1,  key = "category.apartment" },
+    { name = "Bar",         icon = "GlassWine",            id = 2,  key = "category.bar" },
+    { name = "Cityscape",   icon = "City",                 id = 3,  key = "category.cityscape" },
+    { name = "Clothing",    icon = "TshirtCrew",           id = 4,  key = "category.clothing" },
+    { name = "Coffee",      icon = "Coffee",               id = 5,  key = "category.coffee" },
+    { name = "Destination", icon = "MapMarkerStar",        id = 6,  key = "category.destination" },
+    { name = "Enemy",       icon = "Skull",                id = 7,  key = "category.enemy" },
+    { name = "Food",        icon = "FoodTakeoutBox",       id = 8,  key = "category.food" },
+    { name = "Imported",    icon = "InboxArrowDown",       id = 9,  key = "category.imported" },
+    { name = "Hidden Gem",  icon = "DiamondStone",         id = 10, key = "category.hiddenGem" },
+    { name = "Loot",        icon = "TreasureChest",        id = 11, key = "category.loot" },
+    { name = "Misc",        icon = "Help",                 id = 12, key = "category.misc" },
+    { name = "NPC",         icon = "Human",                id = 13, key = "category.npc" },
+    { name = "Photo Spot",  icon = "Camera",               id = 14, key = "category.photoSpot" },
+    { name = "Quest",       icon = "ExclamationThick",     id = 15, key = "category.quest" },
+    { name = "Restaurant",  icon = "SilverwareForkKnife",  id = 16, key = "category.restaurant" },
+    { name = "Saved",       icon = "ContentSave",          id = 17, key = "category.saved" },
+    { name = "Vehicle",     icon = "CarSide",              id = 18, key = "category.vehicle" },
+    { name = "Vendor",      icon = "CurrencyUsd",          id = 19, key = "category.vendor" },
+    { name = "Vista",       icon = "ImageFilterHdr",       id = 20, key = "category.vista" },
+    { name = "Weapon",      icon = "Pistol",               id = 21, key = "category.weapon" },
+    { name = "POI",         icon = "MapMarkerStarOutline", id = 22, key = "category.poi" },
+    { name = "Garage",      icon = "GarageVariant",        id = 23, key = "category.garage" }
 }
+
+-- Stored category name -> its key, read off the records above so the two cannot drift apart.
+local DEFAULT_CATEGORY_KEYS = {}
+for _, c in ipairs(Logic.defaultCategories) do DEFAULT_CATEGORY_KEYS[c.name] = c.key end
+
+--- The name to DRAW for a stored category.
+--- A category the player made is their own words and is drawn as they typed it; only the
+--- defaults SLM ships are interface strings.
+---@param name string|nil A stored category name
+---@return string label
+function Logic.CategoryLabel(name)
+    if not name or name == "" then return L("category.misc") end
+
+    local key = DEFAULT_CATEGORY_KEYS[name]
+    return key and L(key) or name
+end
+
+-- Districts this mod stores itself, which the game therefore cannot name. Every other stored
+-- district is an enum name the game names in all nineteen of its languages, so it needs no
+-- key here. The stored word is never translated, only mapped to a label - it is compared in
+-- code and written into saves, the same way GROUP_BY_KEYS and loc.favorite are.
+local DISTRICT_KEYS = {
+    ["Unknown"] = "district.unknown",
+    ["Manual"] = "district.manual",
+}
+
+--- The name to DRAW for a stored district, in the game's language.
+--- Nil and empty answer to the same label as "Unknown", because that is the district a
+--- location with none has. A sub-district is optional and its callers check for empty before
+--- asking, so nothing here has to tell the two apart.
+---@param stored string|nil A stored district or sub-district
+---@return string label
+function Logic.DistrictLabel(stored)
+    if not stored or stored == "" then return L("district.unknown") end
+
+    local key = DISTRICT_KEYS[stored]
+    if key then return L(key) end
+
+    -- A point of interest the blackboard named, or a district saved before identifiers were
+    -- kept, is drawn exactly as it stands.
+    return Utils.DistrictLabel(stored) or stored
+end
+
+-- Districts stored as display text, from before identifiers were kept. Migrating one needs the
+-- game's own district records, which are not readable at init on every load, so the pass runs
+-- again from the overlay and stops asking once it has worked.
+local districtsMigrated = false
+
+--- Rewrite every district still stored as a name into the enum name behind it.
+---
+--- The reverse map is read from the player's own game, so a French install migrates its French
+--- names and this mod ships no name to do it with. A string the game does not name is left as
+--- it stands and still draws as itself.
+---
+--- Safe to call repeatedly: an enum name maps to itself.
+---@return boolean done True once the district records have been read
+function Logic.MigrateDistricts()
+    if districtsMigrated then return true end
+    if not Utils.DistrictsReady() then return false end
+
+    local changed = 0
+    for _, loc in ipairs(Logic.locations) do
+        local district = Utils.DistrictEnum(loc.district)
+        if district and district ~= loc.district then
+            loc.district = district
+            changed = changed + 1
+        end
+
+        local subDistrict = Utils.DistrictEnum(loc.subDistrict)
+        if subDistrict and subDistrict ~= loc.subDistrict then
+            loc.subDistrict = subDistrict
+            changed = changed + 1
+        end
+    end
+
+    districtsMigrated = true
+
+    if changed > 0 then
+        Utils.Info("Stored " .. changed .. " district names as identifiers.")
+        Logic.Save()
+    end
+
+    return true
+end
 
 -- Current Settings (Initialized from defaults)
 Logic.settings = {}
@@ -147,6 +238,11 @@ function Logic.Load()
                     -- Trigger Save to write clean files (split locations and settings)
                     Logic.Save()
                 end
+
+                -- MIGRATION: districts stored as display text. This is the earliest it can be
+                -- tried; UI.OnOverlayOpen tries again for the loads where the record store
+                -- was not up yet.
+                Logic.MigrateDistricts()
             end
         end
     end
@@ -238,9 +334,12 @@ function Logic.CheckSearch(loc, query)
     local q = string.lower(query)
     local n = string.lower(loc.name or "")
     local d = string.lower(loc.description or "")
-    local dist = string.lower(loc.district or "")
-    local sub = string.lower(loc.subDistrict or "")
-    local cat = string.lower(loc.category or "")
+    -- Both the name on screen and the identifier behind it: a player searches for what they
+    -- can see, and an identifier read off an export should still find its location.
+    local dist = string.lower(Logic.DistrictLabel(loc.district) .. " " .. (loc.district or ""))
+    local sub = string.lower((loc.subDistrict and Logic.DistrictLabel(loc.subDistrict) or "") ..
+        " " .. (loc.subDistrict or ""))
+    local cat = string.lower(Logic.CategoryLabel(loc.category) .. " " .. (loc.category or ""))
 
     local coords = ""
     if loc.pos then
@@ -777,8 +876,11 @@ function Logic.GetCategories()
         end
     end
 
-    -- Sort
-    table.sort(cats, function(a, b) return a.name < b.name end)
+    -- A-Z by the name on screen. Sorting on the stored name would file the defaults in English
+    -- order for a player reading them in their own language.
+    local labels = {}
+    for _, c in ipairs(cats) do labels[c.name] = Logic.CategoryLabel(c.name) end
+    table.sort(cats, function(a, b) return labels[a.name] < labels[b.name] end)
     return cats
 end
 
@@ -892,7 +994,7 @@ function Logic.GroupLocations(locations, groupBy)
                 table.sort(bucket, function(a, b) return (a.name or "") < (b.name or "") end)
                 table.insert(groups, {
                     key = "cat_" .. cat.name,
-                    name = cat.name,
+                    name = Logic.CategoryLabel(cat.name),
                     icon = cat.icon,
                     locations = bucket,
                 })
@@ -901,6 +1003,9 @@ function Logic.GroupLocations(locations, groupBy)
         return groups
     end
 
+    -- Bucketed on the STORED district and headed with its label. Keying on the label instead
+    -- would give the group a different key in every language, and the collapsed state a
+    -- player set is remembered against that key.
     local byDistrict = {}
     local order = {}
     for _, loc in ipairs(locations) do
@@ -912,14 +1017,19 @@ function Logic.GroupLocations(locations, groupBy)
         table.insert(byDistrict[dName], loc)
     end
 
-    table.sort(order)
+    -- A-Z in the language on screen, which is not A-Z by identifier: "The Glen" files under T
+    -- for an English player and under G for nobody.
+    local labels = {}
+    for _, dName in ipairs(order) do labels[dName] = Logic.DistrictLabel(dName) end
+    table.sort(order, function(a, b) return labels[a] < labels[b] end)
+
     local groups = {}
     for _, dName in ipairs(order) do
         local bucket = byDistrict[dName]
         table.sort(bucket, function(a, b) return (a.name or "") < (b.name or "") end)
         table.insert(groups, {
             key = "dist_" .. dName,
-            name = dName,
+            name = labels[dName],
             icon = "MapMarker",
             locations = bucket,
         })

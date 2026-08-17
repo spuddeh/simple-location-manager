@@ -60,12 +60,18 @@ end
 -- MAPPINGS (Hardcoded for stability across updates)
 -- These IDs MUST NOT CHANGE once released. Add new items to the end.
 
+-- Keyed by the district's ENUM NAME, which is what a location stores. Keyed by the displayed
+-- name, every one of these missed on a non-English install: the code went unused, the player's
+-- own language travelled in the export in its place, and a preset written in English landed
+-- beside their saves as a second group for the same district.
+--
+-- The numbers are untouched by that change, so an export written before it still reads.
 local DistrictMap = {
     ["Watson"] = 1,
     ["Westbrook"] = 2,
-    ["City Center"] = 3,
+    ["CityCenter"] = 3,
     ["Heywood"] = 4,
-    ["Santo Domingo"] = 5,
+    ["SantoDomingo"] = 5,
     ["Pacifica"] = 6,
     ["Badlands"] = 7,
     ["Dogtown"] = 8
@@ -75,36 +81,36 @@ for k, v in pairs(DistrictMap) do DistrictMapRev[v] = k end
 
 local SubDistrictMap = {
     -- Watson
-    ["Little China"] = 1,
+    ["LittleChina"] = 1,
     ["Kabuki"] = 2,
     ["Northside"] = 3,
-    ["Arasaka Waterfront"] = 4,
+    ["ArasakaWaterfront"] = 4,
     -- Westbrook
-    ["Japantown"] = 5,
-    ["Charter Hill"] = 6,
-    ["North Oak"] = 7,
+    ["JapanTown"] = 5,
+    ["CharterHill"] = 6,
+    ["NorthOaks"] = 7,
     -- City Center
-    ["Corpo Plaza"] = 8,
+    ["CorpoPlaza"] = 8,
     ["Downtown"] = 9,
     -- Heywood
     ["Wellsprings"] = 10,
-    ["The Glen"] = 11,
-    ["Vista del Rey"] = 12,
+    ["Glen"] = 11,
+    ["VistaDelRey"] = 12,
     -- Santo Domingo
     ["Arroyo"] = 13,
-    ["Rancho Coronado"] = 14,
+    ["RanchoCoronado"] = 14,
     -- Pacifica
     ["Coastview"] = 15,
-    ["West Wind Estate"] = 16,
+    ["WestWindEstate"] = 16,
     -- Badlands
     ["Badlands"] = 17, -- Generic
-    ["Rocky Ridge"] = 18,
-    ["Sierra Sonora"] = 19,
-    ["Laguna Bend"] = 20,
-    ["Jackson Plains"] = 21,
-    ["Rattlesnake Creek"] = 22,
-    ["Red Peaks"] = 23,
-    ["Biotechnica Flats"] = 24,
+    ["Badlands_RockyRidge"] = 18,
+    ["Badlands_SierraSonora"] = 19,
+    ["Badlands_LagunaBend"] = 20,
+    ["Badlands_JacksonPlains"] = 21,
+    ["Badlands_RattlesnakeCreek"] = 22,
+    ["Badlands_RedPeaks"] = 23,
+    ["Badlands_BiotechnicaFlats"] = 24,
     -- Dogtown
     ["Dogtown"] = 25,
     -- Generic
@@ -210,8 +216,11 @@ local function ExpandLocation(min)
     loc.id = min.i -- Restore ID (Critical for Preset Updates)
 
     -- 2. Restore IDs
-    loc.district = DistrictMapRev[min.d] or min.d or "Unknown"
-    loc.subDistrict = SubDistrictMapRev[min.s] or min.s or "Unknown"
+    -- The code first, then the name behind it. An export written before districts travelled as
+    -- identifiers carries a name in whatever language wrote it, and that still resolves for a
+    -- player whose game runs in the same one.
+    loc.district = DistrictMapRev[min.d] or Utils.DistrictEnum(min.d) or min.d or "Unknown"
+    loc.subDistrict = SubDistrictMapRev[min.s] or Utils.DistrictEnum(min.s) or min.s or "Unknown"
     loc.category = CategoryMapRev[min.c] or min.c or "Imported"
 
     -- 3. Restore Pos

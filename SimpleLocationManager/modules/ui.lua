@@ -78,6 +78,18 @@ local function GroupStateLabel(value)
     return L(GROUP_STATE_KEYS[value] or "groupState.expanded")
 end
 
+--- "District (Sub-District)" for a location, in the game's language. A location with no
+--- sub-district is just the district.
+---@param loc table
+---@return string
+local function DistrictLine(loc)
+    local text = Logic.DistrictLabel(loc.district)
+    if loc.subDistrict and loc.subDistrict ~= "" then
+        text = text .. " " .. L("common.parenthesised", Logic.DistrictLabel(loc.subDistrict))
+    end
+    return text
+end
+
 -- Window Utils is optional. Where it is absent, `wu` is ImGui itself and the window
 -- behaves exactly as it does without the library, so nothing here is a dependency.
 -- Resolved on the first draw rather than in Init, because every CET mod has loaded
@@ -304,6 +316,14 @@ function UI.OnOverlayOpen()
     -- player can change it mid-session with nothing telling a CET mod that they did.
     -- Checked here because it is the moment before any of this text is drawn.
     Loc.Refresh(Logic.settings.language)
+
+    -- The district records are readable by now for the same reason. An empty read is cached
+    -- so the draw path does not pay for it every frame, so ask again here - once per overlay
+    -- open, and only until it works.
+    if not Utils.DistrictsReady() then
+        Utils.InvalidateDistrictMaps()
+    end
+    Logic.MigrateDistricts()
 end
 
 function UI.OnOverlayClose()
@@ -557,12 +577,8 @@ local function DrawExportSelectModal()
 
                         -- Under the name rather than beside it. Sharing the line ran a long name
                         -- and a long district past the right edge, where the child clips.
-                        local districtStr = (loc.district or "Unknown")
-                        if loc.subDistrict and loc.subDistrict ~= "" then
-                            districtStr = districtStr .. " (" .. loc.subDistrict .. ")"
-                        end
                         ImGui.Indent(EXPORT_SELECT_DISTRICT_INDENT)
-                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, districtStr)
+                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, DistrictLine(loc))
                         ImGui.Unindent(EXPORT_SELECT_DISTRICT_INDENT)
                         ImGui.PopTextWrapPos()
 
@@ -829,7 +845,10 @@ local function DrawEditModal()
             local allCats = Logic.GetCategories()
             for _, c in ipairs(allCats) do
                 local icon = IconGlyphs[c.icon] or IconGlyphs.Help
-                if ImGui.Selectable(icon .. " " .. c.name, false) then
+                -- Picked by label, stored by name. The box beside this one holds what is
+                -- stored, because a name typed there is a new category and has to be the
+                -- word every location will carry.
+                if ImGui.Selectable(icon .. " " .. Logic.CategoryLabel(c.name), false) then
                     tempCategory = c.name
                     tempCategoryIcon = nil
                     showTempCatPicker = false
@@ -860,10 +879,11 @@ local function DrawEditModal()
 
             if loc then
                 if loc.district then
-                    ImGui.TextColored(0.7, 0.7, 0.7, 1.0, loc.district)
+                    ImGui.TextColored(0.7, 0.7, 0.7, 1.0, Logic.DistrictLabel(loc.district))
                     if loc.subDistrict and loc.subDistrict ~= "" then
                         ImGui.SameLine()
-                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, L("common.parenthesised", loc.subDistrict))
+                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0,
+                            L("common.parenthesised", Logic.DistrictLabel(loc.subDistrict)))
                     end
                 end
                 if loc.pos then
@@ -963,11 +983,7 @@ local function DrawDeleteConfirmModal()
         if loc then
             ImGui.TextColored(0.7, 0.7, 0.7, 1.0, loc.name or L("deleteConfirm.unknownLocation"))
             if Logic.settings.showDistrict then
-                local fullDistrictName = loc.district or "Unknown"
-                if loc.subDistrict and loc.subDistrict ~= "" then
-                    fullDistrictName = fullDistrictName .. " (" .. loc.subDistrict .. ")"
-                end
-                ImGui.TextColored(0.7, 0.7, 0.7, 1.0, tostring(fullDistrictName))
+                ImGui.TextColored(0.7, 0.7, 0.7, 1.0, DistrictLine(loc))
             end
 
             if Logic.settings.showCoords and loc.pos then
@@ -1069,18 +1085,17 @@ local function DrawLocationRow(loc, uniqueSuffix)
         local glyph = IconGlyphs[catIcon] or IconGlyphs.Help
         -- Category: Medium Purple (0.6, 0.4, 0.9) - Readable "Middle Ground"
         ImGui.PushStyleColor(ImGuiCol.Text, 0.6, 0.4, 0.9, 1.0)
-        ImGui.Text(L("locationRow.categoryLine", glyph, catName))
+        ImGui.Text(L("locationRow.categoryLine", glyph, Logic.CategoryLabel(catName)))
         ImGui.PopStyleColor()
     end
 
     -- District Information (Conditional OR Favorite)
     if Logic.settings.showDistrict or loc.favorite then
-        local districtName = loc.district or "Unknown"
         local subDistrictName = loc.subDistrict
 
         -- District: Electric Blue (0.2, 0.85, 1.0) - Tech/Hologram feel
         ImGui.PushStyleColor(ImGuiCol.Text, 0.2, 0.85, 1.0, 1.0)
-        ImGui.Text(L("locationRow.districtLine", districtName))
+        ImGui.Text(L("locationRow.districtLine", Logic.DistrictLabel(loc.district)))
         ImGui.PopStyleColor()
 
         -- Sub-District (Darker Blue), inline if exists
@@ -1093,7 +1108,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
 
             -- Darker Blue for Sub-District (0.4, 0.6, 0.75)
             ImGui.PushStyleColor(ImGuiCol.Text, 0.4, 0.6, 0.75, 1.0)
-            ImGui.Text(L("locationRow.subDistrictLine", subDistrictName))
+            ImGui.Text(L("locationRow.subDistrictLine", Logic.DistrictLabel(subDistrictName)))
             ImGui.PopStyleColor()
         end
     end
@@ -1230,9 +1245,12 @@ local function DrawLocationsTab()
         local q = string.lower(searchQuery)
         local n = string.lower(loc.name or "")
         local d = string.lower(loc.description or "")
-        local dist = string.lower(loc.district or "")
-        local sub = string.lower(loc.subDistrict or "")
-        local cat = string.lower(loc.category or "")
+        -- Both the name on screen and the identifier behind it: a player searches for what
+        -- they can see, and an identifier read off an export should still find its location.
+        local dist = string.lower(Logic.DistrictLabel(loc.district) .. " " .. (loc.district or ""))
+        local sub = string.lower((loc.subDistrict and Logic.DistrictLabel(loc.subDistrict) or "") ..
+            " " .. (loc.subDistrict or ""))
+        local cat = string.lower(Logic.CategoryLabel(loc.category) .. " " .. (loc.category or ""))
 
         local coords = ""
         if loc.pos then
@@ -1462,6 +1480,9 @@ local function DrawLocationsTab()
 
                 local iconStr = IconGlyphs[catInfo.icon] or IconGlyphs.Star
 
+                -- Headed by label, keyed and exported on the stored name. The collapsed state
+                -- a player sets is remembered against the key.
+                local catLabel = Logic.CategoryLabel(catInfo.name)
                 local catKey = "cat_" .. catInfo.name
                 ApplyGroupOpenState(catKey)
 
@@ -1469,7 +1490,7 @@ local function DrawLocationsTab()
                 ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
                 ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
 
-                local isOpen = ImGui.CollapsingHeader(iconStr .. " " .. catInfo.name .. " (" .. #catLocs .. ")##cat_" .. catInfo.name)
+                local isOpen = ImGui.CollapsingHeader(iconStr .. " " .. catLabel .. " (" .. #catLocs .. ")##cat_" .. catInfo.name)
                 RecordGroupOpenState(catKey, isOpen)
                 ImGui.PopStyleColor(3)
 
@@ -1478,7 +1499,7 @@ local function DrawLocationsTab()
                     if ImGui.MenuItem(IconGlyphs.ContentCopy .. L("checkSearch.exportCategory")) then
                         local data, c = Impex.ExportCategory(catInfo.name)
                         if data then
-                            OpenExport(L("locations.exportCategoryTitle", catInfo.name, c), data)
+                            OpenExport(L("locations.exportCategoryTitle", catLabel, c), data)
                         else
                             Utils.NotifyWarning(L("checkSearch.noLocationsToExport2"))
                         end
@@ -1544,12 +1565,20 @@ local function DrawLocationsTab()
         end
 
         -- Render Districts
+        -- Bucketed and keyed on the STORED district, headed and sorted by its label. The
+        -- collapsed state a player sets is remembered against the key, so keying on the label
+        -- would reset every group the moment the game changed language.
+        local districtLabels = {}
         local sortedDistricts = {}
-        for dName, _ in pairs(districts) do table.insert(sortedDistricts, dName) end
-        table.sort(sortedDistricts)
+        for dName, _ in pairs(districts) do
+            table.insert(sortedDistricts, dName)
+            districtLabels[dName] = Logic.DistrictLabel(dName)
+        end
+        table.sort(sortedDistricts, function(a, b) return districtLabels[a] < districtLabels[b] end)
 
         for _, dName in ipairs(sortedDistricts) do
             local subDistricts = districts[dName]
+            local dLabel = districtLabels[dName]
             local count = 0
             for _, group in pairs(subDistricts) do count = count + #group end
 
@@ -1560,16 +1589,17 @@ local function DrawLocationsTab()
             ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
             ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
 
-            local isOpen = ImGui.CollapsingHeader(dName .. " (" .. count .. ")##dist_" .. dName)
+            local isOpen = ImGui.CollapsingHeader(dLabel .. " (" .. count .. ")##dist_" .. dName)
             RecordGroupOpenState(distKey, isOpen)
             ImGui.PopStyleColor(3)
 
             -- Context Menu for Export (Must be outside the isOpen check to work when collapsed)
             if ImGui.BeginPopupContextItem("##ctx" .. dName) then
                 if ImGui.MenuItem(IconGlyphs.ContentCopy .. L("checkSearch.exportDistrict")) then
+                    -- The export matches on what is stored; the title says what is on screen.
                     local data, c = Impex.ExportDistrict(dName)
                     if data then
-                        OpenExport(L("locations.exportDistrictTitle", dName, c), data)
+                        OpenExport(L("locations.exportDistrictTitle", dLabel, c), data)
                     else
                         Utils.NotifyWarning(L("checkSearch.noLocationsToExport2"))
                     end
@@ -1605,16 +1635,21 @@ local function DrawLocationsTab()
                     end
                 else
                     -- Standard Nested Logic
+                    local subLabels = {}
                     local sortedSubs = {}
-                    for sName, _ in pairs(subDistricts) do table.insert(sortedSubs, sName) end
-                    table.sort(sortedSubs)
+                    for sName, _ in pairs(subDistricts) do
+                        table.insert(sortedSubs, sName)
+                        subLabels[sName] = (sName == "General") and L("district.general")
+                            or Logic.DistrictLabel(sName)
+                    end
+                    table.sort(sortedSubs, function(a, b) return subLabels[a] < subLabels[b] end)
 
                     for _, sName in ipairs(sortedSubs) do
                         local locs = subDistricts[sName]
                         table.sort(locs, SortLocationByName)
 
                         -- One header per subdistrict.
-                        local headerText = sName
+                        local headerText = subLabels[sName]
                         local subKey = "sub_" .. dName .. "_" .. sName
                         ApplyGroupOpenState(subKey)
 
@@ -2154,7 +2189,11 @@ local function DrawSettingsTab()
                 -- Sort Categories Alphabetically for Display
                 local sortedCats = {}
                 for _, c in ipairs(Logic.settings.customCategories) do table.insert(sortedCats, c) end
-                table.sort(sortedCats, function(a, b) return string.lower(a.name) < string.lower(b.name) end)
+                local catLabels = {}
+                for _, c in ipairs(sortedCats) do catLabels[c.name] = Logic.CategoryLabel(c.name) end
+                table.sort(sortedCats, function(a, b)
+                    return string.lower(catLabels[a.name]) < string.lower(catLabels[b.name])
+                end)
 
                 for _, c in ipairs(sortedCats) do
                     ImGui.TableNextRow()
@@ -2164,7 +2203,7 @@ local function DrawSettingsTab()
                     ImGui.Text(glyph)
 
                     ImGui.TableSetColumnIndex(1)
-                    ImGui.Text(c.name)
+                    ImGui.Text(catLabels[c.name])
 
                     ImGui.TableSetColumnIndex(2)
                     local isDefault = false
@@ -3032,7 +3071,8 @@ local function DrawManualModal()
         if ImGui.BeginCombo("##manualCatSelect", "", ImGuiComboFlags.NoPreview) then
             for _, c in ipairs(Logic.GetCategories()) do
                 local icon = IconGlyphs[c.icon] or IconGlyphs.Help
-                if ImGui.Selectable(icon .. " " .. c.name, false) then
+                -- Picked by label, stored by name, the same way the Edit modal does it.
+                if ImGui.Selectable(icon .. " " .. Logic.CategoryLabel(c.name), false) then
                     manualCategory = c.name
                     manualCategoryIcon = nil
                     showManualCatPicker = false

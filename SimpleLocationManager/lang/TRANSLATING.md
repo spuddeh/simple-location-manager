@@ -60,7 +60,12 @@ English on its own. A file holding twenty keys is a valid translation.
 
 **Log levels** (Off, Error, Warn, Info, Debug) are diagnostic terms and stay English.
 
-**Category and district names** are saved player data rather than interface strings.
+**District names** come from the game, which already names every district in each of the
+nineteen languages it ships. They follow the game's language even where SLM is pinned to
+another, and they match the world map because they are the same strings.
+
+**Custom category names** are saved player data. The categories SLM ships with are interface
+strings and are in this file, under `category.`.
 
 ## Non-Latin alphabets need a CET setting
 

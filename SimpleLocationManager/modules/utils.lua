@@ -55,9 +55,152 @@ function Utils.PlaySound(eventName)
     end)
 end
 
+-- ==================================================================
+--  DISTRICT IDENTITY
+-- ==================================================================
+
+-- A location STORES a district's enum name and DRAWS its localised name. The enum name reads
+-- the same in every language; the localised name does not, so storing one puts French text in
+-- an export that an English install then groups as a district of its own.
+--
+-- Both directions are read from the player's own game rather than from a table here. The names
+-- therefore agree with the world map in all nineteen languages, and this mod ships none of them.
+local districtLabels = nil -- enum name -> localised label
+local districtEnums = nil  -- localised label -> enum name
+
+--- How far a record sits below a root district. The walk ends at Night City, which parents the
+--- roots and is not a district anyone stands in.
+---@param record userdata gamedataDistrict_Record
+---@return number depth 0 for a root district, 1 for its direct child
+local function DistrictDepth(record)
+    local depth, ptr, seen = 0, record, {}
+
+    while ptr and depth < 8 do
+        local name = ptr:EnumName()
+        if not name or name == "" or seen[name] then break end
+        seen[name] = true
+
+        local parent = ptr:ParentDistrict()
+        if not parent then break end
+
+        local parentName = parent:EnumName()
+        if not parentName or parentName == "" or parentName == "NightCity" then break end
+
+        depth = depth + 1
+        ptr = parent
+    end
+
+    return depth
+end
+
+--- A record's name, which is held as a LocKey rather than as text.
+---@param record userdata gamedataDistrict_Record
+---@return string|nil
+local function DistrictText(record)
+    local name = record:LocalizedName()
+    if not name or name == "" then return nil end
+
+    if string.find(name, "LocKey#") then
+        local text = GetLocalizedText(name)
+        return (text and text ~= "") and text or nil
+    end
+
+    return name
+end
+
+--- Read every district record once and build both directions.
+local function BuildDistrictMaps()
+    local labels, enums, depths = {}, {}, {}
+
+    local ok = pcall(function()
+        local records = TweakDB:GetRecords("gamedataDistrict_Record")
+        if not records then return end
+
+        for _, record in ipairs(records) do
+            local enum = record:EnumName()
+            local text = DistrictText(record)
+
+            if enum and enum ~= "" and text then
+                labels[enum] = text
+
+                -- The reverse direction covers only the depths a location can hold - a root
+                -- district and its direct children, which is what the ancestry walk below
+                -- takes. Deeper records repeat a label (three cyberspace interiors are all
+                -- called "Unknown"), and a repeat here would rewrite a stored name onto the
+                -- wrong district.
+                local depth = DistrictDepth(record)
+                if depth <= 1 then
+                    local held = depths[text]
+                    if held == nil or depth < held then
+                        enums[text], depths[text] = enum, depth
+                    elseif depth == held then
+                        -- Two records at one depth answer to one name, so neither is the
+                        -- answer. The label maps to nothing and passes through untouched.
+                        enums[text] = nil
+                    end
+                end
+            end
+        end
+    end)
+
+    if not ok then
+        Utils.Warn("District records are not readable. District names stay as they were stored.")
+    end
+
+    -- An empty result is cached like any other. Reading the record store is not free, and
+    -- Utils.DistrictLabel is called for every row on screen, so retrying inside the draw
+    -- would pay that cost every frame. UI.OnOverlayOpen is what asks again.
+    districtLabels, districtEnums = labels, enums
+end
+
+--- Both maps, built on the first call.
+---@return table labels, table enums
+local function DistrictMaps()
+    if not districtLabels then BuildDistrictMaps() end
+    return districtLabels or {}, districtEnums or {}
+end
+
+--- Drop the maps so the next lookup rebuilds them.
+--- District names come from the GAME's language, so a change there is what invalidates these -
+--- not a change to the language this mod's own interface is pinned to.
+function Utils.InvalidateDistrictMaps()
+    districtLabels, districtEnums = nil, nil
+end
+
+--- True once the district records have actually been read.
+--- The record store is not up at init on every load, and a district saved as a name cannot be
+--- turned into an identifier until it is.
+---@return boolean
+function Utils.DistrictsReady()
+    local labels = DistrictMaps()
+    return next(labels) ~= nil
+end
+
+--- The name to DRAW for a stored district, in the language the game is running in.
+--- A string that is no district enum - a point of interest the blackboard named, a district
+--- stored before identifiers were kept - is returned unchanged.
+---@param stored string|nil
+---@return string|nil
+function Utils.DistrictLabel(stored)
+    if not stored or stored == "" then return stored end
+
+    local labels = DistrictMaps()
+    return labels[stored] or stored
+end
+
+--- The enum name behind a district LABEL, or nil where the game has no district by that name.
+---@param label string|nil
+---@return string|nil
+function Utils.DistrictEnum(label)
+    if type(label) ~= "string" or label == "" then return nil end
+
+    local _, enums = DistrictMaps()
+    return enums[label]
+end
+
 --- Gets the district data at the given position
 ---@param currPos Vector4
----@return table { district="Name", subDistrict="Name" }
+---@return table { district="EnumName", subDistrict="EnumName" }
 function Utils.GetLocationData(currPos)
     local data = { district = "Unknown", subDistrict = "Unknown" }
 
@@ -92,21 +235,23 @@ function Utils.GetLocationData(currPos)
                 -- ancestry[#ancestry-1] is the Child (e.g. Little China)
                 -- ancestry[1] is the Leaf (e.g. V's Apartment)
 
+                -- EnumName rather than LocalizedName: what is stored has to read the same in
+                -- every language. Utils.DistrictLabel turns it back into a name at draw time.
                 if #ancestry > 0 then
                     local root = ancestry[#ancestry]
                     if root then
-                        data.district = root:LocalizedName()
+                        data.district = root:EnumName()
                     end
 
                     if #ancestry >= 2 then
                         local sub = ancestry[#ancestry - 1]
                         if sub then
-                            data.subDistrict = sub:LocalizedName()
+                            data.subDistrict = sub:EnumName()
                         end
                     else
                         -- Only Root exists (Length 1)
                         if ancestry[1] then
-                            data.subDistrict = ancestry[1]:LocalizedName()
+                            data.subDistrict = ancestry[1]:EnumName()
                         end
                     end
                 end
@@ -118,6 +263,11 @@ function Utils.GetLocationData(currPos)
     -- 2. Sub-District Refinement (Blackboard)
     -- The recursive walk above already resolves the structure. This is a supplementary
     -- pass, and it only fills in a sub-district the walk could not name.
+    --
+    -- What it fills in is a NAME and not an identifier: the blackboard reports the point of
+    -- interest the player is standing in, which is often no district at all and so has no
+    -- enum to store. Utils.DistrictLabel passes a string it does not recognise straight
+    -- through, so this reads back exactly as it was written.
     pcall(function()
         local blackboardDefs = GetAllBlackboardDefs()
         if blackboardDefs and blackboardDefs.UI_Map then
@@ -143,20 +293,18 @@ function Utils.GetLocationData(currPos)
         end
     end)
 
-    -- Cleanup: Handle LocKey entries
-    if data.district and string.find(data.district, "LocKey#") then
-        local loc = GetLocalizedText(data.district)
-        if loc and loc ~= "" then data.district = loc end
-    end
+    -- Cleanup: a LocKey the blackboard pass could not resolve. Only the sub-district can hold
+    -- one - the district is an enum name and never was text.
     if data.subDistrict and string.find(data.subDistrict, "LocKey#") then
         local loc = GetLocalizedText(data.subDistrict)
         if loc and loc ~= "" then data.subDistrict = loc end
     end
 
-    -- Special Case: Dogtown
+    -- Special Case: Dogtown. These are enum names, so they are the same comparison in
+    -- every language.
     if data.district == "Dogtown" or data.subDistrict == "Dogtown" then
         -- Force Dogtown to be the District if it appears anywhere
-        if data.subDistrict == "Dogtown" and data.district == "Pacificia" then
+        if data.subDistrict == "Dogtown" and data.district == "Pacifica" then
             data.district = "Dogtown"
             data.subDistrict = nil
         elseif data.district == "Dogtown" then

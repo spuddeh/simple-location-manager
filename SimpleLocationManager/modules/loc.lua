@@ -30,6 +30,11 @@ local requestedCode = nil
 -- session, so saying so more than once is noise rather than news.
 local warnedMissing = {}
 
+-- The game's own language at the last check, which is NOT the language in use: district
+-- names come from the game's string tables whatever this mod is pinned to, so the two
+-- move independently and each needs its own comparison.
+local lastGameCode = nil
+
 -- Every language file found on disk, code -> display name from its own "@name" entry.
 -- Built by scanning the directory rather than from a list in this file, so a language
 -- nobody here has heard of works the moment its file is dropped in.
@@ -198,6 +203,14 @@ function Loc.Refresh(preference)
     local wanted = Resolve(preference)
     if wanted and wanted ~= requestedCode then
         Loc.Apply(preference)
+    end
+
+    -- District names are the game's own strings, so they follow the GAME's language even
+    -- where this mod is pinned to another. A pinned mod would never reach the line above.
+    local game = DetectGameLanguage()
+    if game and game ~= lastGameCode then
+        lastGameCode = game
+        Utils.InvalidateDistrictMaps()
     end
 end
 
