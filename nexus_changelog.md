@@ -5,6 +5,9 @@
 - New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
 - New: Remove unused, in the Category Manager. Lists the custom categories no location uses and clears the ones you tick. Default categories are never listed, and no location changes - the category just comes off the list you pick from. Handy right after clearing out a preset, since a preset brings its own categories with it.
 - Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
+- New: District names come from the game, so they appear in your own language and match the world map, in every language the game ships. Nothing needs translating for this - the names are the game's own.
+- New: The categories the mod comes with are translated too. Categories you made yourself stay as you named them.
+- Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
 - Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 
 ### 1.6.0
@@ -110,6 +113,9 @@ New: Translations. The mod follows your game's language, or one you pick in Sett
 New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
 New: Remove unused, in the Category Manager. Lists the custom categories no location uses and clears the ones you tick. Default categories are never listed, and no location changes - the category just comes off the list you pick from. Handy right after clearing out a preset, since a preset brings its own categories with it.
 Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
+New: District names come from the game, so they appear in your own language and match the world map, in every language the game ships. Nothing needs translating for this - the names are the game's own.
+New: The categories the mod comes with are translated too. Categories you made yourself stay as you named them.
+Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
 Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 ```
 
@@ -128,11 +134,14 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [*]New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
 [*]New: Remove unused, in the Category Manager. Lists the custom categories no location uses and clears the ones you tick. Default categories are never listed, and no location changes - the category just comes off the list you pick from. Handy right after clearing out a preset, since a preset brings its own categories with it.
 [*]Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
+[*]New: District names come from the game, so they appear in your own language and match the world map, in every language the game ships. Nothing needs translating for this - the names are the game's own.
+[*]New: The categories the mod comes with are translated too. Categories you made yourself stay as you named them.
+[*]Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
 [*]Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 [/list]
 ```
 
-> Character count: 1489 / 5000
+> Character count: 2186 / 5000
 
 ### Comment 2 - older versions
 
