@@ -37,7 +37,15 @@ district. `%s` takes text, `%d` takes a number.
 "locations.exportCategoryTitle": "Export Category: %s (%d)"
 ```
 
-Where the count reads better first, `"(%2$d) %1$s"` picks a slot by position.
+Where the count reads better first, number the slots: `%1$` is the first value SLM passes,
+`%2$` the second, whatever order they appear in.
+
+```json
+"locations.exportCategoryTitle": "Kategorie exportieren: (%2$d) %1$s"
+```
+
+Number every slot in a string or none of them. Mixing `%s` and `%2$s` in one string is
+ambiguous and the line will show unformatted.
 
 **Do not add or remove slots.** A slot SLM has no value for renders as a literal `%s`.
 

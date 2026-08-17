@@ -53,7 +53,7 @@ That's it. SLM scans the folder at startup, so your language shows up on its own
 [list]
 [*][b]Translate values, never keys.[/b] [font=Courier New]"edit.save": "Speichern"[/font] is right. Renaming the key leaves a string nothing looks up, and you'll see [font=Courier New]edit.save[/font] on screen.
 [*][b]Keep every[/b] [font=Courier New]%s[/font] [b]and[/b] [font=Courier New]%d[/font][b].[/b] They are slots SLM fills at runtime with a name, a count or a district. [font=Courier New]%s[/font] takes text, [font=Courier New]%d[/font] takes a number.
-[*][b]Move the slots wherever your language needs them.[/b] Word order is yours. If the count reads better first, [font=Courier New]"(%2$d) %1$s"[/font] picks a slot by position.
+[*][b]Move the slots wherever your language needs them.[/b] Word order is yours. Number them to reorder: [font=Courier New]%1$[/font] is the first value SLM passes, [font=Courier New]%2$[/font] the second. So [font=Courier New]"Export Category: %s (%d)"[/font] can become [font=Courier New]"Kategorie exportieren: (%2$d) %1$s"[/font]. Number every slot in a string or none of them.
 [*][b]Don't add or remove slots.[/b] A slot SLM has no value for renders as a literal [font=Courier New]%s[/font].
 [*][b]Keep[/b] [font=Courier New]\n[/font] [b]where it appears.[/b] It is a line break inside a tooltip.
 [/list]

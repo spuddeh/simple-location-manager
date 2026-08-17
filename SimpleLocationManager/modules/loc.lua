@@ -215,9 +215,26 @@ function Loc.L(key, ...)
         return text
     end
 
-    -- A translation carrying the wrong specifier - %s where English had %d - would
-    -- otherwise throw once per frame from inside the draw. It shows unformatted instead.
-    local ok, formatted = pcall(string.format, text, ...)
+    local args = table.pack(...)
+
+    -- "%2$s" means "the second value here", which is how a translation puts the values in
+    -- the order its own grammar wants. Lua's string.format has no such thing - it reads
+    -- them strictly left to right - so the values are reordered here and the positions are
+    -- stripped before it ever sees them.
+    if string.find(text, "%%%d+%$") then
+        local ordered, count = {}, 0
+        local rewritten = string.gsub(text, "%%(%d+)%$", function(position)
+            count = count + 1
+            ordered[count] = args[tonumber(position)]
+            return "%"
+        end)
+        text, args = rewritten, table.pack(table.unpack(ordered, 1, count))
+    end
+
+    -- A translation carrying the wrong specifier - %s where English had %d, or a position
+    -- with no value behind it - would otherwise throw once per frame from inside the draw.
+    -- It shows unformatted instead.
+    local ok, formatted = pcall(string.format, text, table.unpack(args, 1, args.n))
     if ok then return formatted end
 
     Utils.Warn("Bad format in '" .. key .. "' for language " .. activeCode)
@@ -228,6 +245,13 @@ end
 ---@return string code
 function Loc.GetLanguage()
     return activeCode
+end
+
+--- What the GAME's language setting says, which is not what is in use when the player has
+--- pinned one. The picker names both, so it has to be able to tell them apart.
+---@return string code
+function Loc.GetGameLanguage()
+    return DetectGameLanguage() or Loc.FALLBACK
 end
 
 --- Every language with a file present, as code -> name written in that language.

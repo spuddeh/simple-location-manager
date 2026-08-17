@@ -481,14 +481,16 @@ local function DrawExportSelectModal()
         ImGui.Text(L("exportSelect.groupLabel"))
         ImGui.SameLine()
         ImGui.SetNextItemWidth(EXPORT_SELECT_SORT_WIDTH)
+        local chosenExportGroup = nil
         if ImGui.BeginCombo("##exportGroupBy", GroupByLabel(exportSelectGroupBy)) then
             for _, value in ipairs(GROUP_BY_VALUES) do
                 if ImGui.Selectable(GroupByLabel(value), exportSelectGroupBy == value) then
-                    exportSelectGroupBy = value
+                    chosenExportGroup = value
                 end
             end
             ImGui.EndCombo()
         end
+        if chosenExportGroup then exportSelectGroupBy = chosenExportGroup end
         if ImGui.IsItemHovered() then ImGui.SetTooltip(L("exportSelect.groupTooltip")) end
 
         ImGui.Separator()
@@ -1301,16 +1303,19 @@ local function DrawLocationsTab()
         -- Sort Combo
         ImGui.SetNextItemWidth(comboW)
 
+        -- Chosen after the loop rather than inside it, the same way the log level combo is.
+        local chosenSort = nil
         if ImGui.BeginCombo("##sort", GroupByLabel(currentSort)) then
             for _, value in ipairs(GROUP_BY_VALUES) do
                 if ImGui.Selectable(GroupByLabel(value), currentSort == value) then
-                    if currentSort ~= value then
-                        Logic.settings.groupBy = value
-                        Logic.Save()
-                    end
+                    chosenSort = value
                 end
             end
             ImGui.EndCombo()
+        end
+        if chosenSort and chosenSort ~= currentSort then
+            Logic.settings.groupBy = chosenSort
+            Logic.Save()
         end
         if ImGui.IsItemHovered() then ImGui.SetTooltip(L("locations.sortBy", GroupByLabel(currentSort))) end
 
@@ -1878,14 +1883,18 @@ local function DrawSettingsTab()
 
     ImGui.SetNextItemWidth(-1)
     local currentGroupState = Logic.settings.defaultGroupState or "Expanded"
+    local chosenGroupState = nil
     if ImGui.BeginCombo("##GroupState", GroupStateLabel(currentGroupState)) then
         for _, value in ipairs(GROUP_STATE_VALUES) do
             if ImGui.Selectable(GroupStateLabel(value), currentGroupState == value) then
-                Logic.settings.defaultGroupState = value
-                Logic.Save()
+                chosenGroupState = value
             end
         end
         ImGui.EndCombo()
+    end
+    if chosenGroupState then
+        Logic.settings.defaultGroupState = chosenGroupState
+        Logic.Save()
     end
     if ImGui.IsItemClicked(1) then
         Logic.settings.defaultGroupState = "Expanded"
@@ -1905,26 +1914,41 @@ local function DrawSettingsTab()
 
     ImGui.SetNextItemWidth(-1)
     local currentLanguage = Logic.settings.language or "Auto"
+    -- The game's setting, not the one in force: pinning German must not make this row claim
+    -- the game is in German.
+    local autoLabel = L("settings.languageAuto", Loc.GetGameLanguage())
     local languagePreview = currentLanguage == "Auto"
-        and L("settings.languageAuto", Loc.GetLanguage())
+        and autoLabel
         or (Loc.GetAvailable()[currentLanguage] or currentLanguage)
 
+    -- Chosen after the loop, never inside it. Applying a language mid-loop moves what the
+    -- rows below it compare against, which put every entry above the current one out of
+    -- reach - the same fault the log level combo carries a note about.
+    local chosenLanguage = nil
+
     if ImGui.BeginCombo("##Language", languagePreview) then
-        if ImGui.Selectable(L("settings.languageAuto", Loc.GetLanguage()), currentLanguage == "Auto") then
-            Logic.settings.language = "Auto"
-            Loc.Apply(nil)
-            Logic.Save()
+        if ImGui.Selectable(autoLabel, currentLanguage == "Auto") then
+            chosenLanguage = "Auto"
         end
         -- Listed from the files on disk, so a language dropped in after release appears
-        -- without anything here naming it.
-        for code, name in pairs(Loc.GetAvailable()) do
-            if ImGui.Selectable(name, currentLanguage == code) then
-                Logic.settings.language = code
-                Loc.Apply(code)
-                Logic.Save()
+        -- without anything here naming it. Sorted, because pairs() promises no order and a
+        -- list that reshuffles between frames is one whose rows move under the cursor.
+        local codes = {}
+        for code in pairs(Loc.GetAvailable()) do table.insert(codes, code) end
+        table.sort(codes)
+
+        for _, code in ipairs(codes) do
+            if ImGui.Selectable(Loc.GetAvailable()[code], currentLanguage == code) then
+                chosenLanguage = code
             end
         end
         ImGui.EndCombo()
+    end
+
+    if chosenLanguage then
+        Logic.settings.language = chosenLanguage
+        Loc.Apply(chosenLanguage ~= "Auto" and chosenLanguage or nil)
+        Logic.Save()
     end
     if ImGui.IsItemClicked(1) then
         Logic.settings.language = "Auto"
