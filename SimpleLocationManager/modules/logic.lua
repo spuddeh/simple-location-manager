@@ -872,6 +872,41 @@ function Logic.InvalidateMappin()
     Logic.currentMappinID = nil
 end
 
+--- The category record stored under this name, default or custom.
+--- Walks the two lists rather than calling GetCategories, which builds and sorts a table: this
+--- is asked once per location row, per frame.
+---@param name string|nil A stored category name
+---@return table|nil category { name, icon, id?, key? }
+function Logic.FindCategory(name)
+    if not name or name == "" then return nil end
+
+    for _, c in ipairs(Logic.defaultCategories) do
+        if c.name == name then return c end
+    end
+    if Logic.settings.customCategories then
+        for _, c in ipairs(Logic.settings.customCategories) do
+            if c.name == name then return c end
+        end
+    end
+    return nil
+end
+
+--- Whether a category already answers to this name, compared without case.
+--- Case-insensitive because that is how DeleteCategory removes one: a list holding both "Bar"
+--- and "bar" would leave one of them unreachable.
+---@param name string|nil
+---@param except string|nil A name to ignore, for the category being renamed
+---@return boolean
+function Logic.CategoryExists(name, except)
+    if not name or name == "" then return false end
+
+    local wanted = string.lower(name)
+    for _, c in ipairs(Logic.GetCategories()) do
+        if string.lower(c.name) == wanted and c.name ~= except then return true end
+    end
+    return false
+end
+
 --- Get all categories (Defaults + Custom) sorted alphabetically
 function Logic.GetCategories()
     local cats = {}
@@ -898,11 +933,7 @@ end
 function Logic.AddCategory(name, icon)
     if not name or name == "" then return false end
 
-    -- Check duplicates
-    local all = Logic.GetCategories()
-    for _, c in ipairs(all) do
-        if c.name == name then return false end
-    end
+    if Logic.CategoryExists(name) then return false end
 
     table.insert(Logic.settings.customCategories, { name = name, icon = (icon or "NewBox") })
     Logic.Save()
@@ -918,25 +949,12 @@ function Logic.MergeCustomCategories(importCats)
     local count = 0
     local changed = false
 
-    -- Helper to check existence in Defaults or Custom
-    local function Exists(name)
-        for _, c in ipairs(Logic.defaultCategories) do
-            if string.lower(c.name) == string.lower(name) then return true end
-        end
-        if Logic.settings.customCategories then
-            for _, c in ipairs(Logic.settings.customCategories) do
-                if string.lower(c.name) == string.lower(name) then return true end
-            end
-        end
-        return false
-    end
-
     -- Ensure list exists
     if not Logic.settings.customCategories then Logic.settings.customCategories = {} end
 
     for _, cat in ipairs(importCats) do
         if cat.name and cat.icon then
-            if not Exists(cat.name) then
+            if not Logic.CategoryExists(cat.name) then
                 table.insert(Logic.settings.customCategories, { name = cat.name, icon = cat.icon })
                 count = count + 1
                 changed = true
@@ -978,9 +996,13 @@ end
 --- Bucket locations into ordered groups, the same way the Locations tab does.
 --- Takes an already-filtered list and shapes it; it draws nothing and holds no state, so a
 --- caller decides for itself how a group is headed and whether it can be collapsed.
+---
+--- Each group carries `value` as well as `name`: the STORED category or district it was bucketed
+--- on, against which an export is queried and a group's collapsed state remembered, while `name`
+--- is the label drawn above it. The two differ in every language but English.
 ---@param locations table Locations to group, already filtered
 ---@param groupBy string|nil "District", "Category" or "A-Z" (default "District")
----@return table groups Array of { key, name, icon, locations }, empty groups dropped
+---@return table groups Array of { key, value, name, icon, locations }, empty groups dropped
 function Logic.GroupLocations(locations, groupBy)
     groupBy = groupBy or "District"
 
@@ -988,7 +1010,7 @@ function Logic.GroupLocations(locations, groupBy)
         local flat = {}
         for _, loc in ipairs(locations) do table.insert(flat, loc) end
         table.sort(flat, function(a, b) return (a.name or "") < (b.name or "") end)
-        return { { key = "az", name = "A-Z", icon = nil, locations = flat } }
+        return { { key = "az", value = "A-Z", name = "A-Z", icon = nil, locations = flat } }
     end
 
     if groupBy == "Category" then
@@ -1004,6 +1026,7 @@ function Logic.GroupLocations(locations, groupBy)
                 table.sort(bucket, function(a, b) return (a.name or "") < (b.name or "") end)
                 table.insert(groups, {
                     key = "cat_" .. cat.name,
+                    value = cat.name,
                     name = Logic.CategoryLabel(cat.name),
                     icon = cat.icon,
                     locations = bucket,
@@ -1039,6 +1062,7 @@ function Logic.GroupLocations(locations, groupBy)
         table.sort(bucket, function(a, b) return (a.name or "") < (b.name or "") end)
         table.insert(groups, {
             key = "dist_" .. dName,
+            value = dName,
             name = labels[dName],
             icon = "MapMarker",
             locations = bucket,

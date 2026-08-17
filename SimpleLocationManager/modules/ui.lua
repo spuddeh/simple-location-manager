@@ -25,6 +25,10 @@ local MODAL_PREFIX = "SLM - "
 -- Icon a category gets when it is created without one being picked.
 local DEFAULT_NEW_CATEGORY_ICON = "Star"
 
+-- Icon drawn beside a location whose category no longer exists. Deleting a category leaves the
+-- locations tagged with it, so this is a normal state rather than a fault.
+local UNKNOWN_CATEGORY_ICON = "DotsCircle"
+
 -- Export Selected geometry. Declared here rather than beside the modal, because a local is
 -- not in scope above the line that declares it: the same names further down the file read as
 -- globals from inside a function written earlier, and arrive as nil.
@@ -35,6 +39,19 @@ local EXPORT_SELECT_LIST_HEIGHT = 470
 -- Lines the district up with the location name above it, past the checkbox.
 local EXPORT_SELECT_DISTRICT_INDENT = 28
 local EXPORT_SELECT_SORT_WIDTH = 140
+
+-- Category picker geometry. Both rows are the same width so the combo and the new-name box
+-- line up under each other; the icon button sits inside the second row's width.
+local CATEGORY_PICKER_WIDTH = 220
+local CATEGORY_PICKER_ICON_WIDTH = 40
+local CATEGORY_PICKER_LIST_HEIGHT = 200
+
+-- Modal widths, passed to WrapperModal. Height is never stated: it is auto-fitted, because a
+-- stated height has to be kept in step with the content and cuts the buttons off when it is not.
+local EDIT_MODAL_WIDTH = 500
+local ICON_PICKER_MODAL_WIDTH = 900
+-- A floor, not the width: the Manual Coordinates modal measures its own action buttons.
+local MANUAL_MODAL_MIN_WIDTH = 420
 
 -- What a setting STORES is an English word; what a combo SHOWS is a translation of it.
 -- The two are kept apart because comparing the stored value against the label would make
@@ -76,6 +93,135 @@ end
 ---@return string label
 local function GroupStateLabel(value)
     return L(GROUP_STATE_KEYS[value] or "groupState.expanded")
+end
+
+--- A modal title whose two states file their geometry separately.
+--- Everything after "##" is ImGui identity rather than title, so both read the same on screen
+--- while a cleanup modal's "nothing to do" state does not inherit the width of its list state.
+---@param key string A lockey for the visible title
+---@param empty boolean
+---@return string title
+local function CleanupTitle(key, empty)
+    return L(key) .. (empty and "##empty" or "##list")
+end
+
+--- A button in the destructive red, for anything that deletes.
+--- The three colours are pushed and popped as a set: a Pop that misses its Push leaks the red
+--- onto everything drawn after it.
+---@param label string
+---@param danger boolean|nil False draws the ordinary button, for a control that only sometimes
+---                          deletes; omit it where the button always does
+---@return boolean pressed
+local function DangerButton(label, danger)
+    if danger == false then
+        return ImGui.Button(label)
+    end
+
+    ImGui.PushStyleColor(ImGuiCol.Button, 0.6, 0.1, 0.1, 1.0)
+    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0.7, 0.15, 0.15, 1.0)
+    ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.5, 0.05, 0.05, 1.0)
+    local pressed = ImGui.Button(label)
+    ImGui.PopStyleColor(3)
+    return pressed
+end
+
+--- The glyph for a stored category name.
+---@param name string|nil
+---@param fallback string Icon name to use where no category answers to that name
+---@return string glyph
+local function CategoryGlyph(name, fallback)
+    local category = Logic.FindCategory(name)
+    return IconGlyphs[category and category.icon or fallback] or IconGlyphs.Help
+end
+
+--- The category row: a combo that picks an existing category, and a box that names a new one.
+---
+--- **Two widgets, because one cannot do both jobs.** A single box that showed the current
+--- category and accepted a new name had to hold the STORED name - the English word for a
+--- default - beside a combo listing the translated one. Here the combo shows labels and
+--- nothing else, and the box holds only what the player typed.
+---
+--- A typed name wins, and the combo is disabled while there is one, so which of the two is
+--- about to be saved is on screen rather than remembered.
+---@param id string Widget id suffix, unique per modal
+---@param chosen string The stored category name currently selected
+---@param newName string The new category being typed, "" for none
+---@param newIcon string|nil Icon picked for the new category
+---@param pickerOpen boolean Whether the icon picker is showing
+---@return string chosen, string newName, string|nil newIcon, boolean pickerOpen
+local function DrawCategoryPicker(id, chosen, newName, newIcon, pickerOpen)
+    local creating = (newName ~= "")
+
+    ImGui.Text(L("edit.category"))
+    ImGui.SameLine()
+    ImGui.AlignTextToFramePadding()
+    local chosenGlyph = CategoryGlyph(chosen, "Help")
+    ImGui.Text(chosenGlyph .. " ")
+    ImGui.SameLine()
+
+    ImGui.BeginDisabled(creating)
+    ImGui.SetNextItemWidth(CATEGORY_PICKER_WIDTH)
+    if ImGui.BeginCombo("##" .. id .. "Select", chosen ~= "" and Logic.CategoryLabel(chosen) or "") then
+        for _, c in ipairs(Logic.GetCategories()) do
+            local icon = IconGlyphs[c.icon] or IconGlyphs.Help
+            if ComboRow(icon .. " " .. Logic.CategoryLabel(c.name), c.name == chosen) then
+                chosen = c.name
+            end
+        end
+        ImGui.EndCombo()
+    end
+    ImGui.EndDisabled()
+    if not creating and ImGui.IsItemHovered() then ImGui.SetTooltip(L("edit.selectExistingCategory")) end
+
+    ImGui.Text(L("edit.newCategory"))
+    ImGui.SameLine()
+    ImGui.AlignTextToFramePadding()
+
+    -- The icon belongs to the category being created, so there is nothing to pick until there
+    -- is a name. An existing category's icon is the Category Manager's to change, not this.
+    ImGui.BeginDisabled(not creating)
+    -- "##" makes the rest an ImGui identity rather than a label, so nothing after it is drawn.
+    local iconButton = (IconGlyphs[newIcon or DEFAULT_NEW_CATEGORY_ICON] or IconGlyphs.Help) ..
+        "##" .. id .. "IconBtn"
+    if ImGui.Button(iconButton) then
+        pickerOpen = not pickerOpen
+        IconPicker.ClearSearch()
+    end
+    ImGui.EndDisabled()
+    if creating and ImGui.IsItemHovered() then ImGui.SetTooltip(L("category.chooseIconFor", newName)) end
+
+    ImGui.SameLine()
+    ImGui.SetNextItemWidth(CATEGORY_PICKER_WIDTH - CATEGORY_PICKER_ICON_WIDTH)
+    newName = ImGui.InputText("##" .. id .. "New", newName, 50)
+    if ImGui.IsItemHovered() then ImGui.SetTooltip(L("edit.newCategoryTooltip")) end
+
+    if newName == "" then
+        pickerOpen = false
+        newIcon = nil
+    elseif pickerOpen then
+        IconPicker.Draw(newIcon or DEFAULT_NEW_CATEGORY_ICON, function(iconName)
+            newIcon = iconName
+            pickerOpen = false
+            IconPicker.ClearSearch()
+        end, CATEGORY_PICKER_LIST_HEIGHT)
+    end
+
+    return chosen, newName, newIcon, pickerOpen
+end
+
+--- The category a picker's state resolves to, creating it first where the player named a new
+--- one. Returns "" only where nothing is selected and nothing was typed.
+---@param chosen string
+---@param newName string
+---@param newIcon string|nil
+---@return string category The stored name to save against
+local function CommitCategory(chosen, newName, newIcon)
+    if newName == "" then return chosen end
+
+    if not Logic.CategoryExists(newName) then
+        Logic.AddCategory(newName, newIcon or DEFAULT_NEW_CATEGORY_ICON)
+    end
+    return newName
 end
 
 --- "District (Sub-District)" for a location, in the game's language. A location with no
@@ -229,6 +375,7 @@ local editingCategoryOriginalName = nil -- Stores original name when editing to 
 local tempName = ""
 local tempDesc = ""
 local tempCategory = "Misc"
+local tempCategoryNew = ""       -- A category being named for the first time, "" for none
 local tempCategoryIcon = nil     -- Icon chosen for a category being typed for the first time
 local showTempCatPicker = false  -- Inline icon picker open, in the Edit modal
 local tempEnvEnabled = false     -- "Save time and weather with this location"
@@ -247,6 +394,7 @@ local manualZ = 0.0
 local manualYaw = 0.0
 local manualName = "Manual Location"
 local manualCategory = "Misc"
+local manualCategoryNew = ""        -- A category being named for the first time, "" for none
 local manualCategoryIcon = nil      -- Icon chosen for a category being typed for the first time
 local showManualCatPicker = false   -- Inline icon picker open, in the Manual Coordinates modal
 
@@ -262,7 +410,7 @@ end
 --- @param shouldOpen boolean|nil Condition to force open the popup
 --- @param flags number|nil ImGuiWindowFlags (default: AlwaysAutoResize)
 --- @param renderContent function Callback to render the modal body
---- @param options table|nil Optional overrides: { onClose = func, onPreOpen = func }
+--- @param options table|nil Optional overrides: { width = number, onClose = func, onPreOpen = func }
 function UI.WrapperModal(titleSuffix, shouldOpen, flags, renderContent, options)
     local fullTitle = MODAL_PREFIX .. titleSuffix
     flags = flags or ImGuiWindowFlags.AlwaysAutoResize
@@ -278,6 +426,15 @@ function UI.WrapperModal(titleSuffix, shouldOpen, flags, renderContent, options)
     -- queued position and size unconsumed for the NEXT window begun - the mod's own window,
     -- which then jumped a little whenever a modal was drawn.
     if ImGui.IsPopupOpen(fullTitle) then
+        -- Width stated, height auto-fitted. A stated height is a number that has to be kept in
+        -- step with the content and cuts the buttons off the moment it is not.
+        --
+        -- Always rather than Appearing: Appearing loses to a size ImGui already has filed under
+        -- this title, so a width change to an existing modal silently does nothing.
+        if options.width then
+            ImGui.SetNextWindowSize(options.width, 0, ImGuiCond.Always)
+        end
+
         if options.onPreOpen then options.onPreOpen() end
 
         -- Centring subtracts half the window's size, and a height of 0 or AlwaysAutoResize
@@ -564,15 +721,8 @@ local function DrawExportSelectModal()
                         end
 
                         ImGui.SameLine()
-                        local catIcon = "DotsCircle"
-                        for _, c in ipairs(Logic.GetCategories()) do
-                            if c.name == loc.category then
-                                catIcon = c.icon
-                                break
-                            end
-                        end
                         ImGui.PushTextWrapPos(0.0)
-                        ImGui.Text((IconGlyphs[catIcon] or IconGlyphs.Help) .. " " ..
+                        ImGui.Text(CategoryGlyph(loc.category, UNKNOWN_CATEGORY_ICON) .. " " ..
                             (loc.name or L("exportSelect.unnamed")))
 
                         -- Under the name rather than beside it. Sharing the line ran a long name
@@ -628,13 +778,7 @@ local function DrawExportSelectModal()
         onClose = function()
             showExportSelectModal = false
         end,
-        onPreOpen = function()
-            -- Always rather than Appearing. Appearing loses to a size ImGui already has filed
-            -- under this title, and this modal has carried its own since before the width was
-            -- changed. The two cleanup modals took the new width only because their titles are
-            -- new this release and had nothing stored.
-            ImGui.SetNextWindowSize(EXPORT_SELECT_WIDTH, 0, ImGuiCond.Always)
-        end
+        width = EXPORT_SELECT_WIDTH,
     })
 end
 
@@ -802,69 +946,8 @@ local function DrawEditModal()
         ImGui.Spacing()
         ImGui.Separator()
 
-        -- Category
-        ImGui.Text(L("edit.category"))
-        ImGui.SameLine()
-        -- Fetch icon for tempCategory. A name that matches no category is one the user is
-        -- typing now, and its icon is theirs to choose.
-        local currentCatIcon = nil
-        for _, c in ipairs(Logic.GetCategories()) do
-            if c.name == tempCategory then
-                currentCatIcon = c.icon
-                break
-            end
-        end
-        local isNewCategory = (currentCatIcon == nil and tempCategory ~= "")
-        if isNewCategory then
-            currentCatIcon = tempCategoryIcon or DEFAULT_NEW_CATEGORY_ICON
-        end
-        local glyph = IconGlyphs[currentCatIcon or "Help"] or IconGlyphs.Help
-
-        ImGui.AlignTextToFramePadding()
-        if isNewCategory then
-            -- Existing categories own their icon: it is changed in the Category Manager, not here.
-            if ImGui.Button(glyph .. "##catIconBtn") then
-                showTempCatPicker = not showTempCatPicker
-                IconPicker.ClearSearch()
-            end
-            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("category.chooseIconFor", tempCategory)) end
-        else
-            ImGui.Text(glyph .. " ")
-            showTempCatPicker = false
-        end
-        ImGui.SameLine()
-
-        ImGui.SetNextItemWidth(200)
-        tempCategory = ImGui.InputText("##catInput", tempCategory, 50)
-        if ImGui.IsItemHovered() then ImGui.SetTooltip(L("edit.typeNewCategoryNameOr")) end
-        ImGui.SameLine()
-
-        -- Category Dropdown
-        ImGui.SetNextItemWidth(20)
-        if ImGui.BeginCombo("##catSelect", "", ImGuiComboFlags.NoPreview) then
-            local allCats = Logic.GetCategories()
-            for _, c in ipairs(allCats) do
-                local icon = IconGlyphs[c.icon] or IconGlyphs.Help
-                -- Picked by label, stored by name. The box beside this one holds what is
-                -- stored, because a name typed there is a new category and has to be the
-                -- word every location will carry.
-                if ImGui.Selectable(icon .. " " .. Logic.CategoryLabel(c.name), false) then
-                    tempCategory = c.name
-                    tempCategoryIcon = nil
-                    showTempCatPicker = false
-                end
-            end
-            ImGui.EndCombo()
-        end
-        if ImGui.IsItemHovered() then ImGui.SetTooltip(L("edit.selectExistingCategory")) end
-
-        if isNewCategory and showTempCatPicker then
-            IconPicker.Draw(currentCatIcon, function(iconName)
-                tempCategoryIcon = iconName
-                showTempCatPicker = false
-                IconPicker.ClearSearch()
-            end, 200)
-        end
+        tempCategory, tempCategoryNew, tempCategoryIcon, showTempCatPicker =
+            DrawCategoryPicker("cat", tempCategory, tempCategoryNew, tempCategoryIcon, showTempCatPicker)
 
         ImGui.Separator()
 
@@ -900,16 +983,7 @@ local function DrawEditModal()
         ImGui.Separator()
 
         if ImGui.Button(IconGlyphs.ContentSave .. L("edit.save")) then
-            -- Auto-add category if new
-            local exists = false
-            for _, c in ipairs(Logic.GetCategories()) do
-                if c.name == tempCategory then
-                    exists = true; break
-                end
-            end
-            if not exists and tempCategory ~= "" then
-                Logic.AddCategory(tempCategory, tempCategoryIcon or DEFAULT_NEW_CATEGORY_ICON)
-            end
+            local category = CommitCategory(tempCategory, tempCategoryNew, tempCategoryIcon)
 
             if editingId then
                 if editingId == "NEW" then
@@ -917,13 +991,13 @@ local function DrawEditModal()
                     if pendingNewLocation then
                         pendingNewLocation.name = tempName
                         pendingNewLocation.description = tempDesc
-                        pendingNewLocation.category = tempCategory
+                        pendingNewLocation.category = category
                         pendingNewLocation.env = BuildEnvFromBuffers()
                         Logic.AddLocation(pendingNewLocation) -- Save to DB
                         Utils.Notify(L("edit.savedNewLocation", tempName))
                     end
                 else
-                    Logic.UpdateLocation(editingId, tempName, tempDesc, nil, tempCategory)
+                    Logic.UpdateLocation(editingId, tempName, tempDesc, nil, category)
                     Logic.SetLocationEnv(editingId, BuildEnvFromBuffers())
                 end
 
@@ -941,10 +1015,8 @@ local function DrawEditModal()
         onClose = function()
             editingId = nil
         end,
-        onPreOpen = function()
-            -- Pins the initial width so AlwaysAutoResize cannot run away with a long name.
-            ImGui.SetNextWindowSize(500, 0, ImGuiCond.Appearing)
-        end
+        -- Pinned so AlwaysAutoResize cannot run away with a long name.
+        width = EDIT_MODAL_WIDTH,
     })
 end
 
@@ -1017,6 +1089,7 @@ local function OpenEditModal(loc)
     tempName = loc.name
     tempDesc = loc.description or ""
     tempCategory = loc.category or "Misc"
+    tempCategoryNew = ""
     tempCategoryIcon = nil
     showTempCatPicker = false
     SeedEnvBuffers(loc)
@@ -1029,6 +1102,7 @@ local function OpenCreateModal(locData)
     tempName = locData.name
     tempDesc = locData.description or ""
     tempCategory = locData.category or "Misc"
+    tempCategoryNew = ""
     tempCategoryIcon = nil
     showTempCatPicker = false
     SeedEnvBuffers(locData)
@@ -1041,6 +1115,7 @@ local function OpenManualModal()
     manualX, manualY, manualZ, manualYaw = 0.0, 0.0, 0.0, 0.0
     manualName = "Manual Location"
     manualCategory = "Misc"
+    manualCategoryNew = ""
     manualCategoryIcon = nil
     showManualCatPicker = false
     showManualModal = true
@@ -1075,14 +1150,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
     -- A-Z view is ungrouped, so the category isn't shown as a header; show it per row instead.
     if Logic.settings.groupBy == "District" or Logic.settings.groupBy == "A-Z" or loc.favorite then
         local catName = loc.category or "Misc"
-        local catIcon = "DotsCircle"
-        for _, c in ipairs(Logic.GetCategories()) do
-            if c.name == catName then
-                catIcon = c.icon
-                break
-            end
-        end
-        local glyph = IconGlyphs[catIcon] or IconGlyphs.Help
+        local glyph = CategoryGlyph(catName, UNKNOWN_CATEGORY_ICON)
         -- Category: Medium Purple (0.6, 0.4, 0.9) - Readable "Middle Ground"
         ImGui.PushStyleColor(ImGuiCol.Text, 0.6, 0.4, 0.9, 1.0)
         ImGui.Text(L("locationRow.categoryLine", glyph, Logic.CategoryLabel(catName)))
@@ -1464,63 +1532,61 @@ local function DrawLocationsTab()
 
     if currentSort == "Category" then
         -- CATEGORY VIEW
-        local cats = Logic.GetCategories()
-        for _, catInfo in ipairs(cats) do
-            -- Filter locations
-            local catLocs = {}
-            for _, loc in ipairs(Logic.locations) do
-                if not loc.favorite and loc.category == catInfo.name and CheckSearch(loc) then
-                    table.insert(catLocs, loc)
-                    filteredLocationCount = filteredLocationCount + 1
+        -- Bucketed by Logic.GroupLocations, the same call the Export Selected list makes, so the
+        -- two cannot come out in a different order. It groups what it is given, so the filter
+        -- runs first and the footer's count comes off the filtered list rather than the groups.
+        local visible = {}
+        for _, loc in ipairs(Logic.locations) do
+            if not loc.favorite and CheckSearch(loc) then table.insert(visible, loc) end
+        end
+
+        for _, group in ipairs(Logic.GroupLocations(visible, "Category")) do
+            local catLocs = group.locations
+            -- Counted off the groups rather than off `visible`: a location tagged with a
+            -- category that no longer exists lands in no group and is not drawn, so counting
+            -- it would put a number in the footer that nothing on screen adds up to.
+            filteredLocationCount = filteredLocationCount + #catLocs
+
+            -- Headed by label, keyed and exported on the stored name. The collapsed state a
+            -- player sets is remembered against the key.
+            local catKey = group.key
+            ApplyGroupOpenState(catKey)
+
+            ImGui.PushStyleColor(ImGuiCol.Header, 0, 0, 0, 0.0)
+            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
+            ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
+
+            local isOpen = ImGui.CollapsingHeader((IconGlyphs[group.icon] or IconGlyphs.Star) ..
+                " " .. group.name .. " (" .. #catLocs .. ")##" .. catKey)
+            RecordGroupOpenState(catKey, isOpen)
+            ImGui.PopStyleColor(3)
+
+            -- Context Menu for Export (Must be outside the isOpen check)
+            if ImGui.BeginPopupContextItem("##ctx_" .. catKey) then
+                if ImGui.MenuItem(IconGlyphs.ContentCopy .. L("checkSearch.exportCategory")) then
+                    local data, c = Impex.ExportCategory(group.value)
+                    if data then
+                        OpenExport(L("locations.exportCategoryTitle", group.name, c), data)
+                    else
+                        Utils.NotifyWarning(L("checkSearch.noLocationsToExport2"))
+                    end
                 end
+                ImGui.EndPopup()
             end
+            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("checkSearch.rightClickForOptions")) end
 
-            if #catLocs > 0 then
-                table.sort(catLocs, SortLocationByName)
-
-                local iconStr = IconGlyphs[catInfo.icon] or IconGlyphs.Star
-
-                -- Headed by label, keyed and exported on the stored name. The collapsed state
-                -- a player sets is remembered against the key.
-                local catLabel = Logic.CategoryLabel(catInfo.name)
-                local catKey = "cat_" .. catInfo.name
-                ApplyGroupOpenState(catKey)
-
-                ImGui.PushStyleColor(ImGuiCol.Header, 0, 0, 0, 0.0)
-                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0.0)
-                ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0.0)
-
-                local isOpen = ImGui.CollapsingHeader(iconStr .. " " .. catLabel .. " (" .. #catLocs .. ")##cat_" .. catInfo.name)
-                RecordGroupOpenState(catKey, isOpen)
-                ImGui.PopStyleColor(3)
-
-                -- Context Menu for Export (Must be outside the isOpen check)
-                if ImGui.BeginPopupContextItem("##ctx_cat" .. catInfo.name) then
-                    if ImGui.MenuItem(IconGlyphs.ContentCopy .. L("checkSearch.exportCategory")) then
-                        local data, c = Impex.ExportCategory(catInfo.name)
-                        if data then
-                            OpenExport(L("locations.exportCategoryTitle", catLabel, c), data)
-                        else
-                            Utils.NotifyWarning(L("checkSearch.noLocationsToExport2"))
-                        end
+            if isOpen then
+                ImGui.Indent(10)
+                if ImGui.BeginTable("CatTable" .. catKey, 1, ImGuiTableFlags.RowBg) then
+                    ImGui.TableSetupColumn("Loc", ImGuiTableColumnFlags.WidthStretch)
+                    for _, loc in ipairs(catLocs) do
+                        ImGui.TableNextRow()
+                        ImGui.TableSetColumnIndex(0)
+                        DrawLocationRow(loc, "Cat")
                     end
-                    ImGui.EndPopup()
+                    ImGui.EndTable()
                 end
-                if ImGui.IsItemHovered() then ImGui.SetTooltip(L("checkSearch.rightClickForOptions")) end
-
-                if isOpen then
-                    ImGui.Indent(10)
-                    if ImGui.BeginTable("CatTable" .. catInfo.name, 1, ImGuiTableFlags.RowBg) then
-                        ImGui.TableSetupColumn("Loc", ImGuiTableColumnFlags.WidthStretch)
-                        for _, loc in ipairs(catLocs) do
-                            ImGui.TableNextRow()
-                            ImGui.TableSetColumnIndex(0)
-                            DrawLocationRow(loc, "Cat")
-                        end
-                        ImGui.EndTable()
-                    end
-                    ImGui.Unindent(10)
-                end
+                ImGui.Unindent(10)
             end
         end
     elseif currentSort == "A-Z" then
@@ -2358,13 +2424,9 @@ local function DrawSettingsTab()
 
     -- Col 1
     -- Delete All (Red Button)
-    ImGui.PushStyleColor(ImGuiCol.Button, 0.6, 0.1, 0.1, 1.0)
-    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0.7, 0.15, 0.15, 1.0)
-    ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.5, 0.05, 0.05, 1.0)
-    if ImGui.Button(IconGlyphs.Delete .. L("resetTooltip.deleteAllLocations")) then
+    if DangerButton(IconGlyphs.Delete .. L("resetTooltip.deleteAllLocations")) then
         confirmDeleteAll = true
     end
-    ImGui.PopStyleColor(3)
     if ImGui.IsItemHovered() then ImGui.SetTooltip(L("resetTooltip.permanentlyDeleteAllLocations")) end
 
     ImGui.NextColumn()
@@ -2482,9 +2544,7 @@ end
 local function DrawPresetCleanupModal()
     local empty = #presetOrphans == 0
 
-    -- Everything after ## is identity rather than title: both states read the same on screen
-    -- while ImGui files their geometry separately.
-    local title = L("presetCleanup.title") .. (empty and "##empty" or "##list")
+    local title = CleanupTitle("presetCleanup.title", empty)
 
     UI.WrapperModal(title, showPresetCleanupModal, ImGuiWindowFlags.NoResize,
         function()
@@ -2634,12 +2694,7 @@ local function DrawPresetCleanupModal()
                     and (IconGlyphs.Delete .. L("presetCleanup.deleteCount", toDelete))
                     or (IconGlyphs.Check .. L("presetCleanup.keepCount", totalSelected))
 
-                if toDelete > 0 then
-                    ImGui.PushStyleColor(ImGuiCol.Button, 0.6, 0.1, 0.1, 1.0)
-                    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0.7, 0.15, 0.15, 1.0)
-                    ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.5, 0.05, 0.05, 1.0)
-                end
-                if ImGui.Button(label) then
+                if DangerButton(label, toDelete > 0) then
                     local removed, kept =
                         Impex.RemovePresetLocations(presetCleanupSelection, presetCleanupDeleteEdited)
 
@@ -2649,9 +2704,6 @@ local function DrawPresetCleanupModal()
 
                     showPresetCleanupModal = false
                     ImGui.CloseCurrentPopup()
-                end
-                if toDelete > 0 then
-                    ImGui.PopStyleColor(3)
                 end
             end
 
@@ -2664,15 +2716,7 @@ local function DrawPresetCleanupModal()
             onClose = function()
                 showPresetCleanupModal = false
             end,
-            onPreOpen = function()
-                -- Width stated, height auto-fitted. A stated height is a number that has to be
-                -- kept in step with the content, and it cuts the buttons off the moment it is
-                -- not. WrapperModal asserts the centre for two frames, which is what lets the
-                -- height stay unknown on the first one.
-                ImGui.SetNextWindowSize(
-                    empty and PRESET_CLEANUP_EMPTY_WIDTH or PRESET_CLEANUP_WIDTH,
-                    0, ImGuiCond.Always)
-            end
+            width = empty and PRESET_CLEANUP_EMPTY_WIDTH or PRESET_CLEANUP_WIDTH,
         })
 end
 
@@ -2680,9 +2724,8 @@ end
 -- Custom categories only. A default with nothing in it is the normal state of the list every
 -- location falls back into, not something to tidy away.
 local function DrawCategoryCleanupModal()
-    -- Same two-states-one-title hazard as the preset cleanup: identity after ##, title before.
     local empty = #unusedCategories == 0
-    local title = L("categoryCleanup.title") .. (empty and "##empty" or "##list")
+    local title = CleanupTitle("categoryCleanup.title", empty)
 
     UI.WrapperModal(title, showCategoryCleanupModal, ImGuiWindowFlags.NoResize, function()
             if #unusedCategories == 0 then
@@ -2730,17 +2773,13 @@ local function DrawCategoryCleanupModal()
                 ImGui.Text(L("categoryCleanup.tickACategoryToRemoveIt"))
                 ImGui.PopStyleColor()
             else
-                ImGui.PushStyleColor(ImGuiCol.Button, 0.6, 0.1, 0.1, 1.0)
-                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0.7, 0.15, 0.15, 1.0)
-                ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.5, 0.05, 0.05, 1.0)
-                if ImGui.Button(IconGlyphs.Delete .. L("categoryCleanup.removeCount", selected)) then
+                if DangerButton(IconGlyphs.Delete .. L("categoryCleanup.removeCount", selected)) then
                     local removed = Logic.DeleteCategories(categoryCleanupSelection)
                     Utils.Notify(L(removed == 1 and "categoryCleanup.removedOne"
                         or "categoryCleanup.removedMany", removed))
                     showCategoryCleanupModal = false
                     ImGui.CloseCurrentPopup()
                 end
-                ImGui.PopStyleColor(3)
             end
 
             ImGui.SameLine()
@@ -2752,9 +2791,7 @@ local function DrawCategoryCleanupModal()
             onClose = function()
                 showCategoryCleanupModal = false
             end,
-            onPreOpen = function()
-                ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH, 0, ImGuiCond.Always)
-            end
+            width = CATEGORY_CLEANUP_WIDTH,
         })
 end
 
@@ -2843,19 +2880,9 @@ local function DrawAddCategoryModal()
         newCatName = ImGui.InputText("##catName", newCatName, 50)
 
         -- Check for duplicates
-        local isDuplicate = false
-        if newCatName ~= "" then
-            for _, c in ipairs(Logic.GetCategories()) do
-                -- Check equality, but ignore self if editing
-                if string.lower(c.name) == string.lower(newCatName) then
-                    if not isEditingCategory or (isEditingCategory and c.name ~= editingCategoryOriginalName) then
-                        isDuplicate = true
-                        break
-                    end
-                end
-            end
-        end
-
+        -- The category being renamed does not collide with itself.
+        local isDuplicate = Logic.CategoryExists(newCatName,
+            isEditingCategory and editingCategoryOriginalName or nil)
         if isDuplicate then
             ImGui.SameLine()
             ImGui.TextColored(1.0, 0.4, 0.4, 1.0, L("addCategory.alreadyExists"))
@@ -2925,10 +2952,8 @@ local function DrawAddCategoryModal()
             isEditingCategory = false
             IconPicker.ClearSearch()
         end,
-        onPreOpen = function()
-            -- Set Fixed Width (900) to allow 13 icons with scrollbar
-            ImGui.SetNextWindowSize(900, 0, ImGuiCond.Always)
-        end
+        -- Wide enough for 13 icons across, plus the scrollbar.
+        width = ICON_PICKER_MODAL_WIDTH,
     })
 end
 
@@ -2968,14 +2993,38 @@ local function DrawDeleteCategoryConfirmModal()
     })
 end
 
--- The modal's action buttons, in the order they are drawn. They share one row, and the
--- window is sized from these same strings, so the two cannot drift apart.
-local MANUAL_ACTION_LABELS = {
-    IconGlyphs.ContentSave .. " Save",
-    IconGlyphs.ContentSaveMove .. " Save & Teleport",
-    IconGlyphs.RunFast .. " Teleport",
-    IconGlyphs.Cancel .. " Cancel",
-}
+--- The modal's action buttons, in the order they are drawn. They share one row, and the window
+--- is sized from these same strings, so the two cannot drift apart.
+---
+--- Built per call rather than held in a constant: a label is a translation, and the player can
+--- change language while the mod is loaded.
+---@return table labels
+local function ManualActionLabels()
+    return {
+        IconGlyphs.ContentSave .. L("edit.save"),
+        IconGlyphs.ContentSaveMove .. L("manual.saveAndTeleport"),
+        IconGlyphs.RunFast .. L("manual.teleport"),
+        IconGlyphs.Cancel .. L("exportSelect.cancel"),
+    }
+end
+
+--- The width that holds all four action buttons on one row.
+--- NoResize means a window too narrow for them clips the last one with no way to widen it, so
+--- the labels are measured rather than guessed - true whatever the font does to their width,
+--- and in whatever language they are drawn.
+---@return number
+local function ManualModalWidth()
+    local labels = ManualActionLabels()
+    local style = ImGui.GetStyle()
+
+    local buttonsW = 0
+    for _, label in ipairs(labels) do
+        buttonsW = buttonsW + ImGui.CalcTextSize(label) + (style.FramePadding.x * 2)
+    end
+    buttonsW = buttonsW + (style.ItemSpacing.x * (#labels - 1)) + (style.WindowPadding.x * 2)
+
+    return math.max(MANUAL_MODAL_MIN_WIDTH, math.ceil(buttonsW) + 4)
+end
 
 --- Draw the Manual Coordinates modal (save/teleport to typed or pasted XYZ)
 local function DrawManualModal()
@@ -3036,58 +3085,9 @@ local function DrawManualModal()
         ImGui.SetNextItemWidth(-1)
         manualName = ImGui.InputText("##manualName", manualName, 100)
 
-        -- Category (same input + dropdown pattern as the Edit modal)
-        ImGui.Text(L("edit.category"))
-        ImGui.SameLine()
-        local currentCatIcon = nil
-        for _, c in ipairs(Logic.GetCategories()) do
-            if c.name == manualCategory then
-                currentCatIcon = c.icon
-                break
-            end
-        end
-        local isNewCategory = (currentCatIcon == nil and manualCategory ~= "")
-        if isNewCategory then
-            currentCatIcon = manualCategoryIcon or DEFAULT_NEW_CATEGORY_ICON
-        end
-        local glyph = IconGlyphs[currentCatIcon or "Help"] or IconGlyphs.Help
-        ImGui.AlignTextToFramePadding()
-        if isNewCategory then
-            if ImGui.Button(glyph .. "##manualCatIconBtn") then
-                showManualCatPicker = not showManualCatPicker
-                IconPicker.ClearSearch()
-            end
-            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("category.chooseIconFor", manualCategory)) end
-        else
-            ImGui.Text(glyph .. " ")
-            showManualCatPicker = false
-        end
-        ImGui.SameLine()
-        ImGui.SetNextItemWidth(200)
-        manualCategory = ImGui.InputText("##manualCatInput", manualCategory, 50)
-        if ImGui.IsItemHovered() then ImGui.SetTooltip(L("manual.typeNewCategoryNameOr")) end
-        ImGui.SameLine()
-        ImGui.SetNextItemWidth(20)
-        if ImGui.BeginCombo("##manualCatSelect", "", ImGuiComboFlags.NoPreview) then
-            for _, c in ipairs(Logic.GetCategories()) do
-                local icon = IconGlyphs[c.icon] or IconGlyphs.Help
-                -- Picked by label, stored by name, the same way the Edit modal does it.
-                if ImGui.Selectable(icon .. " " .. Logic.CategoryLabel(c.name), false) then
-                    manualCategory = c.name
-                    manualCategoryIcon = nil
-                    showManualCatPicker = false
-                end
-            end
-            ImGui.EndCombo()
-        end
-
-        if isNewCategory and showManualCatPicker then
-            IconPicker.Draw(currentCatIcon, function(iconName)
-                manualCategoryIcon = iconName
-                showManualCatPicker = false
-                IconPicker.ClearSearch()
-            end, 200)
-        end
+        manualCategory, manualCategoryNew, manualCategoryIcon, showManualCatPicker =
+            DrawCategoryPicker("manualCat", manualCategory, manualCategoryNew, manualCategoryIcon,
+                showManualCatPicker)
 
         ImGui.Separator()
 
@@ -3096,12 +3096,8 @@ local function DrawManualModal()
             return manualX == 0.0 and manualY == 0.0 and manualZ == 0.0
         end
         local function ensureCategory()
-            for _, c in ipairs(Logic.GetCategories()) do
-                if c.name == manualCategory then return end
-            end
-            if manualCategory ~= "" then
-                Logic.AddCategory(manualCategory, manualCategoryIcon or DEFAULT_NEW_CATEGORY_ICON)
-            end
+            manualCategory = CommitCategory(manualCategory, manualCategoryNew, manualCategoryIcon)
+            manualCategoryNew = ""
         end
         local function buildLoc()
             return Logic.CreateManualLocationData(manualX, manualY, manualZ, manualYaw, manualName, manualCategory)
@@ -3111,8 +3107,11 @@ local function DrawManualModal()
             ImGui.CloseCurrentPopup()
         end
 
-        -- Action buttons
-        if ImGui.Button(MANUAL_ACTION_LABELS[1]) then
+        -- Action buttons. Read once here, from the same function the window width was measured
+        -- from, so a label cannot differ between the measurement and the button.
+        local manualActions = ManualActionLabels()
+
+        if ImGui.Button(manualActions[1]) then
             if allZero() then
                 Utils.NotifyWarning(L("close.enterCoordinatesFirstAreAll"))
             else
@@ -3123,7 +3122,7 @@ local function DrawManualModal()
             end
         end
         ImGui.SameLine()
-        if ImGui.Button(MANUAL_ACTION_LABELS[2]) then
+        if ImGui.Button(manualActions[2]) then
             if allZero() then
                 Utils.NotifyWarning(L("close.enterCoordinatesFirstAreAll"))
             else
@@ -3135,7 +3134,7 @@ local function DrawManualModal()
             end
         end
         ImGui.SameLine()
-        if ImGui.Button(MANUAL_ACTION_LABELS[3]) then
+        if ImGui.Button(manualActions[3]) then
             if allZero() then
                 Utils.NotifyWarning(L("close.enterCoordinatesFirstAreAll"))
             else
@@ -3144,27 +3143,14 @@ local function DrawManualModal()
             end
         end
         ImGui.SameLine()
-        if ImGui.Button(MANUAL_ACTION_LABELS[4]) then
+        if ImGui.Button(manualActions[4]) then
             close()
         end
     end, {
         onClose = function()
             showManualModal = false
         end,
-        onPreOpen = function()
-            -- The width has to hold the four action buttons on one row, and NoResize means a
-            -- window too narrow for them clips the last one with no way to widen it. Measuring
-            -- the labels keeps that true whatever the font does to their width.
-            local style = ImGui.GetStyle()
-            local buttonsW = 0
-            for _, label in ipairs(MANUAL_ACTION_LABELS) do
-                buttonsW = buttonsW + ImGui.CalcTextSize(label) + (style.FramePadding.x * 2)
-            end
-            buttonsW = buttonsW + (style.ItemSpacing.x * (#MANUAL_ACTION_LABELS - 1))
-                + (style.WindowPadding.x * 2)
-
-            ImGui.SetNextWindowSize(math.max(420, math.ceil(buttonsW) + 4), 0, ImGuiCond.Always)
-        end
+        width = ManualModalWidth(),
     })
 end
 
