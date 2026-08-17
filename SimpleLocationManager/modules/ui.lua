@@ -479,14 +479,19 @@ local function DrawExportSelectModal()
                         break
                     end
                 end
+                ImGui.PushTextWrapPos(0.0)
                 ImGui.Text((IconGlyphs[catIcon] or IconGlyphs.Help) .. " " .. (loc.name or L("exportSelect.unnamed")))
 
                 local districtStr = (loc.district or "Unknown")
                 if loc.subDistrict and loc.subDistrict ~= "" then
                     districtStr = districtStr .. " (" .. loc.subDistrict .. ")"
                 end
-                ImGui.SameLine()
-                ImGui.TextColored(0.5, 0.5, 0.5, 1.0, L("exportSelect.districtLine", districtStr))
+                -- Under the name rather than beside it. Sharing the line ran a long name and a
+                -- long district past the right edge, where the child clips rather than wraps.
+                ImGui.Indent(EXPORT_SELECT_DISTRICT_INDENT)
+                ImGui.TextColored(0.5, 0.5, 0.5, 1.0, districtStr)
+                ImGui.Unindent(EXPORT_SELECT_DISTRICT_INDENT)
+                ImGui.PopTextWrapPos()
 
                 ImGui.PopID()
             end
@@ -2279,6 +2284,9 @@ local PRESET_CLEANUP_OWNER_INDENT = 22
 local CATEGORY_CLEANUP_WIDTH = 320
 local CATEGORY_CLEANUP_HEIGHT = 260
 
+-- Lines the district up with the location name above it, past the checkbox.
+local EXPORT_SELECT_DISTRICT_INDENT = 28
+
 --- One side of the preset cleanup location list.
 --- @param wantEdited boolean Draw the edited locations rather than the ones being deleted
 --- @param showOwner boolean Name the preset each location came from
@@ -2313,12 +2321,18 @@ end
 -- re-imports itself on the next load, so offering to delete its locations would promise a
 -- removal that undoes itself.
 local function DrawPresetCleanupModal()
+    local empty = #presetOrphans == 0
+
     -- Two side-by-side lists need a width stated rather than derived: auto-resize measures
     -- the widest row, so one long location name would decide how wide the modal is.
-    local flags = (#presetOrphans == 0) and ImGuiWindowFlags.AlwaysAutoResize
-        or ImGuiWindowFlags.NoResize
+    local flags = empty and ImGuiWindowFlags.AlwaysAutoResize or ImGuiWindowFlags.NoResize
 
-    UI.WrapperModal(L("presetCleanup.title"), showPresetCleanupModal, flags,
+    -- Everything after ## is identity rather than title, so both states read the same on
+    -- screen while ImGui files their geometry separately. Sharing one identity had the
+    -- small state centred against the tall one's remembered height, which put it at the top.
+    local title = L("presetCleanup.title") .. (empty and "##empty" or "##list")
+
+    UI.WrapperModal(title, showPresetCleanupModal, flags,
         function()
             if #presetOrphans == 0 then
                 ImGui.Text(L("presetCleanup.everyPresetYourLocationsCame"))
@@ -2508,7 +2522,11 @@ end
 -- Custom categories only. A default with nothing in it is the normal state of the list every
 -- location falls back into, not something to tidy away.
 local function DrawCategoryCleanupModal()
-    UI.WrapperModal(L("categoryCleanup.title"), showCategoryCleanupModal,
+    -- Same two-states-one-title hazard as the preset cleanup: identity after ##, title before.
+    local title = L("categoryCleanup.title") ..
+        (#unusedCategories == 0 and "##empty" or "##list")
+
+    UI.WrapperModal(title, showCategoryCleanupModal,
         ImGuiWindowFlags.AlwaysAutoResize, function()
             if #unusedCategories == 0 then
                 ImGui.Text(L("categoryCleanup.everyCategoryIsInUse"))
