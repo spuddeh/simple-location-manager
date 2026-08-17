@@ -2235,12 +2235,49 @@ local function DrawSettingsTab()
     })
 end
 
+-- Preset cleanup modal geometry. The lists scroll inside a fixed height so a player with
+-- forty orphaned locations gets the same modal as one with three.
+local PRESET_CLEANUP_WIDTH = 720
+local PRESET_CLEANUP_FILE_COL = 300
+local PRESET_CLEANUP_LIST_HEIGHT = 260
+
+--- One side of the preset cleanup location list.
+--- @param wantEdited boolean Draw the edited locations rather than the ones being deleted
+--- @param showOwner boolean Name the preset each location came from
+local function DrawPresetCleanupLocations(wantEdited, showOwner)
+    for _, orphan in ipairs(presetOrphans) do
+        if presetCleanupSelection[orphan.file] then
+            for _, entry in ipairs(orphan.locations) do
+                -- With deleteEdited on, an edited location is being deleted like any other,
+                -- so it belongs in the removal list rather than in the kept list.
+                local isKept = entry.edited and not presetCleanupDeleteEdited
+                if isKept == wantEdited then
+                    ImGui.Bullet()
+                    ImGui.SameLine()
+                    ImGui.PushTextWrapPos(0.0)
+                    ImGui.Text(entry.name)
+                    if showOwner then
+                        ImGui.SameLine()
+                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, L("common.parenthesised", orphan.file))
+                    end
+                    ImGui.PopTextWrapPos()
+                end
+            end
+        end
+    end
+end
+
 -- Remove Preset Locations Modal
 -- Lists only presets whose file has gone from the presets directory. An installed preset
 -- re-imports itself on the next load, so offering to delete its locations would promise a
 -- removal that undoes itself.
 local function DrawPresetCleanupModal()
-    UI.WrapperModal(L("presetCleanup.title"), showPresetCleanupModal, ImGuiWindowFlags.AlwaysAutoResize,
+    -- Two side-by-side lists need a width stated rather than derived: auto-resize measures
+    -- the widest row, so one long location name would decide how wide the modal is.
+    local flags = (#presetOrphans == 0) and ImGuiWindowFlags.AlwaysAutoResize
+        or ImGuiWindowFlags.NoResize
+
+    UI.WrapperModal(L("presetCleanup.title"), showPresetCleanupModal, flags,
         function()
             if #presetOrphans == 0 then
                 ImGui.Text(L("presetCleanup.everyPresetYourLocationsCame"))
@@ -2263,31 +2300,82 @@ local function DrawPresetCleanupModal()
 
             local totalSelected = 0
             local editedSelected = 0
-
+            local selectedFiles = 0
             for _, orphan in ipairs(presetOrphans) do
-                local ticked = presetCleanupSelection[orphan.file] or false
-                local newTicked, changed = ImGui.Checkbox("##preset_" .. orphan.file, ticked)
-                if changed then
-                    presetCleanupSelection[orphan.file] = newTicked
-                    ticked = newTicked
-                end
-                ImGui.SameLine()
-                ImGui.Text(orphan.file)
-                ImGui.SameLine()
-
-                local detail = L(orphan.total == 1 and "presetCleanup.oneLocation" or "presetCleanup.manyLocations",
-                    orphan.total)
-                if orphan.edited > 0 then
-                    detail = detail .. ", " .. orphan.edited .. " edited"
-                end
-                ImGui.TextColored(0.7, 0.7, 0.7, 1.0, detail)
-
-                if ticked then
+                if presetCleanupSelection[orphan.file] then
                     totalSelected = totalSelected + orphan.total
                     editedSelected = editedSelected + orphan.edited
+                    selectedFiles = selectedFiles + 1
                 end
             end
 
+            ImGui.Columns(2, "PresetCleanupCols", false)
+            ImGui.SetColumnWidth(0, PRESET_CLEANUP_FILE_COL)
+
+            -- Left: the preset files, one tick each.
+            ImGui.TextColored(0.7, 0.7, 0.7, 1.0, L("presetCleanup.presetFiles"))
+            ImGui.Spacing()
+
+            if ImGui.BeginChild("PresetFiles", 0, PRESET_CLEANUP_LIST_HEIGHT, false) then
+                for _, orphan in ipairs(presetOrphans) do
+                    local ticked = presetCleanupSelection[orphan.file] or false
+                    local newTicked, changed = ImGui.Checkbox("##preset_" .. orphan.file, ticked)
+                    if changed then
+                        presetCleanupSelection[orphan.file] = newTicked
+                    end
+                    ImGui.SameLine()
+                    ImGui.PushTextWrapPos(0.0)
+                    ImGui.Text(orphan.file)
+
+                    local detail = L(orphan.total == 1 and "presetCleanup.oneLocation"
+                        or "presetCleanup.manyLocations", orphan.total)
+                    if orphan.edited > 0 then
+                        detail = detail .. L("presetCleanup.editedSuffix", orphan.edited)
+                    end
+                    ImGui.Indent(24)
+                    ImGui.TextColored(0.7, 0.7, 0.7, 1.0, detail)
+                    ImGui.Unindent(24)
+                    ImGui.PopTextWrapPos()
+                    ImGui.Spacing()
+                end
+                ImGui.EndChild()
+            end
+
+            ImGui.NextColumn()
+
+            -- Right: what the tick boxes on the left actually add up to. The file name is
+            -- only worth a column once more than one preset is ticked; with one, every row
+            -- would repeat the same name.
+            local showOwner = selectedFiles > 1
+            ImGui.TextColored(0.7, 0.7, 0.7, 1.0,
+                L("presetCleanup.willBeRemovedHeader", totalSelected - (presetCleanupDeleteEdited and 0 or editedSelected)))
+            ImGui.Spacing()
+
+            if ImGui.BeginChild("PresetLocations", 0, PRESET_CLEANUP_LIST_HEIGHT, true) then
+                if totalSelected == 0 then
+                    ImGui.PushStyleColor(ImGuiCol.Text, 0.5, 0.5, 0.5, 1.0)
+                    ImGui.TextWrapped(L("presetCleanup.tickAPresetToSeeWhat"))
+                    ImGui.PopStyleColor()
+                else
+                    DrawPresetCleanupLocations(false, showOwner)
+
+                    -- Edited locations are listed apart rather than mixed in, because what
+                    -- happens to them is the opposite of what happens to the rest.
+                    if editedSelected > 0 and not presetCleanupDeleteEdited then
+                        ImGui.Spacing()
+                        ImGui.Separator()
+                        ImGui.Spacing()
+                        ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.8, 0.3, 1.0)
+                        ImGui.TextWrapped(L("presetCleanup.keptEditedHeader", editedSelected))
+                        ImGui.PopStyleColor()
+                        ImGui.Spacing()
+                        DrawPresetCleanupLocations(true, showOwner)
+                    end
+                end
+                ImGui.EndChild()
+            end
+
+            ImGui.Columns(1)
             ImGui.Spacing()
             ImGui.Separator()
             ImGui.Spacing()
@@ -2334,8 +2422,8 @@ local function DrawPresetCleanupModal()
                 ImGui.PopStyleColor()
             else
                 local label = toDelete > 0
-                    and (IconGlyphs.Delete .. " Delete " .. toDelete)
-                    or (IconGlyphs.Check .. " Keep " .. totalSelected .. " as your own")
+                    and (IconGlyphs.Delete .. L("presetCleanup.deleteCount", toDelete))
+                    or (IconGlyphs.Check .. L("presetCleanup.keepCount", totalSelected))
 
                 if toDelete > 0 then
                     ImGui.PushStyleColor(ImGuiCol.Button, 0.6, 0.1, 0.1, 1.0)
@@ -2346,11 +2434,9 @@ local function DrawPresetCleanupModal()
                     local removed, kept =
                         Impex.RemovePresetLocations(presetCleanupSelection, presetCleanupDeleteEdited)
 
-                    local message = "Removed " .. removed .. " preset location(s)"
-                    if kept > 0 then
-                        message = message .. ", kept " .. kept .. " you had edited"
-                    end
-                    Utils.Notify(message)
+                    Utils.Notify(kept > 0
+                        and L("presetCleanup.removedAndKept", removed, kept)
+                        or L("presetCleanup.removed", removed))
 
                     showPresetCleanupModal = false
                     ImGui.CloseCurrentPopup()
@@ -2368,6 +2454,11 @@ local function DrawPresetCleanupModal()
         end, {
             onClose = function()
                 showPresetCleanupModal = false
+            end,
+            onPreOpen = function()
+                if #presetOrphans > 0 then
+                    ImGui.SetNextWindowSize(PRESET_CLEANUP_WIDTH, 0, ImGuiCond.Appearing)
+                end
             end
         })
 end

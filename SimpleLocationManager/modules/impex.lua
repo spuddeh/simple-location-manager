@@ -814,7 +814,9 @@ end
 --- Removing the preset download takes its .txt away and leaves its locations behind; this is
 --- what finds them. Only missing files are reported, because an installed preset re-imports
 --- itself on the next load and deleting its locations would achieve nothing.
----@return table orphans Array of { file = string, total = number, edited = number }, by file name
+--- Each orphan carries the locations themselves, not just a count, so the confirmation can
+--- name what it is about to delete from the same snapshot the counts came from.
+---@return table orphans Array of { file, total, edited, locations = { { name, edited } } }
 function Impex.GetOrphanedPresets()
     local present = InstalledPresetFiles()
     local byFile = {}
@@ -824,16 +826,25 @@ function Impex.GetOrphanedPresets()
         local file = loc.sourceDetail
         if file and loc.sourceType and string.find(loc.sourceType, "SLM Preset") and not present[file] then
             if not byFile[file] then
-                byFile[file] = { file = file, total = 0, edited = 0 }
+                byFile[file] = { file = file, total = 0, edited = 0, locations = {} }
                 table.insert(orphans, byFile[file])
             end
-            byFile[file].total = byFile[file].total + 1
-            if string.find(loc.sourceType, "%(Edited%)") then
-                byFile[file].edited = byFile[file].edited + 1
-            end
+
+            local entry = byFile[file]
+            local edited = string.find(loc.sourceType, "%(Edited%)") ~= nil
+
+            entry.total = entry.total + 1
+            if edited then entry.edited = entry.edited + 1 end
+            table.insert(entry.locations, {
+                name = loc.name or "Unnamed",
+                edited = edited,
+            })
         end
     end
 
+    for _, orphan in ipairs(orphans) do
+        table.sort(orphan.locations, function(a, b) return a.name < b.name end)
+    end
     table.sort(orphans, function(a, b) return a.file < b.file end)
     return orphans
 end

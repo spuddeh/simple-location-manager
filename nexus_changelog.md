@@ -2,7 +2,7 @@
 
 ### [Unreleased - v1.7.0]
 - New: Translations. The mod follows your game's language, or one you pick in Settings. Anything not yet translated shows in English. Adding a language takes a single file in the mod's lang folder - see the Translating article.
-- New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. A location you had edited yourself is kept and becomes your own, unless you tick the box to delete those too.
+- New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
 - Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
 - Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 
@@ -106,7 +106,7 @@ Paste this whole block into the GitHub Release body. Everything above the marker
 Adds translations and a cleanup for locations left behind by an uninstalled preset. Lazy Mode is gone - teleport is always available. Requires Codeware and Map Waypoint Bug Fixes; Window Utils is optional.
 <!-- nexus-description-end -->
 New: Translations. The mod follows your game's language, or one you pick in Settings. Anything not yet translated shows in English. Adding a language takes a single file in the mod's lang folder - see the Translating article.
-New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. A location you had edited yourself is kept and becomes your own, unless you tick the box to delete those too.
+New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
 Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
 Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 ```
@@ -114,7 +114,7 @@ Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's 
 ---
 ## Stickied Comment BBCode
 
-The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts. Post the last one first and work back, so the newest sits at the top of the thread.
+The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts. Post the last one first and work back, so the newest sits at the top of the thread.
 
 ### Comment 1 - current
 
@@ -123,10 +123,21 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 
 [b][size=3]Version 1.7.0[/size][/b]
 [list][*]New: Translations. The mod follows your game's language, or one you pick in Settings. Anything not yet translated shows in English. Adding a language takes a single file in the mod's lang folder - see the Translating article.
-[*]New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. A location you had edited yourself is kept and becomes your own, unless you tick the box to delete those too.
+[*]New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
 [*]Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
 [*]Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 [/list]
+```
+
+> Character count: 1160 / 5000
+
+### Comment 2 - older versions
+
+```
+[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
+
+[i](Continued - older versions)[/i]
+
 [b][size=3]Version 1.6.0[/size][/b]
 [spoiler][list][*]New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies what the game is doing now. The two are separately optional, so a location can set one and leave the other alone.
 [*]New: Right-click a teleport button to teleport and apply that location's saved time and weather. Left-click teleports as always, and releases any weather SLM was holding.
@@ -150,23 +161,23 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [*]Fix: The Cancel button was cut off the edge of the Manual Coordinates window.
 [*]Minor code improvements
 [/list][/spoiler]
-```
-
-> Character count: 4391 / 5000
-
-### Comment 2 - older versions
-
-```
-[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
-
-[i](Continued - older versions)[/i]
-
 [b][size=3]Version 1.5.0[/size][/b]
 [spoiler][list][*]Feature: Manual Coordinates - a new button next to "Add current location" lets you save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. Choose Save, Save & Teleport, or Teleport.
 [*]Feature: SmartPaste™ - the Manual Coordinates box understands labeled values (x= y= z= yaw=, including AMM JSON), full CET Vector4.new(...) / EulerAngles.new(...) teleport commands, and plain "x, y, z" number lists. It drives the fields and has a clear button. Always double-check the auto-filled values before saving or teleporting.
 [*]Feature: A-Z View - a third sort mode that lists every location in one flat alphabetical list, with no district or category grouping.
 [*]Fix: Renamed the mod's window titles from "[SLM]" to "SLM - " to prevent a conflict with other CET mods.
 [/list][/spoiler]
+```
+
+> Character count: 4347 / 5000
+
+### Comment 3 - older versions
+
+```
+[color=#ffff00][size=5][b]- Changes -[/b][/size][/color]
+
+[i](Continued - older versions)[/i]
+
 [b][size=3]Version 1.4.0[/size][/b]
 [spoiler][list][*]QOL: Group State Persistence - Manually expanded/collapsed groups now maintain their state across searches. Groups auto-expand when search results appear in them, and return to their previous state when search is cleared.
 [*]QOL: Dump Coordinates Auto-Copy - The Dump Coordinates button in the settings tab now automatically copies to clipboard for easy pasting.
@@ -208,4 +219,4 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 2 posts
 [/list][/spoiler]
 ```
 
-> Character count: 4426 / 5000
+> Character count: 3553 / 5000
