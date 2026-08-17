@@ -10,7 +10,7 @@
 * **Smart Organisation:** Locations are grouped by **District**, by **Category**, or shown as a flat **A-Z** list.
 * **Manual Coordinates:** Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. **SmartPaste™** understands labelled values, AMM JSON, and full CET `Vector4.new(...)` / `EulerAngles.new(...)` teleport commands and fills the fields for you (double-check the auto-filled values before saving or teleporting).
 * **Custom Categories:** Create, edit, and share your own categories with unique icons.
-* **Favorites:** Keep your most-used spots pinned at the top of the list.
+* **Favourites:** Keep your most-used spots pinned at the top of the list.
 * **Powerful Search:** Real-time filtering by name, description, district, or category.
 * **Import / Export:** Share a single spot, a whole district, or your entire database as a compact text string. Imports AMM locations too (AMM is not required).
 * **Presets:** Install location packs that auto-create their custom categories for you. Uninstall one and **Remove Preset Locations** in Settings clears out what it left behind, keeping any location you had edited as your own.
