@@ -85,6 +85,11 @@ Logic.defaultCategories = {
     { name = "Garage",      icon = "GarageVariant",        id = 23, key = "category.garage" }
 }
 
+-- The category a location falls into when it names none, and the one the pickers open on.
+-- It has to be one of the defaults above: a location tagged with a name no category answers to
+-- draws the fallback icon and lands in no group at all in the Category view.
+Logic.DEFAULT_CATEGORY = "Misc"
+
 -- Stored category name -> its key, read off the records above so the two cannot drift apart.
 local DEFAULT_CATEGORY_KEYS = {}
 for _, c in ipairs(Logic.defaultCategories) do DEFAULT_CATEGORY_KEYS[c.name] = c.key end
@@ -95,7 +100,7 @@ for _, c in ipairs(Logic.defaultCategories) do DEFAULT_CATEGORY_KEYS[c.name] = c
 ---@param name string|nil A stored category name
 ---@return string label
 function Logic.CategoryLabel(name)
-    if not name or name == "" then return L("category.misc") end
+    if not name or name == "" then name = Logic.DEFAULT_CATEGORY end
 
     local key = DEFAULT_CATEGORY_KEYS[name]
     return key and L(key) or name
@@ -222,7 +227,7 @@ function Logic.Load()
                 -- MIGRATION: Ensure all locations have a category
                 for _, loc in ipairs(Logic.locations) do
                     if not loc.category then
-                        loc.category = "Misc"
+                        loc.category = Logic.DEFAULT_CATEGORY
                     end
                 end
 
@@ -385,7 +390,7 @@ function Logic.CreateLocationData()
         id = id,
         name = name,
         description = desc,
-        category = "Misc", -- Default
+        category = Logic.DEFAULT_CATEGORY,
         district = state.district,
         subDistrict = state.subDistrict,
         pos = state.pos,
@@ -405,7 +410,7 @@ end
 ---@param z number
 ---@param yaw number|nil Defaults to 0
 ---@param name string|nil Defaults to "Manual Location"
----@param category string|nil Defaults to "Misc"
+---@param category string|nil Defaults to Logic.DEFAULT_CATEGORY
 ---@return table loc
 function Logic.CreateManualLocationData(x, y, z, yaw, name, category)
     local desc = ""
@@ -419,7 +424,7 @@ function Logic.CreateManualLocationData(x, y, z, yaw, name, category)
         id = GenerateID(),
         name = (name and name ~= "") and name or "Manual Location",
         description = desc,
-        category = (category and category ~= "") and category or "Misc",
+        category = (category and category ~= "") and category or Logic.DEFAULT_CATEGORY,
         district = "Manual",
         subDistrict = "",
         pos = { x = x, y = y, z = z, w = 1.0 },

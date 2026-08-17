@@ -11,6 +11,7 @@
 - New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
 - Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
 - Fix: A category whose name differed from an existing one only by capitals could be created and then not deleted.
+- Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
 - Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 - Minor code improvements
 
@@ -123,6 +124,7 @@ Fix: Playing in a language other than English wrote that language's district nam
 New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
 Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
 Fix: A category whose name differed from an existing one only by capitals could be created and then not deleted.
+Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
 Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 Minor code improvements
 ```
@@ -148,12 +150,13 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [*]New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
 [*]Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
 [*]Fix: A category whose name differed from an existing one only by capitals could be created and then not deleted.
+[*]Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
 [*]Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 [*]Minor code improvements
 [/list]
 ```
 
-> Character count: 2723 / 5000
+> Character count: 2885 / 5000
 
 ### Comment 2 - older versions
 

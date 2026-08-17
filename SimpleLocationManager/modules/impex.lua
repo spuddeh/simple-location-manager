@@ -633,8 +633,8 @@ function Impex.ProcessImportDataArray(dataArray, sourceType, sourceDetail, custo
             Utils.Warn(msg)
             report.skipped = report.skipped + 1
         else
-            -- Default "Misc" or None to "Imported"
-            if not loc.category or loc.category == "" or loc.category == "Misc" then
+            -- The default category, or none at all, becomes "Imported".
+            if not loc.category or loc.category == "" or loc.category == Logic.DEFAULT_CATEGORY then
                 loc.category = "Imported"
             end
 

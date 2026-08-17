@@ -374,7 +374,7 @@ local editingCategoryOriginalName = nil -- Stores original name when editing to 
 -- Temporary Edit Buffers (used in Edit Modal)
 local tempName = ""
 local tempDesc = ""
-local tempCategory = "Misc"
+local tempCategory = Logic.DEFAULT_CATEGORY
 local tempCategoryNew = ""       -- A category being named for the first time, "" for none
 local tempCategoryIcon = nil     -- Icon chosen for a category being typed for the first time
 local showTempCatPicker = false  -- Inline icon picker open, in the Edit modal
@@ -393,7 +393,7 @@ local manualY = 0.0
 local manualZ = 0.0
 local manualYaw = 0.0
 local manualName = "Manual Location"
-local manualCategory = "Misc"
+local manualCategory = Logic.DEFAULT_CATEGORY
 local manualCategoryNew = ""        -- A category being named for the first time, "" for none
 local manualCategoryIcon = nil      -- Icon chosen for a category being typed for the first time
 local showManualCatPicker = false   -- Inline icon picker open, in the Manual Coordinates modal
@@ -1088,7 +1088,7 @@ local function OpenEditModal(loc)
     editingId = loc.id
     tempName = loc.name
     tempDesc = loc.description or ""
-    tempCategory = loc.category or "Misc"
+    tempCategory = loc.category or Logic.DEFAULT_CATEGORY
     tempCategoryNew = ""
     tempCategoryIcon = nil
     showTempCatPicker = false
@@ -1101,7 +1101,7 @@ local function OpenCreateModal(locData)
     pendingNewLocation = locData
     tempName = locData.name
     tempDesc = locData.description or ""
-    tempCategory = locData.category or "Misc"
+    tempCategory = locData.category or Logic.DEFAULT_CATEGORY
     tempCategoryNew = ""
     tempCategoryIcon = nil
     showTempCatPicker = false
@@ -1114,7 +1114,7 @@ local function OpenManualModal()
     manualLastPaste = ""
     manualX, manualY, manualZ, manualYaw = 0.0, 0.0, 0.0, 0.0
     manualName = "Manual Location"
-    manualCategory = "Misc"
+    manualCategory = Logic.DEFAULT_CATEGORY
     manualCategoryNew = ""
     manualCategoryIcon = nil
     showManualCatPicker = false
@@ -1149,7 +1149,7 @@ local function DrawLocationRow(loc, uniqueSuffix)
     -- Category Info (District View OR Favorite)
     -- A-Z view is ungrouped, so the category isn't shown as a header; show it per row instead.
     if Logic.settings.groupBy == "District" or Logic.settings.groupBy == "A-Z" or loc.favorite then
-        local catName = loc.category or "Misc"
+        local catName = loc.category or Logic.DEFAULT_CATEGORY
         local glyph = CategoryGlyph(catName, UNKNOWN_CATEGORY_ICON)
         -- Category: Medium Purple (0.6, 0.4, 0.9) - Readable "Middle Ground"
         ImGui.PushStyleColor(ImGuiCol.Text, 0.6, 0.4, 0.9, 1.0)
@@ -1205,9 +1205,9 @@ local function DrawLocationRow(loc, uniqueSuffix)
 
     -- Source Information (Grey - Subtle)
     if Logic.settings.showSourceInfo and loc.sourceType then
-        local sStr = "Source: " .. loc.sourceType
+        local sStr = L("locationRow.sourceLine", loc.sourceType)
         if loc.sourceDetail and loc.sourceDetail ~= "" then
-            sStr = sStr .. " (" .. loc.sourceDetail .. ")"
+            sStr = sStr .. " " .. L("common.parenthesised", loc.sourceDetail)
         end
         ImGui.PushStyleColor(ImGuiCol.Text, 0.5, 0.5, 0.5, 1.0)
         ImGui.PushTextWrapPos(0.0)
@@ -3212,10 +3212,10 @@ function UI.Draw()
 
         -- Left: Location Count (QOL: Show Filtered / Total)
         local totalCount = Logic.locations and #Logic.locations or 0
-        local countText = "Locations: " .. totalCount
+        local countText = L("footer.locationCount", totalCount)
 
         if searchQuery ~= "" then
-            countText = "Locations: " .. filteredLocationCount .. " / " .. totalCount
+            countText = L("footer.locationCountFiltered", filteredLocationCount, totalCount)
         end
 
         ImGui.TextColored(0.5, 0.5, 0.5, 1.0, countText)
@@ -3259,21 +3259,19 @@ function UI.Draw()
             end
 
             if ImGui.IsItemHovered() then
-                local tip = "Game time and current weather state"
+                local tip = L("footer.envTooltip")
                 if envReadout.weatherId then
                     tip = tip .. "\n" .. envReadout.weatherId
                 end
                 if envReadout.status == "held" then
-                    tip = tip .. "\n\nSLM is holding this state, so the weather cycle is stopped." ..
-                        "\nRight-click to unlock the weather cycle."
+                    tip = tip .. "\n\n" .. L("footer.envHeld")
                 elseif envReadout.status == "overridden" then
-                    tip = tip .. "\n\nSLM set " .. Env.GetWeatherLabel(envReadout.forcedState) ..
-                        " and another mod replaced it." ..
-                        "\nRight-click to stop holding it."
+                    tip = tip .. "\n\n" ..
+                        L("footer.envOverridden", Env.GetWeatherLabel(envReadout.forcedState))
                 else
                     -- The engine's cycle flag is not readable from script, so no
                     -- padlock means SLM is not holding it, not that the cycle is running.
-                    tip = tip .. "\n\nSLM is not holding the weather."
+                    tip = tip .. "\n\n" .. L("footer.envFree")
                 end
                 ImGui.SetTooltip(tip)
             end
