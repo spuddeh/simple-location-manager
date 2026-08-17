@@ -21,6 +21,15 @@ local english = {}
 local active = {}
 local activeCode = Loc.FALLBACK
 
+-- The code last asked for, which is NOT activeCode: asking for a language with no file
+-- leaves English active. Comparing a re-check against activeCode would therefore see a
+-- difference every time and re-resolve, once per call, forever.
+local requestedCode = nil
+
+-- Codes already reported as having no file. A language stays missing for the whole
+-- session, so saying so more than once is noise rather than news.
+local warnedMissing = {}
+
 -- Every language file found on disk, code -> display name from its own "@name" entry.
 -- Built by scanning the directory rather than from a list in this file, so a language
 -- nobody here has heard of works the moment its file is dropped in.
@@ -58,7 +67,13 @@ local function DetectGameLanguage()
         local var = settings:GetVar("/language", "OnScreen")
         if not var then return nil end
 
-        return tostring(var:GetValue())
+        -- GetValue returns a CName, and tostring on one of those gives a debug dump
+        -- ("tocname{ hash_lo = ... }") rather than the name. The .value field is the
+        -- string, with NameToString as the fallback for a build that lacks it.
+        local name = var:GetValue()
+        if type(name) == "string" then return name end
+        if type(name) == "userdata" and name.value then return name.value end
+        return NameToString(name)
     end)
 
     if ok and type(code) == "string" and code ~= "" then
@@ -100,7 +115,10 @@ local function Activate(code)
 
     local strings, reason = ReadLanguageFile(code)
     if not strings then
-        Utils.Warn("No " .. code .. " translation (" .. (reason or "unknown") .. "), using English.")
+        if not warnedMissing[code] then
+            warnedMissing[code] = true
+            Utils.Warn("No " .. code .. " translation (" .. (reason or "unknown") .. "), using English.")
+        end
         active = english
         activeCode = Loc.FALLBACK
         return false
@@ -143,38 +161,43 @@ function Loc.Init(preference)
     Loc.Apply(preference)
 end
 
+--- The code that should be loaded: a pinned preference, or the game's own setting.
+--- Returns nil before the game is up, when the setting is not readable yet.
+---@param preference string|nil
+---@return string|nil
+local function Resolve(preference)
+    if preference and preference ~= "Auto" then
+        return string.lower(preference)
+    end
+    return DetectGameLanguage()
+end
+
 --- Switch language. Called at init and again whenever the preference or the game's own
 --- language setting may have changed.
 ---@param preference string|nil A language code, or "Auto" / nil to follow the game
 function Loc.Apply(preference)
-    if preference and preference ~= "Auto" then
-        Activate(preference)
-        return
-    end
+    local wanted = Resolve(preference)
+    requestedCode = wanted
 
-    local detected = DetectGameLanguage()
-    if not detected then
+    if not wanted then
         -- The setting is not readable before the game is up. English until it is.
         active = english
         activeCode = Loc.FALLBACK
         return
     end
 
-    Activate(detected)
+    Activate(wanted)
 end
 
 --- Re-follow the game's language if it has changed since the last check.
 --- The player can change language mid-session, and nothing tells a CET mod when they do.
 ---@param preference string|nil
 function Loc.Refresh(preference)
-    if preference and preference ~= "Auto" then
-        if activeCode ~= string.lower(preference) then Loc.Apply(preference) end
-        return
-    end
-
-    local detected = DetectGameLanguage()
-    if detected and detected ~= activeCode then
-        Loc.Apply(nil)
+    -- Against what was last ASKED for, not what is loaded. A language with no file leaves
+    -- English active, and comparing against that would re-resolve on every single call.
+    local wanted = Resolve(preference)
+    if wanted and wanted ~= requestedCode then
+        Loc.Apply(preference)
     end
 end
 
