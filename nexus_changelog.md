@@ -79,7 +79,7 @@
 - Feature: Categories - Locations can now be assigned a Category (Icon + Name) for better organisation
 - Feature: Custom Category Portability - Exports and Imports now automatically include custom category definitions
 - Feature: AMM Support - Full support for importing Appearance Menu Mod locations (Bulk Import & String Import)
-- Feature: Preset Support (For Authors) - Distribute full location packs with custom categories/icons that auto-install seamlessly for players
+- Feature: Preset Support (For Authors) - Distribute full location packs with custom categories/icons that auto-install for players
 - Feature: Category Manager - Create, Edit, and Delete custom categories
 - Feature: Lazy Mode - The "enable Lazy Mode" (Teleport Buttons) setting is now persistent and saves to your config
 - UI Improvement: Category View - Added dedicated filtering tab to view locations by Category
@@ -231,7 +231,7 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [spoiler][list][*]Feature: Categories - Locations can now be assigned a Category (Icon + Name) for better organisation
 [*]Feature: Custom Category Portability - Exports and Imports now automatically include custom category definitions
 [*]Feature: AMM Support - Full support for importing Appearance Menu Mod locations (Bulk Import & String Import)
-[*]Feature: Preset Support (For Authors) - Distribute full location packs with custom categories/icons that auto-install seamlessly for players
+[*]Feature: Preset Support (For Authors) - Distribute full location packs with custom categories/icons that auto-install for players
 [*]Feature: Category Manager - Create, Edit, and Delete custom categories
 [*]Feature: Lazy Mode - The "enable Lazy Mode" (Teleport Buttons) setting is now persistent and saves to your config
 [*]UI Improvement: Category View - Added dedicated filtering tab to view locations by Category
@@ -246,4 +246,4 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [/list][/spoiler]
 ```
 
-> Character count: 3553 / 5000
+> Character count: 3542 / 5000
