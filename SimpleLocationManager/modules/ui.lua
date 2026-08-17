@@ -2239,7 +2239,9 @@ end
 -- forty orphaned locations gets the same modal as one with three.
 local PRESET_CLEANUP_WIDTH = 720
 local PRESET_CLEANUP_FILE_COL = 300
-local PRESET_CLEANUP_LIST_HEIGHT = 260
+-- Tall enough for roughly a dozen entries, because a row is two lines whenever more than
+-- one preset is ticked and the owning file is named under each location.
+local PRESET_CLEANUP_LIST_HEIGHT = 400
 
 -- Lines the owning file name up with the location name above it, past the bullet.
 local PRESET_CLEANUP_OWNER_INDENT = 22
