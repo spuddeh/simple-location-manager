@@ -225,9 +225,13 @@ end
 --- one.
 ---
 --- **A typed name that matches an existing category resolves TO that category**, under the
---- spelling already stored, and says so. It cannot be stored as typed: "bar" beside "Bar" is a
---- word no category answers to, so the location would draw the fallback icon and land in no
---- group at all in the Category view.
+--- spelling already stored. It cannot be stored as typed: "bar" beside "Bar" is a word no
+--- category answers to, so the location would draw the fallback icon and land in no group at
+--- all in the Category view.
+---
+--- Saying so is the picker's job, not this one's. The note sits under the box while the name is
+--- being typed - a screen notification would fire from inside a CET modal, and those draw on
+--- the ink layer the overlay is covering.
 ---@param chosen string
 ---@param newName string
 ---@param newIcon string|nil
@@ -237,7 +241,6 @@ local function CommitCategory(chosen, newName, newIcon)
 
     local clash = Logic.FindCategoryNamed(newName)
     if clash then
-        Utils.NotifyWarning(L("edit.categoryUsedExisting", Logic.CategoryLabel(clash.name)))
         return clash.name
     end
 

@@ -101,7 +101,6 @@
   "duplicateWarning.youAreVeryCloseTo": "You are very close to an existing location:",
   "edit.category": "Category:",
   "edit.categoryExists": "%s already exists. Saving will use it.",
-  "edit.categoryUsedExisting": "Used the category %s, which already existed.",
   "edit.description": "Description:",
   "edit.name": "Name:",
   "edit.newCategory": "New category:",
