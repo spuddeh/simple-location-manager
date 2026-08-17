@@ -486,7 +486,12 @@ local function DrawExportSelectModal()
             ImGui.TextColored(0.7, 0.7, 0.7, 1.0, L("exportSelect.noLocationsMatchThatFilter"))
         end
 
-        if ImGui.BeginChild("ExportSelectList", 0, EXPORT_SELECT_LIST_HEIGHT, true, 0) then
+        -- Capped against the screen rather than fixed. The rest of the modal auto-fits around
+        -- this, so a list taller than the display leaves the buttons under it off the bottom.
+        local _, screenH = GetDisplayResolution()
+        local listHeight = math.max(220, math.min(EXPORT_SELECT_LIST_HEIGHT, screenH * 0.45))
+
+        if ImGui.BeginChild("ExportSelectList", 0, listHeight, true, 0) then
             -- A-Z is one group covering everything, so a header naming it says nothing.
             local headed = exportSelectGroupBy ~= "A-Z"
 
@@ -581,7 +586,11 @@ local function DrawExportSelectModal()
             showExportSelectModal = false
         end,
         onPreOpen = function()
-            ImGui.SetNextWindowSize(EXPORT_SELECT_WIDTH, 0, ImGuiCond.Appearing)
+            -- Always rather than Appearing. Appearing loses to a size ImGui already has filed
+            -- under this title, and this modal has carried its own since before the width was
+            -- changed. The two cleanup modals took the new width only because their titles are
+            -- new this release and had nothing stored.
+            ImGui.SetNextWindowSize(EXPORT_SELECT_WIDTH, 0, ImGuiCond.Always)
         end
     })
 end
@@ -2574,7 +2583,7 @@ local function DrawPresetCleanupModal()
                 -- height stay unknown on the first one.
                 ImGui.SetNextWindowSize(
                     empty and PRESET_CLEANUP_EMPTY_WIDTH or PRESET_CLEANUP_WIDTH,
-                    0, ImGuiCond.Appearing)
+                    0, ImGuiCond.Always)
             end
         })
 end
@@ -2656,7 +2665,7 @@ local function DrawCategoryCleanupModal()
                 showCategoryCleanupModal = false
             end,
             onPreOpen = function()
-                ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH, 0, ImGuiCond.Appearing)
+                ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH, 0, ImGuiCond.Always)
             end
         })
 end
