@@ -138,6 +138,9 @@ local function RecordGroupOpenState(key, isOpen)
 end
 
 
+-- Frames each open modal has been drawn for, keyed by full title. Cleared when it closes.
+local modalFramesShown = {}
+
 -- Modal Flags & State
 local editingId = nil            -- ID of the location currently being edited (Edit Modal)
 local pendingNewLocation = nil   -- Temp location object for "New Location" (before save)
@@ -229,25 +232,31 @@ function UI.WrapperModal(titleSuffix, shouldOpen, flags, renderContent, options)
     options = options or {}
 
     -- Handle Open Logic
-    if shouldOpen then
-        if not ImGui.IsPopupOpen(fullTitle) then
-            -- Pre-Open hook (e.g. SetNextWindowSize)
-            if options.onPreOpen then options.onPreOpen() end
-            ImGui.OpenPopup(fullTitle)
-        end
+    if shouldOpen and not ImGui.IsPopupOpen(fullTitle) then
+        ImGui.OpenPopup(fullTitle)
     end
 
-    -- Draw Modal
-    -- onPreOpen runs every frame, before BeginPopupModal: SetNextWindowSize only applies to the
-    -- next window begun, and the popup still has to render on frames where shouldOpen is false.
-    if options.onPreOpen then options.onPreOpen() end
+    -- EVERY SetNextWindow* call below is inside this guard, and has to be. BeginPopupModal
+    -- returns false without beginning a window when the popup is closed, which leaves the
+    -- queued position and size unconsumed for the NEXT window begun - the mod's own window,
+    -- which then jumped a little whenever a modal was drawn.
+    if ImGui.IsPopupOpen(fullTitle) then
+        if options.onPreOpen then options.onPreOpen() end
 
-    -- Centred on every appearance. ImGui files a window's position under its TITLE, and a
-    -- modal that draws two sizes under one title - a list, and a line saying there is
-    -- nothing to list - otherwise opens the small state wherever the large one last sat.
-    -- Appearing rather than Always, so dragging it still works once it is open.
-    local screenW, screenH = GetDisplayResolution()
-    ImGui.SetNextWindowPos(screenW * 0.5, screenH * 0.5, ImGuiCond.Appearing, 0.5, 0.5)
+        -- Centring subtracts half the window's size, and a height of 0 or AlwaysAutoResize
+        -- means ImGui has no height until it has drawn the content once. So the position is
+        -- asserted for the first two frames rather than only on the first: frame one lands
+        -- with the height unknown, frame two lands with it measured. After that it is left
+        -- alone, so the modal can still be dragged.
+        local shown = (modalFramesShown[fullTitle] or 0)
+        if shown < 2 then
+            local screenW, screenH = GetDisplayResolution()
+            ImGui.SetNextWindowPos(screenW * 0.5, screenH * 0.5, ImGuiCond.Always, 0.5, 0.5)
+            modalFramesShown[fullTitle] = shown + 1
+        end
+    else
+        modalFramesShown[fullTitle] = nil
+    end
 
     if ImGui.BeginPopupModal(fullTitle, true, flags) then
         renderContent()
@@ -428,12 +437,6 @@ end
 --- Draw the "Export Selected" modal: pick locations, get one export string for the lot.
 local function DrawExportSelectModal()
     local shouldOpen = showExportSelectModal
-    -- Stated on both axes. A height of 0 auto-fits, and an auto-fitted window has no height
-    -- on the frame it is positioned, so the centring pivot has nothing to subtract.
-    if shouldOpen then
-        ImGui.SetNextWindowSize(EXPORT_SELECT_WIDTH, EXPORT_SELECT_HEIGHT, ImGuiCond.Always)
-    end
-
     UI.WrapperModal(L("exportSelect.title"), shouldOpen, ImGuiWindowFlags.NoResize, function()
         local candidates = GetExportCandidates()
 
@@ -576,6 +579,9 @@ local function DrawExportSelectModal()
     end, {
         onClose = function()
             showExportSelectModal = false
+        end,
+        onPreOpen = function()
+            ImGui.SetNextWindowSize(EXPORT_SELECT_WIDTH, 0, ImGuiCond.Appearing)
         end
     })
 end
@@ -714,9 +720,6 @@ end
 --- Draw the Edit Location Modal
 local function DrawEditModal()
     local shouldOpen = (editingId ~= nil)
-
-    -- SetNextWindowSize pins the initial width so AlwaysAutoResize cannot run away.
-    if shouldOpen then ImGui.SetNextWindowSize(500, 0, ImGuiCond.Appearing) end
 
     UI.WrapperModal(L("edit.title"), shouldOpen, ImGuiWindowFlags.AlwaysAutoResize, function()
         ImGui.Text(L("edit.name"))
@@ -878,6 +881,10 @@ local function DrawEditModal()
     end, {
         onClose = function()
             editingId = nil
+        end,
+        onPreOpen = function()
+            -- Pins the initial width so AlwaysAutoResize cannot run away with a long name.
+            ImGui.SetNextWindowSize(500, 0, ImGuiCond.Appearing)
         end
     })
 end
@@ -1607,7 +1614,12 @@ local function DrawDisclaimerModal()
     local titleWidth = ImGui.CalcTextSize(title)
     local winWidth = titleWidth + 60 -- Add padding to account for close button and frame borders
 
-    ImGui.SetNextWindowSize(winWidth, 0, ImGuiCond.Appearing)
+    -- Only while the popup is open. BeginPopupModal begins no window when it is closed, so
+    -- a size queued here would be taken by the next window instead - and this runs on every
+    -- frame the Settings tab is drawn, open or not.
+    if ImGui.IsPopupOpen(title) then
+        ImGui.SetNextWindowSize(winWidth, 0, ImGuiCond.Appearing)
+    end
 
     if ImGui.BeginPopupModal(title, true, ImGuiWindowFlags.NoResize) then
         ImGui.SetWindowFontScale(0.7) -- Specific small font request
@@ -2318,16 +2330,14 @@ local PRESET_CLEANUP_FILE_COL = 300
 -- Tall enough for roughly a dozen entries, because a row is two lines whenever more than
 -- one preset is ticked and the owning file is named under each location.
 local PRESET_CLEANUP_LIST_HEIGHT = 400
--- The lists plus the headings, the edited toggle and the buttons under them.
-local PRESET_CLEANUP_MODAL_HEIGHT = 580
 local PRESET_CLEANUP_EMPTY_WIDTH = 460
-local PRESET_CLEANUP_EMPTY_HEIGHT = 190
 
 -- Lines the owning file name up with the location name above it, past the bullet.
 local PRESET_CLEANUP_OWNER_INDENT = 22
 
+-- Wide enough for the sentence above the list, which is longer than any category name.
+local CATEGORY_CLEANUP_WIDTH = 460
 -- One line per category, so this holds about a dozen before it scrolls.
-local CATEGORY_CLEANUP_WIDTH = 320
 local CATEGORY_CLEANUP_HEIGHT = 260
 
 -- Lines the district up with the location name above it, past the checkbox.
@@ -2338,7 +2348,6 @@ local EXPORT_SELECT_SORT_WIDTH = 140
 -- list is sized for roughly a dozen locations rather than the four the old height showed.
 local EXPORT_SELECT_WIDTH = 640
 local EXPORT_SELECT_LIST_HEIGHT = 470
-local EXPORT_SELECT_HEIGHT = 660
 
 --- One side of the preset cleanup location list.
 --- @param wantEdited boolean Draw the edited locations rather than the ones being deleted
@@ -2559,16 +2568,13 @@ local function DrawPresetCleanupModal()
                 showPresetCleanupModal = false
             end,
             onPreOpen = function()
-                -- Both axes stated. A height of 0 means auto-fit, and an auto-fitted window
-                -- has no height on the frame it is positioned, so centring it against a half
-                -- pivot subtracts a size ImGui does not have yet and it lands high.
-                if #presetOrphans > 0 then
-                    ImGui.SetNextWindowSize(PRESET_CLEANUP_WIDTH, PRESET_CLEANUP_MODAL_HEIGHT,
-                        ImGuiCond.Appearing)
-                else
-                    ImGui.SetNextWindowSize(PRESET_CLEANUP_EMPTY_WIDTH,
-                        PRESET_CLEANUP_EMPTY_HEIGHT, ImGuiCond.Appearing)
-                end
+                -- Width stated, height auto-fitted. A stated height is a number that has to be
+                -- kept in step with the content, and it cuts the buttons off the moment it is
+                -- not. WrapperModal asserts the centre for two frames, which is what lets the
+                -- height stay unknown on the first one.
+                ImGui.SetNextWindowSize(
+                    empty and PRESET_CLEANUP_EMPTY_WIDTH or PRESET_CLEANUP_WIDTH,
+                    0, ImGuiCond.Appearing)
             end
         })
 end
@@ -2597,8 +2603,9 @@ local function DrawCategoryCleanupModal()
             ImGui.Spacing()
 
             local selected = 0
-            if ImGui.BeginChild("UnusedCategories", CATEGORY_CLEANUP_WIDTH,
-                    CATEGORY_CLEANUP_HEIGHT, true) then
+            -- Width 0 fills the modal, so the child follows the window rather than needing
+            -- its own number kept in step with it.
+            if ImGui.BeginChild("UnusedCategories", 0, CATEGORY_CLEANUP_HEIGHT, true) then
                 for _, cat in ipairs(unusedCategories) do
                     local ticked = categoryCleanupSelection[cat.name] or false
                     local newTicked, changed = ImGui.Checkbox("##unusedcat_" .. cat.name, ticked)
@@ -2649,13 +2656,7 @@ local function DrawCategoryCleanupModal()
                 showCategoryCleanupModal = false
             end,
             onPreOpen = function()
-                -- Stated on both axes so the centring pivot has a real height to work from.
-                if empty then
-                    ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH + 40, 150, ImGuiCond.Appearing)
-                else
-                    ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH + 40,
-                        CATEGORY_CLEANUP_HEIGHT + 190, ImGuiCond.Appearing)
-                end
+                ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH, 0, ImGuiCond.Appearing)
             end
         })
 end
@@ -2889,18 +2890,6 @@ local function DrawManualModal()
     -- The width has to hold the four action buttons on one row, and NoResize means a window
     -- too narrow for them clips the last one with no way for the user to widen it. Measuring
     -- the labels keeps that true whatever the font does to their width.
-    if shouldOpen then
-        local style = ImGui.GetStyle()
-        local buttonsW = 0
-        for _, label in ipairs(MANUAL_ACTION_LABELS) do
-            buttonsW = buttonsW + ImGui.CalcTextSize(label) + (style.FramePadding.x * 2)
-        end
-        buttonsW = buttonsW + (style.ItemSpacing.x * (#MANUAL_ACTION_LABELS - 1))
-            + (style.WindowPadding.x * 2)
-
-        ImGui.SetNextWindowSize(math.max(420, math.ceil(buttonsW) + 4), 0, ImGuiCond.Always)
-    end
-
     UI.WrapperModal(L("manual.title"), shouldOpen, ImGuiWindowFlags.NoResize, function()
         -- Smart paste box (source of truth): any change re-syncs the coordinate fields below.
         ImGui.Text(L("manual.pasteCoordinatesOptional"))
@@ -3063,6 +3052,20 @@ local function DrawManualModal()
     end, {
         onClose = function()
             showManualModal = false
+        end,
+        onPreOpen = function()
+            -- The width has to hold the four action buttons on one row, and NoResize means a
+            -- window too narrow for them clips the last one with no way to widen it. Measuring
+            -- the labels keeps that true whatever the font does to their width.
+            local style = ImGui.GetStyle()
+            local buttonsW = 0
+            for _, label in ipairs(MANUAL_ACTION_LABELS) do
+                buttonsW = buttonsW + ImGui.CalcTextSize(label) + (style.FramePadding.x * 2)
+            end
+            buttonsW = buttonsW + (style.ItemSpacing.x * (#MANUAL_ACTION_LABELS - 1))
+                + (style.WindowPadding.x * 2)
+
+            ImGui.SetNextWindowSize(math.max(420, math.ceil(buttonsW) + 4), 0, ImGuiCond.Always)
         end
     })
 end
