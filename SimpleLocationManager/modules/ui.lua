@@ -506,8 +506,7 @@ local function DrawExportSelectModal()
         end
         ImGui.EndDisabled()
         if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
-            ImGui.SetTooltip(L("exportSelect.copyOneExportStringCovering") ..
-                L("exportSelect.pasteItIntoTxtFile"))
+            ImGui.SetTooltip(L("exportSelect.copyExportTooltip"))
         end
 
         ImGui.SameLine()
@@ -1281,8 +1280,8 @@ local function DrawLocationsTab()
             end
         end
         if ImGui.IsItemHovered() then
-            ImGui.SetTooltip(L("checkSearch.export") ..
-                (searchQuery == "" and L("checkSearch.all") or L("checkSearch.filtered")) .. L("checkSearch.locations"))
+            ImGui.SetTooltip(L("locations.exportTooltip",
+                searchQuery == "" and L("checkSearch.all") or L("checkSearch.filtered")))
         end
 
         ImGui.Separator()
@@ -1806,60 +1805,6 @@ local function DrawSettingsTab()
         ImGui.SetTooltip(L("resetTooltip.defaultStateForLocationGroups"))
     end
 
-    ImGui.NextColumn()
-
-    -- Col 2: environment, logging, and the teleport buttons. The safety protocol button stays
-    -- last in this column, so anything added here goes above it.
-
-    -- Time & Weather. There is no on/off setting: the teleport button's left and right
-    -- click are the choice, so it is made per teleport rather than once here.
-    ImGui.PushTextWrapPos(0.0)
-    ImGui.Text(L("resetTooltip.timeWeather"))
-    ImGui.TextColored(0.6, 0.6, 0.6, 1.0,
-        L("resetTooltip.rightClickTeleportButtonTo"))
-    ImGui.PopTextWrapPos()
-
-    ImGui.PushTextWrapPos(0.0)
-    ImGui.Text(L("resetTooltip.weatherTransition"))
-    ImGui.PopTextWrapPos()
-    ImGui.SetNextItemWidth(-1)
-    local newBlend, changedBlend = ImGui.SliderFloat("##envBlend",
-        Logic.settings.envBlendTime or 5.0, 0.0, 30.0, "%.1f")
-    if changedBlend then
-        Logic.settings.envBlendTime = newBlend
-        Logic.Save()
-    end
-    if ImGui.IsItemClicked(1) then
-        Logic.settings.envBlendTime = Logic.defaultSettings.envBlendTime
-        Logic.Save()
-        Utils.Notify(L("resetTooltip.resetWeatherTransition"))
-    end
-    ResetTooltip()
-    ImGui.PushTextWrapPos(0.0)
-    ImGui.TextColored(0.6, 0.6, 0.6, 1.0,
-        L("resetTooltip.onlyVisibleOverShortHops"))
-    ImGui.PopTextWrapPos()
-
-    if Env.IsWeatherAvailable() then
-        -- Forcing a weather state stops the natural cycle, so there has to be a
-        -- way back to it that does not mean loading a save.
-        if ImGui.Button(IconGlyphs.WeatherPartlyCloudy .. L("resetTooltip.restoreNaturalWeather"), -1, 0) then
-            if Env.ResetWeather(Logic.settings.envBlendTime) then
-                Utils.Notify(L("resetTooltip.weatherCycleRestored"))
-            else
-                Utils.NotifyWarning(L("resetTooltip.couldNotRestoreTheWeather"))
-            end
-        end
-        if ImGui.IsItemHovered() then
-            ImGui.SetTooltip(L("resetTooltip.unlockTheGameOwnWeather") ..
-                L("resetTooltip.weatherModHoldingItsOwn"))
-        end
-    else
-        ImGui.PushTextWrapPos(0.0)
-        ImGui.TextColored(1.0, 0.7, 0.3, 1.0, L("resetTooltip.codewareIsMissingTimeApplies"))
-        ImGui.PopTextWrapPos()
-    end
-
     ImGui.Spacing()
 
     -- Language
@@ -1928,14 +1873,7 @@ local function DrawSettingsTab()
         Utils.Notify(L("resetTooltip.resetConsoleLogging"))
     end
     if ImGui.IsItemHovered() then
-        ImGui.SetTooltip(
-            L("resetTooltip.howMuchThisModWrites") ..
-            L("resetTooltip.offNothing") ..
-            L("resetTooltip.errorOnlyFailuresSuchAs") ..
-            L("resetTooltip.warnFailuresPlusProblemsWorth") ..
-            L("resetTooltip.infoWhatTheModIs") ..
-            L("resetTooltip.debugEverythingIncludingOneLine") ..
-            L("resetTooltip.dumpsAndExportConfirmationsAlways"))
+        ImGui.SetTooltip(L("settings.logLevelTooltip"))
     end
 
     -- Applied after the item queries above, so IsItemClicked and IsItemHovered still refer
@@ -1944,6 +1882,59 @@ local function DrawSettingsTab()
         Logic.settings.logLevel = chosenLogLevel
         Utils.SetLogLevel(chosenLogLevel)
         Logic.Save()
+    end
+
+    ImGui.NextColumn()
+
+    -- Col 2: time and weather, then the teleport buttons. The safety protocol button stays
+    -- last in this column, so anything added here goes above it.
+
+    -- Time & Weather. There is no on/off setting: the teleport button's left and right
+    -- click are the choice, so it is made per teleport rather than once here.
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.Text(L("resetTooltip.timeWeather"))
+    ImGui.TextColored(0.6, 0.6, 0.6, 1.0,
+        L("resetTooltip.rightClickTeleportButtonTo"))
+    ImGui.PopTextWrapPos()
+
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.Text(L("resetTooltip.weatherTransition"))
+    ImGui.PopTextWrapPos()
+    ImGui.SetNextItemWidth(-1)
+    local newBlend, changedBlend = ImGui.SliderFloat("##envBlend",
+        Logic.settings.envBlendTime or 5.0, 0.0, 30.0, "%.1f")
+    if changedBlend then
+        Logic.settings.envBlendTime = newBlend
+        Logic.Save()
+    end
+    if ImGui.IsItemClicked(1) then
+        Logic.settings.envBlendTime = Logic.defaultSettings.envBlendTime
+        Logic.Save()
+        Utils.Notify(L("resetTooltip.resetWeatherTransition"))
+    end
+    ResetTooltip()
+    ImGui.PushTextWrapPos(0.0)
+    ImGui.TextColored(0.6, 0.6, 0.6, 1.0,
+        L("resetTooltip.onlyVisibleOverShortHops"))
+    ImGui.PopTextWrapPos()
+
+    if Env.IsWeatherAvailable() then
+        -- Forcing a weather state stops the natural cycle, so there has to be a
+        -- way back to it that does not mean loading a save.
+        if ImGui.Button(IconGlyphs.WeatherPartlyCloudy .. L("resetTooltip.restoreNaturalWeather"), -1, 0) then
+            if Env.ResetWeather(Logic.settings.envBlendTime) then
+                Utils.Notify(L("resetTooltip.weatherCycleRestored"))
+            else
+                Utils.NotifyWarning(L("resetTooltip.couldNotRestoreTheWeather"))
+            end
+        end
+        if ImGui.IsItemHovered() then
+            ImGui.SetTooltip(L("settings.restoreWeatherTooltip"))
+        end
+    else
+        ImGui.PushTextWrapPos(0.0)
+        ImGui.TextColored(1.0, 0.7, 0.3, 1.0, L("resetTooltip.codewareIsMissingTimeApplies"))
+        ImGui.PopTextWrapPos()
     end
 
     ImGui.Spacing()
@@ -2094,8 +2085,7 @@ local function DrawSettingsTab()
         showExportSelectModal = true
     end
     if ImGui.IsItemHovered() then
-        ImGui.SetTooltip(L("resetTooltip.pickLocationsAndCopyOne") ..
-            L("exportSelect.pasteItIntoTxtFile"))
+        ImGui.SetTooltip(L("settings.exportSelectedTooltip"))
     end
 
     if ImGui.Button(IconGlyphs.Download .. L("resetTooltip.importData")) then
@@ -2195,13 +2185,14 @@ local function DrawSettingsTab()
     end
     if ImGui.IsItemHovered() then ImGui.SetTooltip(L("resetTooltip.resetAllSettingsToDefault")) end
 
-    ImGui.Columns(1) -- Reset
-    ImGui.Spacing()
+    ImGui.NextColumn()
 
-    -- Preset Cleanup. The orphan list is taken once here rather than every frame: it walks
-    -- every location and reads the presets directory, and the modal must not shift under the
+    -- Col 1, second row. Sized to its label like the two above it: a width of -1 fills the
+    -- whole tab and reads as a more drastic action than either of them.
+    -- The orphan list is taken once on click rather than every frame - it walks every
+    -- location and reads the presets directory, and the modal must not shift under the
     -- player while they are ticking boxes.
-    if ImGui.Button(IconGlyphs.Broom .. L("resetTooltip.removePresetLocations"), -1, 0) then
+    if ImGui.Button(IconGlyphs.Broom .. L("resetTooltip.removePresetLocations")) then
         presetOrphans = Impex.GetOrphanedPresets()
         presetCleanupSelection = {}
         presetCleanupDeleteEdited = false
@@ -2211,10 +2202,10 @@ local function DrawSettingsTab()
         showPresetCleanupModal = true
     end
     if ImGui.IsItemHovered() then
-        ImGui.SetTooltip(L("resetTooltip.clearOutLocationsLeftBehind") ..
-            L("resetTooltip.onlyPresetsWhoseFileIs"))
+        ImGui.SetTooltip(L("settings.removePresetLocationsTooltip"))
     end
 
+    ImGui.Columns(1) -- Reset
     ImGui.Spacing()
 
     ImGui.EndChild()
