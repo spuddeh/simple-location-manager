@@ -248,12 +248,12 @@ function Utils.GetLocationData(currPos)
                         if sub then
                             data.subDistrict = sub:EnumName()
                         end
-                    else
-                        -- Only Root exists (Length 1)
-                        if ancestry[1] then
-                            data.subDistrict = ancestry[1]:EnumName()
-                        end
                     end
+                    -- A walk of length 1 names no sub-district, and saying so is what lets the
+                    -- blackboard pass below fill one in. Setting the root as its own sub-district
+                    -- here reads as harmless - the match is cleared further down either way - but
+                    -- it is not "Unknown", so the fallback skipped it and the location was left
+                    -- with no sub-district at all.
                 end
             end
         end
@@ -283,8 +283,12 @@ function Utils.GetLocationData(currPos)
                         if bbText ~= "" and bbText ~= "Unknown" then
                             -- The blackboard text is a fallback: it applies only where the
                             -- recursive walk produced no sub-district.
+                            --
+                            -- Resolved to an enum name where the game names a district by it, so
+                            -- the value stays portable. A point of interest the game has no
+                            -- district record for has no enum to find, and travels as the text.
                             if data.subDistrict == "Unknown" or data.subDistrict == nil then
-                                data.subDistrict = bbText
+                                data.subDistrict = Utils.DistrictEnum(bbText) or bbText
                             end
                         end
                     end
