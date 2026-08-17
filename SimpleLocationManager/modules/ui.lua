@@ -2648,7 +2648,8 @@ end
 ---- Draws the Delete Category Confirmation Modal
 local function DrawDeleteCategoryConfirmModal()
     UI.WrapperModal(L("deleteCategoryConfirm.title"), showDeleteCategoryModal, ImGuiWindowFlags.AlwaysAutoResize, function()
-        ImGui.Text(L("deleteCategoryConfirm.areYouSureYouWant") .. (categoryToDelete or L("duplicateWarning.unknown")) .. "'?")
+        ImGui.Text(L("deleteCategoryConfirm.areYouSureYouWant",
+            categoryToDelete or L("duplicateWarning.unknown")))
         ImGui.Spacing()
         ImGui.TextColored(1.0, 0.6, 0.0, 1.0,
             L("deleteCategoryConfirm.locationsUsingThisCategoryWill"))
@@ -2659,7 +2660,7 @@ local function DrawDeleteCategoryConfirmModal()
         if ImGui.Button(IconGlyphs.Delete .. L("deleteCategoryConfirm.deleteForever")) then
             if categoryToDelete then
                 Logic.DeleteCategory(categoryToDelete)
-                Utils.Notify("Category '" .. categoryToDelete .. "' deleted.")
+                Utils.Notify(L("deleteCategoryConfirm.categoryDeleted", categoryToDelete))
             end
             showDeleteCategoryModal = false
             categoryToDelete = nil
@@ -2781,7 +2782,7 @@ local function DrawManualModal()
                 showManualCatPicker = not showManualCatPicker
                 IconPicker.ClearSearch()
             end
-            if ImGui.IsItemHovered() then ImGui.SetTooltip("Choose an icon for \"" .. manualCategory .. "\"") end
+            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("category.chooseIconFor", manualCategory)) end
         else
             ImGui.Text(glyph .. " ")
             showManualCatPicker = false
