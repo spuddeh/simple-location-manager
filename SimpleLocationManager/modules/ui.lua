@@ -39,6 +39,8 @@ local EXPORT_SELECT_LIST_HEIGHT = 470
 -- Lines the district up with the location name above it, past the checkbox.
 local EXPORT_SELECT_DISTRICT_INDENT = 28
 local EXPORT_SELECT_SORT_WIDTH = 140
+-- Wide enough for a preset file name; the row also carries the include-edited tick.
+local EXPORT_SELECT_PRESET_WIDTH = 260
 
 -- Category picker geometry. Both rows are the same width so the combo and the new-name box
 -- line up under each other; the icon button sits inside the second row's width.
@@ -368,6 +370,10 @@ local updateConfirmId = nil      -- ID of the location pending a position update
 local showExportSelectModal = false -- Flag for the "Export Selected" modal
 local exportSelection = {}          -- Set of selected location ids
 local exportSelectSearch = ""       -- Filter inside the modal, separate from the main search
+local exportSelectPreset = ""       -- Preset file whose locations are ticked, "" for none
+-- Default on: an author re-exporting their own preset has usually edited it BECAUSE that edit is
+-- the update they are publishing. Off re-exports the preset as it shipped.
+local exportSelectEdited = true     -- Include preset locations edited since they were imported
 local exportSelectGroupBy = "District" -- Grouping inside the modal, separate from the tab's
 
 -- Import System State
@@ -707,6 +713,53 @@ local function DrawExportSelectModal()
         end
         if chosenExportGroup then exportSelectGroupBy = chosenExportGroup end
         if ImGui.IsItemHovered() then ImGui.SetTooltip(L("exportSelect.groupTooltip")) end
+
+        -- Preset preselect. Only drawn where a preset has actually brought locations in, because
+        -- an empty dropdown is a control that answers no question.
+        local presetSources = Impex.GetPresetSources()
+        if #presetSources > 0 then
+            ImGui.Text(L("exportSelect.presetLabel"))
+            ImGui.SameLine()
+            ImGui.SetNextItemWidth(EXPORT_SELECT_PRESET_WIDTH)
+
+            local chosenPreset = nil
+            local preview = exportSelectPreset ~= "" and exportSelectPreset
+                or L("exportSelect.presetNone")
+            if ImGui.BeginCombo("##exportPreset", preview) then
+                if ComboRow(L("exportSelect.presetNone"), exportSelectPreset == "") then
+                    chosenPreset = ""
+                end
+                for _, source in ipairs(presetSources) do
+                    local label = source.edited > 0
+                        and L("exportSelect.presetRowEdited", source.file, source.total, source.edited)
+                        or L("exportSelect.presetRow", source.file, source.total)
+                    if ComboRow(label, exportSelectPreset == source.file) then
+                        chosenPreset = source.file
+                    end
+                end
+                ImGui.EndCombo()
+            end
+            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("exportSelect.presetTooltip")) end
+
+            ImGui.SameLine()
+            local newEdited, editedChanged =
+                ImGui.Checkbox(L("exportSelect.includeEdited"), exportSelectEdited)
+            if ImGui.IsItemHovered() then ImGui.SetTooltip(L("exportSelect.includeEditedTooltip")) end
+
+            -- Applied after both item queries, so IsItemHovered still refers to the control it is
+            -- written under rather than to whatever came next.
+            if chosenPreset then exportSelectPreset = chosenPreset end
+            if editedChanged then exportSelectEdited = newEdited end
+
+            -- Re-applied whenever either changes, so the two controls cannot disagree with the
+            -- ticks below them.
+            if chosenPreset or (editedChanged and exportSelectPreset ~= "") then
+                exportSelection = {}
+                for _, loc in ipairs(Impex.GetPresetLocations(exportSelectPreset, exportSelectEdited)) do
+                    exportSelection[loc.id] = true
+                end
+            end
+        end
 
         ImGui.Separator()
 
@@ -2365,6 +2418,7 @@ local function DrawSettingsTab()
     if ImGui.Button(IconGlyphs.CheckAll .. L("resetTooltip.exportSelected")) then
         exportSelection = {}
         exportSelectSearch = ""
+        exportSelectPreset = ""
         showExportSelectModal = true
     end
     if ImGui.IsItemHovered() then

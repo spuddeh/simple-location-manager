@@ -819,6 +819,58 @@ local function InstalledPresetFiles()
     return present
 end
 
+--- Every preset file the locations name, installed or not.
+---
+--- Impex.GetOrphanedPresets answers the opposite question - which preset files are GONE - so it
+--- cannot serve here. Re-exporting a preset to publish an update is something an author does while
+--- that preset is still installed.
+---@return table sources Array of { file, total, edited }, by file name
+function Impex.GetPresetSources()
+    local byFile = {}
+
+    for _, loc in ipairs(Logic.locations) do
+        local file = loc.sourceDetail
+        if file and file ~= "" and loc.sourceType and string.find(loc.sourceType, "SLM Preset") then
+            if not byFile[file] then
+                byFile[file] = { file = file, total = 0, edited = 0 }
+            end
+            byFile[file].total = byFile[file].total + 1
+            if string.find(loc.sourceType, "%(Edited%)") then
+                byFile[file].edited = byFile[file].edited + 1
+            end
+        end
+    end
+
+    local sources = {}
+    for _, entry in pairs(byFile) do table.insert(sources, entry) end
+    table.sort(sources, function(a, b) return a.file < b.file end)
+    return sources
+end
+
+--- The locations one preset file brought in.
+---
+--- An edited location is still attributable: `Logic.MarkPresetEdited` only appends to `sourceType`
+--- and leaves `sourceDetail` alone. Whether to include it is the caller's choice, because it is a
+--- question about intent rather than about the data - for an author updating their own preset the
+--- edit usually IS the update, and for someone re-exporting a preset as it shipped it is not.
+---@param file string
+---@param includeEdited boolean
+---@return table locations
+function Impex.GetPresetLocations(file, includeEdited)
+    local out = {}
+    if not file or file == "" then return out end
+
+    for _, loc in ipairs(Logic.locations) do
+        if loc.sourceDetail == file and loc.sourceType
+            and string.find(loc.sourceType, "SLM Preset") then
+            if includeEdited or not string.find(loc.sourceType, "%(Edited%)") then
+                table.insert(out, loc)
+            end
+        end
+    end
+    return out
+end
+
 --- Preset files that locations still name but which are no longer installed.
 --- Removing the preset download takes its .txt away and leaves its locations behind; this is
 --- what finds them. Only missing files are reported, because an installed preset re-imports
