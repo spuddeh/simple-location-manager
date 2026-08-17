@@ -195,11 +195,12 @@ local function DrawCategoryPicker(id, chosen, newName, newIcon, pickerOpen)
     newName = ImGui.InputText("##" .. id .. "New", newName, 50)
     if ImGui.IsItemHovered() then ImGui.SetTooltip(L("edit.newCategoryTooltip")) end
 
-    -- Named rather than only refused. "bar" is turned away because "Bar" exists, and a player
-    -- reading a bare "already exists" against a name they cannot see has no way to tell why.
+    -- Amber rather than red: this is what will happen, not a reason it cannot. Saying which
+    -- category is in the way is the point of it - "bar" resolves to "Bar", and a player reading
+    -- a bare "already exists" against a name they cannot see has no way to tell why.
     local clash = Logic.FindCategoryNamed(newName)
     if clash then
-        ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.4, 0.4, 1.0)
+        ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.7, 0.3, 1.0)
         ImGui.PushTextWrapPos(0.0)
         ImGui.TextWrapped(L("edit.categoryExists", Logic.CategoryLabel(clash.name)))
         ImGui.PopTextWrapPos()
@@ -223,17 +224,22 @@ end
 --- The category a picker's state resolves to, creating it first where the player named a new
 --- one.
 ---
---- **Nil means the typed name collides and nothing was saved.** A name matching an existing
---- category without matching its case cannot be stored as typed: "bar" beside "Bar" is a word
---- no category answers to, so the location would draw the fallback icon and land in no group
---- at all. The picker says so in red while it is being typed; this is the gate behind that.
+--- **A typed name that matches an existing category resolves TO that category**, under the
+--- spelling already stored, and says so. It cannot be stored as typed: "bar" beside "Bar" is a
+--- word no category answers to, so the location would draw the fallback icon and land in no
+--- group at all in the Category view.
 ---@param chosen string
 ---@param newName string
 ---@param newIcon string|nil
----@return string|nil category The stored name to save against, nil when the typed name clashes
+---@return string category The stored name to save against
 local function CommitCategory(chosen, newName, newIcon)
     if newName == "" then return chosen end
-    if Logic.CategoryExists(newName) then return nil end
+
+    local clash = Logic.FindCategoryNamed(newName)
+    if clash then
+        Utils.NotifyWarning(L("edit.categoryUsedExisting", Logic.CategoryLabel(clash.name)))
+        return clash.name
+    end
 
     Logic.AddCategory(newName, newIcon or DEFAULT_NEW_CATEGORY_ICON)
     return newName
@@ -1000,9 +1006,7 @@ local function DrawEditModal()
         if ImGui.Button(IconGlyphs.ContentSave .. L("edit.save")) then
             local category = CommitCategory(tempCategory, tempCategoryNew, tempCategoryIcon)
 
-            if not category then
-                Utils.NotifyWarning(L("addCategory.categoryAlreadyExistsOrInvalid"))
-            elseif editingId then
+            if editingId then
                 if editingId == "NEW" then
                     -- Commit the new location now
                     if pendingNewLocation then
@@ -3112,18 +3116,9 @@ local function DrawManualModal()
         local function allZero()
             return manualX == 0.0 and manualY == 0.0 and manualZ == 0.0
         end
-        --- False where the typed category clashes with one that exists, which is the one case
-        --- that must stop a save rather than fall back to something.
         local function ensureCategory()
-            local category = CommitCategory(manualCategory, manualCategoryNew, manualCategoryIcon)
-            if not category then
-                Utils.NotifyWarning(L("addCategory.categoryAlreadyExistsOrInvalid"))
-                return false
-            end
-
-            manualCategory = category
+            manualCategory = CommitCategory(manualCategory, manualCategoryNew, manualCategoryIcon)
             manualCategoryNew = ""
-            return true
         end
         local function buildLoc()
             return Logic.CreateManualLocationData(manualX, manualY, manualZ, manualYaw, manualName, manualCategory)
@@ -3140,7 +3135,8 @@ local function DrawManualModal()
         if ImGui.Button(manualActions[1]) then
             if allZero() then
                 Utils.NotifyWarning(L("close.enterCoordinatesFirstAreAll"))
-            elseif ensureCategory() then
+            else
+                ensureCategory()
                 local loc = Logic.AddLocation(buildLoc())
                 Utils.Notify(L("close.savedManualLocation") .. (loc and loc.name or manualName))
                 close()
@@ -3150,7 +3146,8 @@ local function DrawManualModal()
         if ImGui.Button(manualActions[2]) then
             if allZero() then
                 Utils.NotifyWarning(L("close.enterCoordinatesFirstAreAll"))
-            elseif ensureCategory() then
+            else
+                ensureCategory()
                 local loc = Logic.AddLocation(buildLoc())
                 if loc then Logic.TeleportTo(loc) end
                 Utils.Notify(L("close.savedAndTeleported") .. (loc and loc.name or manualName))

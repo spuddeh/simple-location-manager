@@ -10,7 +10,7 @@
 - Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
 - New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
 - Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
-- Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now says so in red under the box and names the one in the way, and the save is refused. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
+- Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now uses the one you already have, names it under the box as you type, and tells you when it saves. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
 - Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
 - Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 - Minor code improvements
@@ -123,7 +123,7 @@ New: The categories the mod comes with are translated too. Categories you made y
 Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
 New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
 Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
-Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now says so in red under the box and names the one in the way, and the save is refused. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
+Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now uses the one you already have, names it under the box as you type, and tells you when it saves. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
 Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
 Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 Minor code improvements
@@ -149,14 +149,14 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [*]Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
 [*]New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
 [*]Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
-[*]Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now says so in red under the box and names the one in the way, and the save is refused. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
+[*]Fix: Typing a category that already exists under different capitals - "bar" where you have "Bar" - now uses the one you already have, names it under the box as you type, and tells you when it saves. It used to save the location under the word you typed, which matched no category at all: the location showed the default icon and disappeared from the Category view.
 [*]Fix: The location count in the footer, the tooltip on the time and weather readout, and a location's Source line were English whatever language you played in.
 [*]Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 [*]Minor code improvements
 [/list]
 ```
 
-> Character count: 3125 / 5000
+> Character count: 3137 / 5000
 
 ### Comment 2 - older versions
 
