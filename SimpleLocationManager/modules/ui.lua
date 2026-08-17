@@ -241,6 +241,13 @@ function UI.WrapperModal(titleSuffix, shouldOpen, flags, renderContent, options)
     -- next window begun, and the popup still has to render on frames where shouldOpen is false.
     if options.onPreOpen then options.onPreOpen() end
 
+    -- Centred on every appearance. ImGui files a window's position under its TITLE, and a
+    -- modal that draws two sizes under one title - a list, and a line saying there is
+    -- nothing to list - otherwise opens the small state wherever the large one last sat.
+    -- Appearing rather than Always, so dragging it still works once it is open.
+    local screenW, screenH = GetDisplayResolution()
+    ImGui.SetNextWindowPos(screenW * 0.5, screenH * 0.5, ImGuiCond.Appearing, 0.5, 0.5)
+
     if ImGui.BeginPopupModal(fullTitle, true, flags) then
         renderContent()
         ImGui.EndPopup()
