@@ -2241,6 +2241,9 @@ local PRESET_CLEANUP_WIDTH = 720
 local PRESET_CLEANUP_FILE_COL = 300
 local PRESET_CLEANUP_LIST_HEIGHT = 260
 
+-- Lines the owning file name up with the location name above it, past the bullet.
+local PRESET_CLEANUP_OWNER_INDENT = 22
+
 --- One side of the preset cleanup location list.
 --- @param wantEdited boolean Draw the edited locations rather than the ones being deleted
 --- @param showOwner boolean Name the preset each location came from
@@ -2256,9 +2259,12 @@ local function DrawPresetCleanupLocations(wantEdited, showOwner)
                     ImGui.SameLine()
                     ImGui.PushTextWrapPos(0.0)
                     ImGui.Text(entry.name)
+                    -- On its own line under the name rather than beside it: a long name and a
+                    -- long file name on one row wrap into each other and the pairing is lost.
                     if showOwner then
-                        ImGui.SameLine()
-                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, L("common.parenthesised", orphan.file))
+                        ImGui.Indent(PRESET_CLEANUP_OWNER_INDENT)
+                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, orphan.file)
+                        ImGui.Unindent(PRESET_CLEANUP_OWNER_INDENT)
                     end
                     ImGui.PopTextWrapPos()
                 end
