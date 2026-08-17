@@ -428,7 +428,11 @@ end
 --- Draw the "Export Selected" modal: pick locations, get one export string for the lot.
 local function DrawExportSelectModal()
     local shouldOpen = showExportSelectModal
-    if shouldOpen then ImGui.SetNextWindowSize(560, 0, ImGuiCond.Always) end
+    -- Stated on both axes. A height of 0 auto-fits, and an auto-fitted window has no height
+    -- on the frame it is positioned, so the centring pivot has nothing to subtract.
+    if shouldOpen then
+        ImGui.SetNextWindowSize(EXPORT_SELECT_WIDTH, EXPORT_SELECT_HEIGHT, ImGuiCond.Always)
+    end
 
     UI.WrapperModal(L("exportSelect.title"), shouldOpen, ImGuiWindowFlags.NoResize, function()
         local candidates = GetExportCandidates()
@@ -456,8 +460,11 @@ local function DrawExportSelectModal()
             exportSelection = {}
         end
 
-        -- Its own grouping rather than the Locations tab's, because picking a set to export
-        -- and browsing the list are different jobs and one should not move the other.
+        -- Its own line: the three bulk buttons already fill the row, and a combo squeezed onto
+        -- the end of them is drawn as whatever width is left, which is a sliver.
+        -- Its own grouping too, rather than the Locations tab's, because picking a set to
+        -- export and browsing the list are different jobs and one should not move the other.
+        ImGui.Text(L("exportSelect.groupLabel"))
         ImGui.SameLine()
         ImGui.SetNextItemWidth(EXPORT_SELECT_SORT_WIDTH)
         if ImGui.BeginCombo("##exportGroupBy", GroupByLabel(exportSelectGroupBy)) then
@@ -476,7 +483,7 @@ local function DrawExportSelectModal()
             ImGui.TextColored(0.7, 0.7, 0.7, 1.0, L("exportSelect.noLocationsMatchThatFilter"))
         end
 
-        if ImGui.BeginChild("ExportSelectList", 0, 320, true, 0) then
+        if ImGui.BeginChild("ExportSelectList", 0, EXPORT_SELECT_LIST_HEIGHT, true, 0) then
             -- A-Z is one group covering everything, so a header naming it says nothing.
             local headed = exportSelectGroupBy ~= "A-Z"
 
@@ -2311,6 +2318,10 @@ local PRESET_CLEANUP_FILE_COL = 300
 -- Tall enough for roughly a dozen entries, because a row is two lines whenever more than
 -- one preset is ticked and the owning file is named under each location.
 local PRESET_CLEANUP_LIST_HEIGHT = 400
+-- The lists plus the headings, the edited toggle and the buttons under them.
+local PRESET_CLEANUP_MODAL_HEIGHT = 580
+local PRESET_CLEANUP_EMPTY_WIDTH = 460
+local PRESET_CLEANUP_EMPTY_HEIGHT = 190
 
 -- Lines the owning file name up with the location name above it, past the bullet.
 local PRESET_CLEANUP_OWNER_INDENT = 22
@@ -2321,7 +2332,13 @@ local CATEGORY_CLEANUP_HEIGHT = 260
 
 -- Lines the district up with the location name above it, past the checkbox.
 local EXPORT_SELECT_DISTRICT_INDENT = 28
-local EXPORT_SELECT_SORT_WIDTH = 110
+local EXPORT_SELECT_SORT_WIDTH = 140
+
+-- A row is two lines - name, then district - and grouping adds a header per group, so the
+-- list is sized for roughly a dozen locations rather than the four the old height showed.
+local EXPORT_SELECT_WIDTH = 640
+local EXPORT_SELECT_LIST_HEIGHT = 470
+local EXPORT_SELECT_HEIGHT = 660
 
 --- One side of the preset cleanup location list.
 --- @param wantEdited boolean Draw the edited locations rather than the ones being deleted
@@ -2359,16 +2376,11 @@ end
 local function DrawPresetCleanupModal()
     local empty = #presetOrphans == 0
 
-    -- Two side-by-side lists need a width stated rather than derived: auto-resize measures
-    -- the widest row, so one long location name would decide how wide the modal is.
-    local flags = empty and ImGuiWindowFlags.AlwaysAutoResize or ImGuiWindowFlags.NoResize
-
-    -- Everything after ## is identity rather than title, so both states read the same on
-    -- screen while ImGui files their geometry separately. Sharing one identity had the
-    -- small state centred against the tall one's remembered height, which put it at the top.
+    -- Everything after ## is identity rather than title: both states read the same on screen
+    -- while ImGui files their geometry separately.
     local title = L("presetCleanup.title") .. (empty and "##empty" or "##list")
 
-    UI.WrapperModal(title, showPresetCleanupModal, flags,
+    UI.WrapperModal(title, showPresetCleanupModal, ImGuiWindowFlags.NoResize,
         function()
             if #presetOrphans == 0 then
                 ImGui.Text(L("presetCleanup.everyPresetYourLocationsCame"))
@@ -2547,8 +2559,15 @@ local function DrawPresetCleanupModal()
                 showPresetCleanupModal = false
             end,
             onPreOpen = function()
+                -- Both axes stated. A height of 0 means auto-fit, and an auto-fitted window
+                -- has no height on the frame it is positioned, so centring it against a half
+                -- pivot subtracts a size ImGui does not have yet and it lands high.
                 if #presetOrphans > 0 then
-                    ImGui.SetNextWindowSize(PRESET_CLEANUP_WIDTH, 0, ImGuiCond.Appearing)
+                    ImGui.SetNextWindowSize(PRESET_CLEANUP_WIDTH, PRESET_CLEANUP_MODAL_HEIGHT,
+                        ImGuiCond.Appearing)
+                else
+                    ImGui.SetNextWindowSize(PRESET_CLEANUP_EMPTY_WIDTH,
+                        PRESET_CLEANUP_EMPTY_HEIGHT, ImGuiCond.Appearing)
                 end
             end
         })
@@ -2559,11 +2578,10 @@ end
 -- location falls back into, not something to tidy away.
 local function DrawCategoryCleanupModal()
     -- Same two-states-one-title hazard as the preset cleanup: identity after ##, title before.
-    local title = L("categoryCleanup.title") ..
-        (#unusedCategories == 0 and "##empty" or "##list")
+    local empty = #unusedCategories == 0
+    local title = L("categoryCleanup.title") .. (empty and "##empty" or "##list")
 
-    UI.WrapperModal(title, showCategoryCleanupModal,
-        ImGuiWindowFlags.AlwaysAutoResize, function()
+    UI.WrapperModal(title, showCategoryCleanupModal, ImGuiWindowFlags.NoResize, function()
             if #unusedCategories == 0 then
                 ImGui.Text(L("categoryCleanup.everyCategoryIsInUse"))
                 ImGui.Spacing()
@@ -2629,6 +2647,15 @@ local function DrawCategoryCleanupModal()
         end, {
             onClose = function()
                 showCategoryCleanupModal = false
+            end,
+            onPreOpen = function()
+                -- Stated on both axes so the centring pivot has a real height to work from.
+                if empty then
+                    ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH + 40, 150, ImGuiCond.Appearing)
+                else
+                    ImGui.SetNextWindowSize(CATEGORY_CLEANUP_WIDTH + 40,
+                        CATEGORY_CLEANUP_HEIGHT + 190, ImGuiCond.Appearing)
+                end
             end
         })
 end
