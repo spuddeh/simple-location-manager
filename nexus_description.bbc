@@ -5,14 +5,14 @@
 [color=#ffff00][size=5][b]Overview[/b][/size][/color]
 Ever found a preem photo spot, a hidden gem, or a great testing location, only to lose it forever? [b]Simple Location Manager[/b] is a UI tool for Cyber Engine Tweaks that lets you save, organise, and share locations.
 
-[b]Simple Location Manager[/b] is designed for organisation first. It automatically detects your location, identifying the District and sub-district, and organises your locations into a clean, collapsible hierarchy.
+[b]Simple Location Manager[/b] automatically detects your location, identifying the District and sub-district, and organises your locations into a clean, collapsible hierarchy.
 
 [color=#ffff00][size=5][b]Key Features[/b][/size][/color]
 [list]
 [*][b]Save Anywhere:[/b] Instantly record your position. Add custom names, descriptions, or let the mod auto-timestamp them.
 [*][b]Smart Organisation:[/b] Locations are automatically grouped by [b]District[/b] or [b]Category[/b], or shown as a flat [b]A-Z[/b] list.
 [*][b]Manual Coordinates:[/b] Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a console command. Pastes CET teleport commands and AMM JSON too.
-[*][b]Favourites:[/b] Keep your most-used spots at the top of the list for instant access.
+[*][b]Favourites:[/b] Keep your most-used spots at the top of the list.
 [*][b]Custom Categories:[/b] Create your own categories (e.g., "Stunts", "Photos") and give them their own icons. Type a new category name while adding a location and click the symbol beside the box to pick its icon there and then. [b]Remove unused[/b] clears out any custom category nothing is filed under.
 [*][b]AMM Support:[/b] Import existing locations created for Appearance Menu Mod. [i]AMM is [b]not[/b] required for this to work.[/i]
 [*][b]Search:[/b] Filter by name, district, or description.
@@ -59,12 +59,12 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [line]
 [color=#ffff00][size=5][b]For Mod Authors: Create Presets[/b][/size][/color]
 Want to publish a list of locations? (Hidden gems, photo spots, stash houses?)
-[b]Simple Location Manager[/b] supports [b]Presets[/b] that allow you to distribute locations easily.
+[b]Simple Location Manager[/b] supports [b]Presets[/b], which distribute locations as a plain text file.
 
 [list]
 [*]Create a [font=Courier New].txt[/font] file with your exported locations.
-[*]Users simply install your mod with the preset file in the [font=Courier New]presets[/font] folder, and it will automatically show in the locations list.
-[*][b]Custom Categories Auto-Install:[/b] If you use a custom category (e.g., "My Stash" with a specific icon), it will [b]automatically be created[/b] for the user when they load your preset. No manual setup required!
+[*]Users install your mod with the preset file in the [font=Courier New]presets[/font] folder, and it shows in the locations list.
+[*][b]Custom Categories Auto-Install:[/b] If you use a custom category (e.g., "My Stash" with a specific icon), it is [b]created automatically[/b] for the user when they load your preset.
 [/list]
 [url=https://www.nexusmods.com/cyberpunk2077/articles/1960][b]Read the full guide on creating Presets here[/b][/url]
 [line]
@@ -81,7 +81,7 @@ Want to publish a list of locations? (Hidden gems, photo spots, stash houses?)
 [line]
 [color=#ffff00][size=5][b]Import / Export[/b][/size][/color]
 To export a location, click on the export button on the location. A simple code string will be added to your clipboard. This can be pasted for easy sharing/backup.
-Importing a location is as simple as pasting that export string into the import window, reachable from the import button on the Locations tab or from the Settings tab.
+To import, paste that export string into the import window, reachable from the import button on the Locations tab or from the Settings tab.
 
 [color=#ffff00][size=4][b]Import from AMM[/b][/size][/color]
 You can now import existing Appearance Menu Mod locations!
@@ -100,7 +100,7 @@ to the SLM import folder:
 [/list]
 [/list]
 [list]
-[*][b]Manual Import:[/b] Simply paste the content from any AMM JSON file into the import box, and it will be automatically detected and converted.
+[*][b]Manual Import:[/b] Paste the content of any AMM JSON file into the import box. It is detected and converted automatically.
 [/list]
 [color=#ffff00][size=4][b]SLM Export Strings[/b][/size][/color]
 These strings can be shared with other users of the mod, or as a way to back up your list of locations (Export All Data in the Settings tab, or Export Selected to pick your own set).
@@ -142,7 +142,7 @@ Here are some examples that you can import to get started. [b][i]Check out the F
 [/list]
 [*]The [b]Dump District Info [/b]button will output your current district and subdistrict details to the console and the mods .log file
 [list]
-[*]This is useful for debugging purposes
+[*]This is useful for debugging
 [/list]
 [/list]
 [line]
