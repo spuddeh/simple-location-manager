@@ -25,6 +25,17 @@ local MODAL_PREFIX = "SLM - "
 -- Icon a category gets when it is created without one being picked.
 local DEFAULT_NEW_CATEGORY_ICON = "Star"
 
+-- Export Selected geometry. Declared here rather than beside the modal, because a local is
+-- not in scope above the line that declares it: the same names further down the file read as
+-- globals from inside a function written earlier, and arrive as nil.
+local EXPORT_SELECT_WIDTH = 640
+-- A row is two lines - name, then district - and grouping adds a header per group, so the
+-- list holds roughly a dozen locations. Capped against the display where that is taller.
+local EXPORT_SELECT_LIST_HEIGHT = 470
+-- Lines the district up with the location name above it, past the checkbox.
+local EXPORT_SELECT_DISTRICT_INDENT = 28
+local EXPORT_SELECT_SORT_WIDTH = 140
+
 -- What a setting STORES is an English word; what a combo SHOWS is a translation of it.
 -- The two are kept apart because comparing the stored value against the label would make
 -- every one of these controls forget its own selection outside English.
@@ -2349,14 +2360,6 @@ local CATEGORY_CLEANUP_WIDTH = 460
 -- One line per category, so this holds about a dozen before it scrolls.
 local CATEGORY_CLEANUP_HEIGHT = 260
 
--- Lines the district up with the location name above it, past the checkbox.
-local EXPORT_SELECT_DISTRICT_INDENT = 28
-local EXPORT_SELECT_SORT_WIDTH = 140
-
--- A row is two lines - name, then district - and grouping adds a header per group, so the
--- list is sized for roughly a dozen locations rather than the four the old height showed.
-local EXPORT_SELECT_WIDTH = 640
-local EXPORT_SELECT_LIST_HEIGHT = 470
 
 --- One side of the preset cleanup location list.
 --- @param wantEdited boolean Draw the edited locations rather than the ones being deleted
