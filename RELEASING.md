@@ -109,5 +109,5 @@ You can also run it manually from the **Actions** tab (workflow_dispatch) with `
   presets require SLM). Set an artifact's `show_requirements_pop_up` to `false` only if it has no
   mod requirements at all.
 - WolvenKit is no longer needed for these CET-only artifacts. A future ArchiveXL/Redscript mod that
-  *does* need WolvenKit packing would add a different build path (the manifest can carry a packing
-  mode); this tooling is structured so that extension is straightforward.
+  *does* need WolvenKit packing would add a different build path - the manifest can carry a packing
+  mode.

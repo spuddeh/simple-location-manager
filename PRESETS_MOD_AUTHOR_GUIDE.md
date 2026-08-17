@@ -1,64 +1,90 @@
 # Presets: Mod Author Guide
 
-So you've found a preem photo spot, a secret hideout, or built a custom location, and you want to share it with the world? The **Preset Import** feature makes it super easy.
+A preset distributes locations as a plain text file. Users drop it in a folder and SLM handles
+loading, updating and conflict checks.
 
-It allows you to distribute your locations as simple text files. SLM handles the rest - loading, updating, and making sure nothing breaks.
+> The same guide is published as a [Nexus article](https://www.nexusmods.com/cyberpunk2077/articles/1960).
+> Change one and change the other.
 
 ## How it works
 
-- **Drop & Load**: Users just drop your `.txt` file in the folder, and it appears in-game.
-- **Auto-Updates**: If you tweak your location later, SLM updates it for the user automatically.
-- **Safety First**: We check for existing locations so we don't spam the user's UI or overwrite their own saves.
+- **Drop and load**: users drop your `.txt` in the folder, and it appears in-game.
+- **Auto-updates**: change your location later and SLM updates it for the user.
+- **Conflict checks**: SLM checks for existing locations, so your preset never spams the list or
+  overwrites a location the user made themselves.
 
 ---
 
 ## 1. Creating your Preset
 
-1. **Go there**: Stand in your spot in-game.
-2. **Save it**: Add it to SLM. Give it a nice name, category, and description.
+1. **Go there**: stand in your spot in-game.
+2. **Save it**: add it to SLM with a name, category and description.
 3. **Export it**:
-    - **Single Location**: Select it and click **Export to Clipboard**.
-    - **Whole Category**: Right-click a Category header -> **Export Category**.
-    - **Whole District**: Right-click a District header -> **Export District**.
-    - **Everything**: Config Tab -> **Export All Data**.
-4. **Save to File**:
-    - Create a new text file (e.g., `MyCustomLocation.txt`).
-    - Paste that code string right in there.
-    - **Pro Tip**: Keep it to **one location string per file**. If you have 5 spots to share, just make 5 `.txt` files. It keeps things clean and easy to manage!
+    - **Single location**: the copy button on the location row.
+    - **Whole category**: right-click a Category header, then **Export Category**.
+    - **Whole district**: right-click a District header, then **Export District**.
+    - **A set you pick**: **Settings** tab, then **Export Selected** - tick the locations you want.
+    - **Everything**: **Settings** tab, then **Export All Data**.
+4. **Save to file**:
+    - Create a text file, for example `MyCustomLocation.txt`.
+    - Paste the exported code string into it.
+    - Keep it to **one preset per file**. Five spots to share means five `.txt` files, so users can
+      install only the ones they want.
 
 ## 2. Packaging it up
 
-Pack your mod so your files land in this folder:
+Pack your mod so your files land in:
 
-```md
+```text
 bin/x64/plugins/cyber_engine_tweaks/mods/SimpleLocationManager/presets/
 ```
 
-**Tip**: Name your file something unique (like `AuthorName_LocationName.txt`) so you don't accidentally clash with other modders.
+Name the file something unique, like `AuthorName_LocationName.txt`, so it cannot clash with another
+author's preset.
 
-## 3. Updates (Calculated Magic)
+## 3. Updating a preset later
 
 SLM remembers the **ID** inside your export string.
 
-If you decide later that your "Secret Base" needs to be moved 2 meters to the left, just update your `.txt` file with the new export string (from the updated location). When the user installs your update, SLM will see the matching ID and **update the location automatically**.
+To move a location, update your `.txt` with the new export string. When the user installs your
+update, SLM matches the ID and **updates the location in place** - no duplicate markers in their
+list.
 
-This means users always get your latest version without duplicate markers cluttering their list! ✨
+**One exception, and it is deliberate:** if the user has edited that location themselves, SLM marks
+it as theirs and your update skips it. Their changes win.
 
-## 4. Conflict Detection (No Drama)
+## 4. Conflict detection
 
-We respect the user's game state. Before importing anything new, SLM checks for existing locations.
+SLM checks for existing locations before importing anything new.
 
-- If the user (or another mod) already has a location within **0.5 meters** of yours, we **SKIP** your import.
-- **Why?**
-  1. To prevent 10 duplicate waypoints stacking on top of each other.
-  2. To ensure we **never overwrite a user's manually created location**. Their personal saves are sacred!
+- If the user, or another mod, already has a location within **0.5 metres** of yours, your import is
+  **skipped**.
+- That prevents duplicate waypoints stacking up, and means a preset can never overwrite a location
+  the user created by hand.
 
-## 5. Verification
+## 5. Uninstalling a preset
 
-Want to check if it's working? Open the CET console and check the logs:
+Removing your mod takes the `.txt` away, but the locations it already imported stay in the user's
+list.
 
-- `Imported Location: The Afterlife Roof` -> Success! It's in.
-- `Synced Preset Location: ...` -> Updated an existing one.
-- `[SKIP] Conflict: Position match...` -> Skipped because something was already there. (System working as intended!)
+**Settings** tab, then **Remove Preset Locations**, lists every preset whose file is gone and clears
+out what it left behind - one preset at a time, so other presets are untouched. Any location the
+user edited themselves is kept and becomes their own.
 
-Happy modding! 🚀
+Worth mentioning on your own mod page, so users know the tidy-up exists.
+
+## 6. Verification
+
+The import lines are off by default. To see them: **Settings** tab, then **Console Logging**, set to
+**Debug**.
+
+Open the CET console and reload. You are looking for:
+
+- `Imported Location: The Afterlife Roof` - it is in.
+- `Synced Preset Location: ...` - an existing location was updated.
+- `[SKIP] Conflict: Position match...` - skipped because something was already there, which is the
+  system working as intended.
+- `[FIX] Resyncing ID for location: ...` - a broken ID link was repaired.
+
+Set **Console Logging** back to **Warn** when you are done, or the console fills with one line per
+location on every load.

@@ -2,16 +2,16 @@
 
 **Simple Location Manager (SLM)** lets you save, organise, and share your favourite spots in Night City. It automatically detects the District and Sub-District of every location you save, so you never lose a great photo spot, hidden gem, or testing location again.
 
-📥 **Download:** [Simple Location Manager on Nexus Mods](https://www.nexusmods.com/cyberpunk2077/mods/26454)
+**Download:** [Simple Location Manager on Nexus Mods](https://www.nexusmods.com/cyberpunk2077/mods/26454)
 
-## 🚀 Features
+## Features
 
 * **Save Anywhere:** Instantly record your position with a custom name and description (or an auto-timestamp).
 * **Smart Organisation:** Locations are grouped by **District**, by **Category**, or shown as a flat **A-Z** list.
 * **Manual Coordinates:** Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a CET console command. **SmartPaste™** understands labelled values, AMM JSON, and full CET `Vector4.new(...)` / `EulerAngles.new(...)` teleport commands and fills the fields for you (double-check the auto-filled values before saving or teleporting).
 * **Custom Categories:** Create, edit, and share your own categories with unique icons.
 * **Favourites:** Keep your most-used spots pinned at the top of the list.
-* **Powerful Search:** Real-time filtering by name, description, district, or category.
+* **Search:** Filters by name, description, district or category as you type.
 * **Import / Export:** Share a single spot, a whole district, or your entire database as a compact text string. Imports AMM locations too (AMM is not required).
 * **Presets:** Install location packs that auto-create their custom categories for you. Uninstall one and **Remove Preset Locations** in Settings clears out what it left behind, keeping any location you had edited as your own.
 * **Translations:** The interface follows the game's language, or one you pick in Settings. Adding a language is a single JSON file dropped in `lang/` - see the [translator guide](SimpleLocationManager/lang/TRANSLATING.md).
@@ -21,7 +21,7 @@
 * **Live Readout:** The footer shows the current game time and weather state. A padlock appears when SLM is holding the weather - right-click it to unlock the weather cycle - and it turns red when another mod has taken it.
 * **Per-Save Persistence:** Your locations are tied to each save file.
 
-## 📋 Requirements
+## Requirements
 
 * [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107) (latest version).
 * [Codeware](https://www.nexusmods.com/cyberpunk2077/mods/7780) - required to set the weather.
@@ -33,7 +33,7 @@
 * [Window Utils](https://www.nexusmods.com/cyberpunk2077/mods/26589) - grid snapping, animation and
   window management for the SLM window.
 
-## 🎮 Usage
+## Usage
 
 1. Open the CET overlay.
 2. The **Simple Location Manager** window appears.
@@ -41,14 +41,14 @@
 4. Open the **Settings** tab to import/export, or adjust UI preferences.
 5. Optionally bind a **Quick Save** key in the CET bindings menu to save a location without opening the overlay.
 
-## 🧩 For Preset Authors
+## For Preset Authors
 
 SLM supports distributable location packs (presets) whose custom categories auto-install for players. See the [preset author guide](PRESETS_MOD_AUTHOR_GUIDE.md) and the [Nexus article](https://www.nexusmods.com/cyberpunk2077/articles/1960).
 
-## 📜 License
+## License
 
 Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). You may use, modify, and share this mod and its source for any **noncommercial** purpose, as long as you credit the original creator. Commercial use, including paid mods or selling, is not permitted. This mirrors the [mod's Nexus permissions](https://www.nexusmods.com/cyberpunk2077/mods/26454).
 
-## 🤖 Disclaimer
+## Disclaimer
 
 This mod was developed with the assistance of an LLM. All in-game testing and code validation was performed by a human. No rogue AIs were permitted through the Blackwall.
