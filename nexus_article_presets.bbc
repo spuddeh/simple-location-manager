@@ -1,52 +1,48 @@
 [center]
 [color=#ffff00][size=6][b]Presets: Mod Author Guide[/b][/size][/color][/center]
 [line]
-So you've found a preem photo spot, a secret hideout, or built a custom location, and you want to share it with the world? The [b]Preset Import[/b] feature makes it easy.
-
-It lets you distribute your locations as plain text files. SLM handles the rest - loading, updating, and making sure nothing breaks.
+A preset distributes locations as a plain text file. Users drop it in a folder and SLM handles loading, updating and conflict checks.
 
 [line]
 [color=#ffff00][size=5][b]How it works[/b][/size][/color]
 [list]
-[*][b]Drop and load:[/b] Users drop your [font=Courier New].txt[/font] file in the folder, and it appears in-game.
-[*][b]Auto-updates:[/b] Tweak your location later and SLM updates it for the user automatically.
-[*][b]Safety first:[/b] SLM checks for existing locations, so your preset never spams the list or overwrites a location the user made themselves.
+[*][b]Drop and load:[/b] users drop your [font=Courier New].txt[/font] in the folder, and it appears in-game.
+[*][b]Auto-updates:[/b] change your location later and SLM updates it for the user.
+[*][b]Conflict checks:[/b] SLM checks for existing locations, so your preset never spams the list or overwrites a location the user made themselves.
 [/list]
 
 [line]
 [color=#ffff00][size=5][b]1. Creating your Preset[/b][/size][/color]
 [list=1]
-[*][b]Go there:[/b] Stand in your spot in-game.
-[*][b]Save it:[/b] Add it to SLM. Give it a name, category, and description.
+[*][b]Go there:[/b] stand in your spot in-game.
+[*][b]Save it:[/b] add it to SLM with a name, category and description.
 [*][b]Export it:[/b][list]
-[*][b]Single location:[/b] Click the copy button on the location row.
-[*][b]Whole category:[/b] Right-click a Category header, then [b]Export Category[/b].
-[*][b]Whole district:[/b] Right-click a District header, then [b]Export District[/b].
+[*][b]Single location:[/b] the copy button on the location row.
+[*][b]Whole category:[/b] right-click a Category header, then [b]Export Category[/b].
+[*][b]Whole district:[/b] right-click a District header, then [b]Export District[/b].
 [*][b]A set you pick:[/b] [b]Settings[/b] tab, then [b]Export Selected[/b] - tick the locations you want.
 [*][b]Everything:[/b] [b]Settings[/b] tab, then [b]Export All Data[/b].
 [/list]
 [*][b]Save to file:[/b][list]
-[*]Create a new text file, for example [font=Courier New]MyCustomLocation.txt[/font].
+[*]Create a text file, for example [font=Courier New]MyCustomLocation.txt[/font].
 [*]Paste the exported code string into it.
-[*][b]Pro tip:[/b] Keep it to [b]one preset per file[/b]. Five spots to share means five [font=Courier New].txt[/font] files, and users can then install only the ones they want.
+[*]Keep it to [b]one preset per file[/b]. Five spots to share means five [font=Courier New].txt[/font] files, so users can install only the ones they want.
 [/list]
 [/list]
 
 [line]
 [color=#ffff00][size=5][b]2. Packaging it up[/b][/size][/color]
-Pack your mod so your files land in this folder:
+Pack your mod so your files land in:
 
 [code]bin/x64/plugins/cyber_engine_tweaks/mods/SimpleLocationManager/presets/[/code]
 
-[b]Tip:[/b] Name your file something unique, like [font=Courier New]AuthorName_LocationName.txt[/font], so it cannot clash with another author's preset.
+Name the file something unique, like [font=Courier New]AuthorName_LocationName.txt[/font], so it cannot clash with another author's preset.
 
 [line]
 [color=#ffff00][size=5][b]3. Updating a preset later[/b][/size][/color]
 SLM remembers the [b]ID[/b] inside your export string.
 
-Decide later that your "Secret Base" needs to move two metres to the left? Update your [font=Courier New].txt[/font] with the new export string. When the user installs your update, SLM matches the ID and [b]updates the location in place[/b].
-
-Users always get your latest version, with no duplicate markers cluttering their list. ✨
+To move a location, update your [font=Courier New].txt[/font] with the new export string. When the user installs your update, SLM matches the ID and [b]updates the location in place[/b] - no duplicate markers in their list.
 
 [b]One exception, and it is deliberate:[/b] if the user has edited that location themselves, SLM marks it as theirs and your update skips it. Their changes win.
 
@@ -56,7 +52,7 @@ SLM checks for existing locations before importing anything new.
 
 [list]
 [*]If the user, or another mod, already has a location within [b]0.5 metres[/b] of yours, your import is [b]skipped[/b].
-[*]That prevents duplicate waypoints stacking on top of each other, and it means a preset can never overwrite a location the user created by hand.
+[*]That prevents duplicate waypoints stacking up, and means a preset can never overwrite a location the user created by hand.
 [/list]
 
 [line]
@@ -69,20 +65,15 @@ Worth mentioning on your own mod page, so users know the tidy-up exists.
 
 [line]
 [color=#ffff00][size=5][b]6. Verification[/b][/size][/color]
-Want to check it is working? The import lines are off by default, so turn them on first:
+The import lines are off by default. To see them: [b]Settings[/b] tab, then [b]Console Logging[/b], set to [b]Debug[/b].
 
-[b]Settings[/b] tab, then [b]Console Logging[/b], set to [b]Debug[/b].
-
-Now open the CET console and reload. You are looking for:
+Open the CET console and reload. You are looking for:
 
 [list]
-[*][font=Courier New]Imported Location: The Afterlife Roof[/font] - it's in.
+[*][font=Courier New]Imported Location: The Afterlife Roof[/font] - it is in.
 [*][font=Courier New]Synced Preset Location: ...[/font] - an existing location was updated.
 [*][font=Courier New][SKIP] Conflict: Position match...[/font] - skipped because something was already there, which is the system working as intended.
 [*][font=Courier New][FIX] Resyncing ID for location: ...[/font] - a broken ID link was repaired.
 [/list]
 
-Set [b]Console Logging[/b] back to [b]Warn[/b] when you're done, or the console fills with one line per location on every load.
-
-[line]
-Happy modding! 🚀
+Set [b]Console Logging[/b] back to [b]Warn[/b] when you are done, or the console fills with one line per location on every load.
