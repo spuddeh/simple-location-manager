@@ -52,6 +52,20 @@ local GROUP_STATE_KEYS = {
     ["Collapsed"] = "groupState.collapsed",
 }
 
+--- One row of a combo. True only where the player picks a row that is not already in force.
+---
+--- The row already in force does not report itself chosen. Without that, the language picker
+--- lost every click made on a row ABOVE the current one - the current row is drawn at its own
+--- position and the pick made above it did not survive to the end of the loop. Why the same
+--- shape works untouched in other combos is not established, so this is applied to all of
+--- them rather than only where it was seen to bite.
+---@param label string
+---@param isCurrent boolean
+---@return boolean picked
+local function ComboRow(label, isCurrent)
+    return ImGui.Selectable(label, isCurrent) and not isCurrent
+end
+
 ---@param value string A stored groupBy value
 ---@return string label
 local function GroupByLabel(value)
@@ -484,8 +498,7 @@ local function DrawExportSelectModal()
         local chosenExportGroup = nil
         if ImGui.BeginCombo("##exportGroupBy", GroupByLabel(exportSelectGroupBy)) then
             for _, value in ipairs(GROUP_BY_VALUES) do
-                if ImGui.Selectable(GroupByLabel(value), exportSelectGroupBy == value)
-                    and value ~= exportSelectGroupBy then
+                if ComboRow(GroupByLabel(value), exportSelectGroupBy == value) then
                     chosenExportGroup = value
                 end
             end
@@ -697,17 +710,13 @@ local function DrawEnvSection()
 
     local preview = (tempEnvWeather == "") and L("env.leaveAsIs") or Env.GetWeatherLabel(tempEnvWeather)
 
-    -- Chosen after the loop, and the row already in force is ignored. Selectable reports
-    -- true for the selected row on every frame rather than only when it is clicked, so a
-    -- row acting on itself overwrites a click made on any row drawn above it.
     local chosenWeather = nil
     if ImGui.BeginCombo("##envWeather", preview) then
-        if ImGui.Selectable(L("env.leaveAsIs"), tempEnvWeather == "") and tempEnvWeather ~= "" then
+        if ComboRow(L("env.leaveAsIs"), tempEnvWeather == "") then
             chosenWeather = ""
         end
         for _, state in ipairs(states) do
-            if ImGui.Selectable(state.label, state.id == tempEnvWeather)
-                and state.id ~= tempEnvWeather then
+            if ComboRow(state.label, state.id == tempEnvWeather) then
                 chosenWeather = state.id
             end
         end
@@ -1315,8 +1324,7 @@ local function DrawLocationsTab()
         local chosenSort = nil
         if ImGui.BeginCombo("##sort", GroupByLabel(currentSort)) then
             for _, value in ipairs(GROUP_BY_VALUES) do
-                if ImGui.Selectable(GroupByLabel(value), currentSort == value)
-                    and value ~= currentSort then
+                if ComboRow(GroupByLabel(value), currentSort == value) then
                     chosenSort = value
                 end
             end
@@ -1895,8 +1903,7 @@ local function DrawSettingsTab()
     local chosenGroupState = nil
     if ImGui.BeginCombo("##GroupState", GroupStateLabel(currentGroupState)) then
         for _, value in ipairs(GROUP_STATE_VALUES) do
-            if ImGui.Selectable(GroupStateLabel(value), currentGroupState == value)
-                and value ~= currentGroupState then
+            if ComboRow(GroupStateLabel(value), currentGroupState == value) then
                 chosenGroupState = value
             end
         end
@@ -1940,11 +1947,7 @@ local function DrawSettingsTab()
         -- Each row carries its own ## identity. ImGui keys an item by its label, and these
         -- labels are translation data: two languages naming themselves the same, or a name
         -- that changes as the language does, otherwise gives two rows one identity.
-        -- The row already in force is ignored. Selectable reports true for the row whose
-        -- selected argument is true on EVERY frame, not only when it is clicked, so without
-        -- this it overwrites a click made on any row drawn above it.
-        if ImGui.Selectable(autoLabel .. "##lang_auto", currentLanguage == "Auto")
-            and currentLanguage ~= "Auto" then
+        if ComboRow(autoLabel .. "##lang_auto", currentLanguage == "Auto") then
             chosenLanguage = "Auto"
         end
         -- Listed from the files on disk, so a language dropped in after release appears
@@ -1956,8 +1959,7 @@ local function DrawSettingsTab()
 
         for _, code in ipairs(codes) do
             local name = Loc.GetAvailable()[code]
-            if ImGui.Selectable(name .. "##lang_" .. code, currentLanguage == code)
-                and code ~= currentLanguage then
+            if ComboRow(name .. "##lang_" .. code, currentLanguage == code) then
                 chosenLanguage = code
             end
         end
@@ -1995,7 +1997,7 @@ local function DrawSettingsTab()
             -- The choice is made after the loop, and a row naming the level already in force
             -- is ignored. Acting inside the loop let a row drawn later overwrite the row the
             -- user clicked, which put every level above the current one out of reach.
-            if ImGui.Selectable(level, currentLogLevel == level) and level ~= currentLogLevel then
+            if ComboRow(level, currentLogLevel == level) then
                 chosenLogLevel = level
             end
         end
