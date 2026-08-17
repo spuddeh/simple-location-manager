@@ -484,7 +484,8 @@ local function DrawExportSelectModal()
         local chosenExportGroup = nil
         if ImGui.BeginCombo("##exportGroupBy", GroupByLabel(exportSelectGroupBy)) then
             for _, value in ipairs(GROUP_BY_VALUES) do
-                if ImGui.Selectable(GroupByLabel(value), exportSelectGroupBy == value) then
+                if ImGui.Selectable(GroupByLabel(value), exportSelectGroupBy == value)
+                    and value ~= exportSelectGroupBy then
                     chosenExportGroup = value
                 end
             end
@@ -694,18 +695,25 @@ local function DrawEnvSection()
     ImGui.BeginDisabled(not weatherAvailable)
     ImGui.SetNextItemWidth(220)
 
-    local preview = (tempEnvWeather == "") and "Leave as is" or Env.GetWeatherLabel(tempEnvWeather)
+    local preview = (tempEnvWeather == "") and L("env.leaveAsIs") or Env.GetWeatherLabel(tempEnvWeather)
+
+    -- Chosen after the loop, and the row already in force is ignored. Selectable reports
+    -- true for the selected row on every frame rather than only when it is clicked, so a
+    -- row acting on itself overwrites a click made on any row drawn above it.
+    local chosenWeather = nil
     if ImGui.BeginCombo("##envWeather", preview) then
-        if ImGui.Selectable(L("env.leaveAsIs"), tempEnvWeather == "") then
-            tempEnvWeather = ""
+        if ImGui.Selectable(L("env.leaveAsIs"), tempEnvWeather == "") and tempEnvWeather ~= "" then
+            chosenWeather = ""
         end
         for _, state in ipairs(states) do
-            if ImGui.Selectable(state.label, state.id == tempEnvWeather) then
-                tempEnvWeather = state.id
+            if ImGui.Selectable(state.label, state.id == tempEnvWeather)
+                and state.id ~= tempEnvWeather then
+                chosenWeather = state.id
             end
         end
         ImGui.EndCombo()
     end
+    if chosenWeather then tempEnvWeather = chosenWeather end
     ImGui.EndDisabled()
 
     if not weatherAvailable then
@@ -1307,7 +1315,8 @@ local function DrawLocationsTab()
         local chosenSort = nil
         if ImGui.BeginCombo("##sort", GroupByLabel(currentSort)) then
             for _, value in ipairs(GROUP_BY_VALUES) do
-                if ImGui.Selectable(GroupByLabel(value), currentSort == value) then
+                if ImGui.Selectable(GroupByLabel(value), currentSort == value)
+                    and value ~= currentSort then
                     chosenSort = value
                 end
             end
@@ -1886,7 +1895,8 @@ local function DrawSettingsTab()
     local chosenGroupState = nil
     if ImGui.BeginCombo("##GroupState", GroupStateLabel(currentGroupState)) then
         for _, value in ipairs(GROUP_STATE_VALUES) do
-            if ImGui.Selectable(GroupStateLabel(value), currentGroupState == value) then
+            if ImGui.Selectable(GroupStateLabel(value), currentGroupState == value)
+                and value ~= currentGroupState then
                 chosenGroupState = value
             end
         end
@@ -1930,7 +1940,11 @@ local function DrawSettingsTab()
         -- Each row carries its own ## identity. ImGui keys an item by its label, and these
         -- labels are translation data: two languages naming themselves the same, or a name
         -- that changes as the language does, otherwise gives two rows one identity.
-        if ImGui.Selectable(autoLabel .. "##lang_auto", currentLanguage == "Auto") then
+        -- The row already in force is ignored. Selectable reports true for the row whose
+        -- selected argument is true on EVERY frame, not only when it is clicked, so without
+        -- this it overwrites a click made on any row drawn above it.
+        if ImGui.Selectable(autoLabel .. "##lang_auto", currentLanguage == "Auto")
+            and currentLanguage ~= "Auto" then
             chosenLanguage = "Auto"
         end
         -- Listed from the files on disk, so a language dropped in after release appears
@@ -1942,7 +1956,8 @@ local function DrawSettingsTab()
 
         for _, code in ipairs(codes) do
             local name = Loc.GetAvailable()[code]
-            if ImGui.Selectable(name .. "##lang_" .. code, currentLanguage == code) then
+            if ImGui.Selectable(name .. "##lang_" .. code, currentLanguage == code)
+                and code ~= currentLanguage then
                 chosenLanguage = code
             end
         end
