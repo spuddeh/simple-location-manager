@@ -11,7 +11,7 @@ Two parts: picking a language, and making one.
 
 [list]
 [*][b]Follow the game[/b] (the default) uses whatever language Cyberpunk is set to.
-[*]Pick a language to pin it, whatever the game is set to.
+[*]Picking any other language overrides that. SLM stays in it even if you change the game.
 [*]Right-click the dropdown to put it back to [b]Follow the game[/b].
 [/list]
 
