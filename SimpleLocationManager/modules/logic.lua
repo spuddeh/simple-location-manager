@@ -468,6 +468,15 @@ end
 ---@param sourceType string|nil Source of import (e.g., "SLM String", "SLM Preset", "AMM Import")
 ---@param sourceDetail string|nil Detail (e.g. filename)
 ---@return table newLoc
+--- Import a location from outside - a pasted string, a preset file, an AMM export.
+---
+--- **A district arriving here is a NAME as often as an identifier.** A V1 batch carries the
+--- district exactly as it was written, and a preset is usually one; only a V2 string is
+--- expanded through the compression map. So the name is resolved here rather than at either
+--- reader, because this is the one point every import passes through.
+---
+--- Logic.MigrateDistricts cannot cover it: presets load after it has run, and it does not run
+--- again once it has succeeded.
 function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
     -- 1. Preserve ID Update (Preset Sync)
     if preserveId and data.id then
@@ -485,8 +494,9 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
             existing.category = data.category or existing.category
             existing.pos = data.pos or existing.pos
             existing.rot = data.rot or existing.rot
-            existing.district = data.district or existing.district
-            existing.subDistrict = data.subDistrict or existing.subDistrict
+            existing.district = Utils.DistrictEnum(data.district) or data.district or existing.district
+            existing.subDistrict = Utils.DistrictEnum(data.subDistrict) or data.subDistrict or
+                existing.subDistrict
             existing.env = data.env or existing.env
 
             -- Metadata Update
@@ -510,8 +520,8 @@ function Logic.ImportLocation(data, preserveId, sourceType, sourceDetail)
         name = data.name or "Imported Location",
         description = data.description or "",
         category = data.category or "Imported",
-        district = data.district or "Unknown",
-        subDistrict = data.subDistrict or "Unknown",
+        district = Utils.DistrictEnum(data.district) or data.district or "Unknown",
+        subDistrict = Utils.DistrictEnum(data.subDistrict) or data.subDistrict or "Unknown",
         pos = data.pos,
         rot = data.rot or { pitch = 0, yaw = 0, roll = 0 },
         env = data.env,

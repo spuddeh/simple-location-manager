@@ -24,3 +24,4 @@
 - [x] Per-save persistence.
 
 ## Planned
+- [ ] Split the category widget in the Edit and Manual Coordinates modals: a dropdown that picks an existing category, and a separate box that is empty until a new name is typed. One box currently does both, so it has to hold the stored name - which is the English word for a default category, beside a dropdown showing the translated one.
