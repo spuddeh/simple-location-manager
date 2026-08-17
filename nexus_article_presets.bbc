@@ -44,6 +44,8 @@ SLM remembers the [b]ID[/b] inside your export string.
 
 To move a location, update your [font=Courier New].txt[/font] with the new export string. When the user installs your update, SLM matches the ID and [b]updates the location in place[/b] - no duplicate markers in their list.
 
+[b]Re-exporting the whole preset:[/b] [b]Settings[/b] tab, then [b]Export Selected[/b], and pick your preset from the [b]Preset[/b] dropdown. Every location it brought in is ticked, so you get one string for the lot without hunting for them. Locations you have changed since installing it are included and counted for you - the export replaces the file whole, so anything left out is dropped from the preset.
+
 [b]One exception, and it is deliberate:[/b] if the user has edited that location themselves, SLM marks it as theirs and your update skips it. Their changes win.
 
 [line]

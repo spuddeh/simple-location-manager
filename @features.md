@@ -4,7 +4,7 @@
 - [x] Smart organisation: locations grouped by District or Category, or a flat A-Z list.
 - [x] Manual coordinates: save or teleport to a shared X/Y/Z (with optional Yaw), with smart paste of CET/AMM/labeled formats.
 - [x] Custom categories with unique icons, picked either as the category is typed or from the Category Manager.
-- [x] Export a chosen set of locations as one string, picked from a filterable checklist.
+- [x] Export a chosen set of locations as one string, picked from a filterable checklist. A Preset dropdown ticks every location one preset file brought in, which is what re-exporting a preset to publish an update needs; edited ones are included and counted, because the export replaces the file whole.
 - [x] Import/export locations as JSON for sharing, reachable from the Locations tab as well as Settings. An imported location's category is created from its name where the string did not define one.
 - [x] Presets system: install location packs with auto-installing categories.
 - [x] Preset cleanup: locations left behind by an uninstalled preset are found by comparing what the locations name against the preset files actually present, and removed per preset file. A location the user has edited is kept and re-tagged as their own manual entry unless they ask for it to go too.

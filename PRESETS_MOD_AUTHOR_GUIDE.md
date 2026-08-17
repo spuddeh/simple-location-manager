@@ -50,6 +50,12 @@ To move a location, update your `.txt` with the new export string. When the user
 update, SLM matches the ID and **updates the location in place** - no duplicate markers in their
 list.
 
+**Re-exporting the whole preset:** **Settings** tab, then **Export Selected**, and pick your preset
+from the **Preset** dropdown. Every location it brought in is ticked, so you get one string for the
+lot without hunting for them. Locations you have changed since installing it are included and
+counted for you - the export replaces the file whole, so anything left out is dropped from the
+preset.
+
 **One exception, and it is deliberate:** if the user has edited that location themselves, SLM marks
 it as theirs and your update skips it. Their changes win.
 
