@@ -1,7 +1,7 @@
 [center]
 [color=#ffff00][size=6][b]Translations: Guide[/b][/size][/color][/center]
 [line]
-SLM reads its interface text from JSON files. Adding a language takes one file, and needs no coding, no compiling, and no mod update.
+SLM reads its interface text from JSON files. A translation is one file: write it, drop it in the lang folder, and SLM picks it up the next time the game starts.
 
 Two parts: picking a language, and making one.
 
@@ -46,7 +46,7 @@ Everything lives in:
 [*][b]Save it in that folder[/b] and restart the game.
 [/list]
 
-SLM scans the folder at startup, so your language appears on its own. No slot has to exist for it beforehand.
+SLM scans the folder at startup, so your language appears on its own.
 
 [line]
 [color=#ffff00][size=5][b]The rules[/b][/size][/color]
