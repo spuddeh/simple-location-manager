@@ -68,6 +68,17 @@ Want to publish a list of locations? (Hidden gems, photo spots, stash houses?)
 [/list]
 [url=https://www.nexusmods.com/cyberpunk2077/articles/1960][b]Read the full guide on creating Presets here[/b][/url]
 [line]
+[color=#ffff00][size=5][b]For Translators: Add a Language[/b][/size][/color]
+[b]Simple Location Manager[/b] reads its interface text from JSON files, so adding a language is one file - no coding, no compiling, and no waiting on an update.
+
+[list]
+[*]Copy [font=Courier New]en-us.json[/font] in the [font=Courier New]lang[/font] folder, name it for your language code, and translate the values.
+[*]The mod follows your game's language on its own, or pick one in [b]Settings[/b].
+[*]Only part of it done? Everything you have not translated shows in English, one string at a time.
+[*][i]Cyrillic, Polish, Chinese, Japanese and Korean also need CET's own [font=Courier New]font[/font] / [font=Courier New]language[/font] setting changed. CET draws this window and loads one alphabet at a time, which no mod can set for you.[/i]
+[/list]
+[b]Read the full guide on Translations here[/b] [i](article link goes here once published)[/i]
+[line]
 [color=#ffff00][size=5][b]Import / Export[/b][/size][/color]
 To export a location, click on the export button on the location. A simple code string will be added to your clipboard. This can be pasted for easy sharing/backup.
 Importing a location is as simple as pasting that export string into the import window, reachable from the import button on the Locations tab or from the Settings tab.

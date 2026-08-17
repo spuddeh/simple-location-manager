@@ -1,0 +1,104 @@
+[center]
+[color=#ffff00][size=6][b]Translations: Guide[/b][/size][/color][/center]
+[line]
+Playing in something other than English? SLM can speak your language, and adding a new one takes a single file - no coding, no compiling, and no waiting on me to publish an update.
+
+This article covers both sides: picking a language as a player, and making one as a translator.
+
+[line]
+[color=#ffff00][size=5][b]For players: picking a language[/b][/size][/color]
+Open [b]Settings[/b] and find the [b]Language[/b] dropdown.
+
+[list]
+[*][b]Follow the game[/b] (the default) uses whatever language Cyberpunk itself is set to.
+[*]Pick a language from the list to pin it, regardless of the game's setting.
+[*]Right-click the dropdown to put it back to [b]Follow the game[/b].
+[/list]
+
+Only languages you actually have a file for appear in that list. Anything not yet translated shows in English, one string at a time - so a half-finished translation is still perfectly usable.
+
+[line]
+[color=#ffff00][size=5][b]⚠ Non-Latin alphabets need a CET setting[/b][/size][/color]
+This one catches people out, so read it before you report a bug.
+
+[b]CET draws SLM's window, not the game[/b] - and CET loads [b]one[/b] extra alphabet, chosen in its own config. SLM cannot set it, and it does not follow your game's language.
+
+German, French, Spanish, Italian and Portuguese need nothing. But [b]Cyrillic, Polish, Czech, Turkish, Vietnamese, Thai, Chinese, Japanese and Korean[/b] need this set in [font=Courier New]bin/x64/plugins/cyber_engine_tweaks/config.json[/font]:
+
+[code]"font": {
+    "language": "Cyrillic"
+}[/code]
+
+Valid values: [font=Courier New]ChineseFull[/font], [font=Courier New]ChineseSimplifiedCommon[/font], [font=Courier New]Japanese[/font], [font=Courier New]Korean[/font], [font=Courier New]Cyrillic[/font], [font=Courier New]Thai[/font], [font=Courier New]Vietnamese[/font]
+
+Without it those characters draw as blank boxes. The good news: CET takes its default from your Windows system language, so it is often already correct.
+
+[line]
+[color=#ffff00][size=5][b]For translators: making one[/b][/size][/color]
+Everything lives in this folder:
+
+[code]bin/x64/plugins/cyber_engine_tweaks/mods/SimpleLocationManager/lang/[/code]
+
+[list=1]
+[*][b]Copy[/b] [font=Courier New]en-us.json[/font] to [font=Courier New]<code>.json[/font], using the game's own language code - [font=Courier New]de-de[/font], [font=Courier New]fr-fr[/font], [font=Courier New]es-es[/font], [font=Courier New]it-it[/font], [font=Courier New]pl-pl[/font], [font=Courier New]pt-br[/font], [font=Courier New]ru-ru[/font], [font=Courier New]zh-cn[/font], [font=Courier New]ja-jp[/font], [font=Courier New]ko-kr[/font] and so on.
+[*][b]Set[/b] [font=Courier New]"@name"[/font] to your language's name written in that language - [font=Courier New]Deutsch[/font], not [font=Courier New]German[/font]. The Settings dropdown shows this value.
+[*][b]Translate the values.[/b] Leave the keys alone.
+[*][b]Save it in that folder[/b] and restart the game.
+[/list]
+
+That's it. SLM scans the folder at startup, so your language shows up on its own - no slot has to exist for it beforehand.
+
+[line]
+[color=#ffff00][size=5][b]The rules[/b][/size][/color]
+[list]
+[*][b]Translate values, never keys.[/b] [font=Courier New]"edit.save": "Speichern"[/font] is right. Renaming the key leaves a string nothing looks up, and you'll see [font=Courier New]edit.save[/font] on screen.
+[*][b]Keep every[/b] [font=Courier New]%s[/font] [b]and[/b] [font=Courier New]%d[/font][b].[/b] They are slots SLM fills at runtime with a name, a count or a district. [font=Courier New]%s[/font] takes text, [font=Courier New]%d[/font] takes a number.
+[*][b]Move the slots wherever your language needs them.[/b] Word order is yours. If the count reads better first, [font=Courier New]"(%2$d) %1$s"[/font] picks a slot by position.
+[*][b]Don't add or remove slots.[/b] A slot SLM has no value for renders as a literal [font=Courier New]%s[/font].
+[*][b]Keep[/b] [font=Courier New]\n[/font] [b]where it appears.[/b] It is a line break inside a tooltip.
+[/list]
+
+[b]A partial translation is fine.[/b] Delete the keys you haven't done and each one falls back to English on its own. Twenty translated keys is a valid translation - ship it and finish later.
+
+[line]
+[color=#ffff00][size=5][b]What you can't translate from here[/b][/size][/color]
+[list]
+[*][b]Icon names[/b] in the icon picker come from the icon library, not from SLM.
+[*][b]Log levels[/b] (Off, Error, Warn, Info, Debug) are diagnostic terms and stay English.
+[*][b]Category and district names[/b] are saved player data, not interface strings.
+[/list]
+
+[line]
+[color=#ffff00][size=5][b]Check it before you share it[/b][/size][/color]
+[list]
+[*]The file is [b]valid JSON[/b]. One trailing comma or missing quote and SLM logs a warning and falls back to English for the whole file.
+[*]The file is saved as [b]UTF-8[/b].
+[*]Every [font=Courier New]%s[/font] and [font=Courier New]%d[/font] in a value also appears in the English value for that key.
+[*]Open the mod and walk the tabs. A string in English is a key you haven't done yet; a string showing as [font=Courier New]edit.save[/font] is a key that got renamed.
+[/list]
+
+[line]
+[color=#ffff00][size=5][b]The full guide, and sharing your work[/b][/size][/color]
+The complete reference ships with the mod, right next to the language files:
+
+[code]bin/x64/plugins/cyber_engine_tweaks/mods/SimpleLocationManager/lang/TRANSLATING.md[/code]
+
+It is also on GitHub, along with the current [font=Courier New]en-us.json[/font] so you can always see the newest strings:
+
+[list]
+[*][url=https://github.com/spuddeh/simple-location-manager/blob/main/SimpleLocationManager/lang/TRANSLATING.md][b]TRANSLATING.md[/b][/url]
+[*][url=https://github.com/spuddeh/simple-location-manager/blob/main/SimpleLocationManager/lang/en-us.json][b]en-us.json[/b][/url] (the English strings)
+[*][url=https://github.com/spuddeh/simple-location-manager][b]The repository[/b][/url]
+[/list]
+
+Done one? I'd love to bundle it so everyone gets it:
+
+[list]
+[*][b]Open a pull request[/b] on GitHub, or
+[*][b]Post it in the comments[/b] here and I'll add it, or
+[*][b]Upload it as your own mod[/b] - it is one file dropped in a folder, so it needs no permission from me. A link in the comments and I'll point people at it.
+[/list]
+
+[b]When SLM adds new strings,[/b] your file keeps working - the new keys just show in English until someone fills them in. Nothing breaks, and nothing needs recompiling. ✨
+
+Thanks for helping other choombas find their way around Night City. 🚀
