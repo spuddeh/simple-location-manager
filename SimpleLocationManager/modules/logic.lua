@@ -896,20 +896,29 @@ function Logic.FindCategory(name)
     return nil
 end
 
---- Whether a category already answers to this name, compared without case.
+--- The category already answering to this name, compared without case.
 --- Case-insensitive because that is how DeleteCategory removes one: a list holding both "Bar"
---- and "bar" would leave one of them unreachable.
+--- and "bar" would leave one of them unreachable. Returns the record rather than a flag, so a
+--- warning can name the category that is in the way - "bar" is refused because "Bar" exists,
+--- and saying which is the difference between a rule and a rejection.
+---@param name string|nil
+---@param except string|nil A name to ignore, for the category being renamed
+---@return table|nil category
+function Logic.FindCategoryNamed(name, except)
+    if not name or name == "" then return nil end
+
+    local wanted = string.lower(name)
+    for _, c in ipairs(Logic.GetCategories()) do
+        if string.lower(c.name) == wanted and c.name ~= except then return c end
+    end
+    return nil
+end
+
 ---@param name string|nil
 ---@param except string|nil A name to ignore, for the category being renamed
 ---@return boolean
 function Logic.CategoryExists(name, except)
-    if not name or name == "" then return false end
-
-    local wanted = string.lower(name)
-    for _, c in ipairs(Logic.GetCategories()) do
-        if string.lower(c.name) == wanted and c.name ~= except then return true end
-    end
-    return false
+    return Logic.FindCategoryNamed(name, except) ~= nil
 end
 
 --- Get all categories (Defaults + Custom) sorted alphabetically

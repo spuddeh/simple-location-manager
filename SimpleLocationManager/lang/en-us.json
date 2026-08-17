@@ -100,6 +100,7 @@
   "duplicateWarning.unknown": "Unknown",
   "duplicateWarning.youAreVeryCloseTo": "You are very close to an existing location:",
   "edit.category": "Category:",
+  "edit.categoryExists": "%s already exists. Pick it above, or choose another name.",
   "edit.description": "Description:",
   "edit.name": "Name:",
   "edit.newCategory": "New category:",
