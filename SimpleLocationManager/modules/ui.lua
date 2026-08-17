@@ -1927,7 +1927,10 @@ local function DrawSettingsTab()
     local chosenLanguage = nil
 
     if ImGui.BeginCombo("##Language", languagePreview) then
-        if ImGui.Selectable(autoLabel, currentLanguage == "Auto") then
+        -- Each row carries its own ## identity. ImGui keys an item by its label, and these
+        -- labels are translation data: two languages naming themselves the same, or a name
+        -- that changes as the language does, otherwise gives two rows one identity.
+        if ImGui.Selectable(autoLabel .. "##lang_auto", currentLanguage == "Auto") then
             chosenLanguage = "Auto"
         end
         -- Listed from the files on disk, so a language dropped in after release appears
@@ -1938,26 +1941,28 @@ local function DrawSettingsTab()
         table.sort(codes)
 
         for _, code in ipairs(codes) do
-            if ImGui.Selectable(Loc.GetAvailable()[code], currentLanguage == code) then
+            local name = Loc.GetAvailable()[code]
+            if ImGui.Selectable(name .. "##lang_" .. code, currentLanguage == code) then
                 chosenLanguage = code
             end
         end
         ImGui.EndCombo()
     end
-
-    if chosenLanguage then
-        Logic.settings.language = chosenLanguage
-        Loc.Apply(chosenLanguage ~= "Auto" and chosenLanguage or nil)
-        Logic.Save()
-    end
     if ImGui.IsItemClicked(1) then
-        Logic.settings.language = "Auto"
-        Loc.Apply(nil)
-        Logic.Save()
+        chosenLanguage = "Auto"
         Utils.Notify(L("settings.resetLanguage"))
     end
     if ImGui.IsItemHovered() then
         ImGui.SetTooltip(L("settings.languageTooltip"))
+    end
+
+    -- Applied after the item queries above, so IsItemClicked and IsItemHovered still refer
+    -- to the combo rather than to whatever came next. Same ordering as the log level combo.
+    if chosenLanguage and chosenLanguage ~= currentLanguage then
+        Utils.Debug("Language picked: " .. chosenLanguage .. " (was " .. currentLanguage .. ")")
+        Logic.settings.language = chosenLanguage
+        Loc.Apply(chosenLanguage ~= "Auto" and chosenLanguage or nil)
+        Logic.Save()
     end
 
     ImGui.Spacing()
