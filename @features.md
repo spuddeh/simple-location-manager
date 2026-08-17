@@ -18,10 +18,10 @@
 - [x] In-game UI via Cyber Engine Tweaks overlay.
 - [x] District names come from the game's own district records, resolved at draw time, so they read in the player's language in all nineteen the game ships and match the world map. A location stores the district's identifier rather than its name, so an export is the same string whatever language wrote it, and a file written before that migrates on load.
 - [x] The 23 default categories are interface strings and translate with the rest. A category the player made is their own words and is left alone.
+- [x] Picking a category and naming a new one are separate controls, in the Edit and Manual Coordinates windows. The dropdown shows translated names and stores the identifier behind them; the box beside it holds only a new name, and typing in it disables the dropdown.
 - [x] Translations: interface strings live in `lang/<code>.json` and the language follows the game's own setting unless the player pins one in Settings. The folder is scanned at startup, so a language file added after release needs no change here. A partial translation falls back to English key by key, and a translation carrying a bad format specifier renders unformatted rather than throwing from the draw.
 - [x] Console logging at a chosen level (Off, Error, Warn, Info, Debug), covering both the CET console and the mod's own log file. Output the user asked for by pressing a button is never suppressed.
 - [x] Optional Window Utils integration: grid snapping, animation and window management when the library is installed.
 - [x] Per-save persistence.
 
 ## Planned
-- [ ] Split the category widget in the Edit and Manual Coordinates modals: a dropdown that picks an existing category, and a separate box that is empty until a new name is typed. One box currently does both, so it has to hold the stored name - which is the English word for a default category, beside a dropdown showing the translated one.

@@ -8,7 +8,11 @@
 - New: District names come from the game, so they appear in your own language and match the world map, in every language the game ships. Nothing needs translating for this - the names are the game's own.
 - New: The categories the mod comes with are translated too. Categories you made yourself stay as you named them.
 - Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
+- New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
+- Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
+- Fix: A category whose name differed from an existing one only by capitals could be created and then not deleted.
 - Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
+- Minor code improvements
 
 ### 1.6.0
 - New: Time & Weather - a location can remember a time of day and a weather state. Turn it on per location in the Edit window; "Use current" copies what the game is doing now. The two are separately optional, so a location can set one and leave the other alone.
@@ -116,7 +120,11 @@ Removed: Lazy Mode. The teleport button is now on every location without turning
 New: District names come from the game, so they appear in your own language and match the world map, in every language the game ships. Nothing needs translating for this - the names are the game's own.
 New: The categories the mod comes with are translated too. Categories you made yourself stay as you named them.
 Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
+New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
+Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
+Fix: A category whose name differed from an existing one only by capitals could be created and then not deleted.
 Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
+Minor code improvements
 ```
 
 ---
@@ -137,11 +145,15 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [*]New: District names come from the game, so they appear in your own language and match the world map, in every language the game ships. Nothing needs translating for this - the names are the game's own.
 [*]New: The categories the mod comes with are translated too. Categories you made yourself stay as you named them.
 [*]Fix: Playing in a language other than English wrote that language's district names into your saved locations and into every export string. An export was then far longer than it needed to be, and a preset written in English showed up as a second group beside your own locations for the same district. Your existing locations are updated the first time you load this version.
+[*]New: Picking a category and naming a new one are two separate controls now, in both the Edit and Manual Coordinates windows. Pick from the dropdown, or type in the box below it to create one - typing greys the dropdown out, so which of the two you are about to save is always on screen.
+[*]Fix: The four buttons in the Manual Coordinates window were English whatever language you played in.
+[*]Fix: A category whose name differed from an existing one only by capitals could be created and then not deleted.
 [*]Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
+[*]Minor code improvements
 [/list]
 ```
 
-> Character count: 2186 / 5000
+> Character count: 2723 / 5000
 
 ### Comment 2 - older versions
 
