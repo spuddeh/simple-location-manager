@@ -2,10 +2,12 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Helper module for selecting icons from CET IconGlyphs.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -------------------------------------------------------------------
 
 local IconPicker = {}
+
+local L = require("modules/loc").L
 
 -- State
 local searchText = ""
@@ -40,13 +42,13 @@ function IconPicker.Draw(currentIconName, onSelectCallback, height)
     EnsureCache()
 
     if not cachedIcons then
-        ImGui.Text("Error: IconGlyphs global not found.")
+        ImGui.Text(L("ui.errorIconglyphsGlobalNotFound"))
         return
     end
 
     -- Stats
     local count = filteredIcons and #filteredIcons or #cachedIcons
-    ImGui.TextDisabled(string.format("Total Icons: %d", count))
+    ImGui.TextDisabled(string.format(L("ui.totalIcons"), count))
     ImGui.Separator()
 
     -- Search Bar with Clear Button
@@ -56,7 +58,7 @@ function IconPicker.Draw(currentIconName, onSelectCallback, height)
     -- Input Width = Avail - ButtonWidth - Spacing
     ImGui.SetNextItemWidth(regionAvail - clearBtnW - style.ItemSpacing.x)
 
-    local newVal, changed = ImGui.InputTextWithHint("##IconSearch", IconGlyphs.Magnify .. " Search icons...", searchText,
+    local newVal, changed = ImGui.InputTextWithHint("##IconSearch", IconGlyphs.Magnify .. L("ui.searchIcons"), searchText,
         100)
     if changed then
         searchText = newVal
@@ -67,7 +69,7 @@ function IconPicker.Draw(currentIconName, onSelectCallback, height)
     if ImGui.Button(IconGlyphs.Eraser) then
         IconPicker.ClearSearch()
     end
-    if ImGui.IsItemHovered() then ImGui.SetTooltip("Clear Search") end
+    if ImGui.IsItemHovered() then ImGui.SetTooltip(L("checkSearch.clearSearch")) end
 
     -- Filter Logic (or use cache)
     local displayList = cachedIcons

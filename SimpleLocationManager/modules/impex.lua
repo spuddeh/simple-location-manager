@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Import/Export module using Base64 encoded JSON strings.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 local Impex = {}
@@ -791,6 +791,86 @@ function Impex.LoadPresets()
     if count > 0 then
         Utils.Info("Loaded " .. count .. " preset locations.")
     end
+end
+
+--- The preset files sitting in the presets directory right now, as a set keyed by file name.
+--- No presets ship with the mod: each one is a separate download that drops its .txt in here,
+--- so a missing directory is the ordinary state of an install with no presets, not a fault.
+---@return table<string, boolean> present
+local function InstalledPresetFiles()
+    local present = {}
+    local files = dir(Impex.PRESETS_PATH)
+    if not files then return present end
+
+    for _, fileInfo in ipairs(files) do
+        if string.find(fileInfo.name, "%.txt$") then
+            present[fileInfo.name] = true
+        end
+    end
+    return present
+end
+
+--- Preset files that locations still name but which are no longer installed.
+--- Removing the preset download takes its .txt away and leaves its locations behind; this is
+--- what finds them. Only missing files are reported, because an installed preset re-imports
+--- itself on the next load and deleting its locations would achieve nothing.
+---@return table orphans Array of { file = string, total = number, edited = number }, by file name
+function Impex.GetOrphanedPresets()
+    local present = InstalledPresetFiles()
+    local byFile = {}
+    local orphans = {}
+
+    for _, loc in ipairs(Logic.locations) do
+        local file = loc.sourceDetail
+        if file and loc.sourceType and string.find(loc.sourceType, "SLM Preset") and not present[file] then
+            if not byFile[file] then
+                byFile[file] = { file = file, total = 0, edited = 0 }
+                table.insert(orphans, byFile[file])
+            end
+            byFile[file].total = byFile[file].total + 1
+            if string.find(loc.sourceType, "%(Edited%)") then
+                byFile[file].edited = byFile[file].edited + 1
+            end
+        end
+    end
+
+    table.sort(orphans, function(a, b) return a.file < b.file end)
+    return orphans
+end
+
+--- Remove the locations belonging to preset files the player has chosen to clear out.
+--- A location the player has edited is their own work by then, so by default it is kept and
+--- re-tagged as a manual entry - left as a preset it would name a file that is gone and be
+--- offered for deletion again every time. deleteEdited removes those as well.
+---@param files table<string, boolean> Set of preset file names to clear, keyed by file name
+---@param deleteEdited boolean|nil Delete edited locations instead of keeping them
+---@return number removed, number kept
+function Impex.RemovePresetLocations(files, deleteEdited)
+    local removed = 0
+    local kept = 0
+
+    -- Backwards, because removing from the list being walked shifts every later index down.
+    for i = #Logic.locations, 1, -1 do
+        local loc = Logic.locations[i]
+        if loc.sourceDetail and files[loc.sourceDetail]
+            and loc.sourceType and string.find(loc.sourceType, "SLM Preset") then
+            if string.find(loc.sourceType, "%(Edited%)") and not deleteEdited then
+                loc.sourceType = "Manual Input"
+                loc.sourceDetail = nil
+                kept = kept + 1
+            else
+                table.remove(Logic.locations, i)
+                removed = removed + 1
+            end
+        end
+    end
+
+    if removed > 0 or kept > 0 then
+        Logic.Save()
+        Utils.Info("Preset cleanup: removed " .. removed .. ", kept " .. kept .. " edited.")
+    end
+
+    return removed, kept
 end
 
 return Impex

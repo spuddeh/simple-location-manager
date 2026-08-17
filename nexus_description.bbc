@@ -22,7 +22,8 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [*][b]Custom Weather States:[/b] Anything a weather mod adds shows up in the picker on its own. Save a location using a modded weather, remove that mod later, and the location still works - you get the time, the sky is set to sunny, and the weather comes back if you reinstall.
 [*][b]Unlock the Weather Cycle:[/b] Setting a weather state stops the game changing it. A button in Settings unlocks it again, or right-click the padlock in the footer readout.
 [*][b]Window Utils Support:[/b] With [url=https://www.nexusmods.com/cyberpunk2077/mods/26589]Window Utils[/url] installed, the SLM window snaps to that mod's grid, animates, and can be arranged alongside your other mod windows. Without it, nothing changes.
-[*][b]Lazy Mode (Teleport):[/b] Optional feature to instantly teleport to any saved spot (Disabled by default).
+[*][b]Teleport:[/b] Instantly teleport to any saved spot.
+[*][b]Remove Preset Locations:[/b] Uninstalled a preset? A button in Settings lists the presets whose file is gone and clears out the locations they left behind, one preset at a time. Any location you had edited yourself is kept and becomes your own, unless you tick the box to delete those too.
 [*][b]Customizable:[/b]
 [list]
 [*]Adjust duplicate warning distance.
@@ -120,7 +121,7 @@ Here are some examples that you can import to get started. [b][i]Check out the F
 [list]
 [*]You can set a keybind in the [b]CET bindings[/b] to "[b]Quicksave[/b]" a location to return to without interrupting your gameplay.
 [*]All the buttons have a tooltip when you hover over them to see what they do
-[*]Check the [b]Settings[/b] tab to [b]enable Lazy Mode[/b] (Teleport) or adjust UI preferences.
+[*]Left-click the orange [b]run[/b] button on any location to teleport, right-click it to teleport and apply that location's saved time and weather.
 [*]Right-click any district or category header to [b]Export[/b] it.
 [*]You can get the coordinates for your current location using the "Dump Coordinates" button in the settings tab.
 [list]

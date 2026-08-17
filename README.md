@@ -13,9 +13,9 @@
 * **Favorites:** Keep your most-used spots pinned at the top of the list.
 * **Powerful Search:** Real-time filtering by name, description, district, or category.
 * **Import / Export:** Share a single spot, a whole district, or your entire database as a compact text string. Imports AMM locations too (AMM is not required).
-* **Presets:** Install location packs that auto-create their custom categories for you.
+* **Presets:** Install location packs that auto-create their custom categories for you. Uninstall one and **Remove Preset Locations** in Settings clears out what it left behind, keeping any location you had edited as your own.
 * **Navigation:** One click to drop a custom Map Pin at any saved location.
-* **Teleport (Lazy Mode):** Optional instant teleport to any saved spot (disabled by default).
+* **Teleport:** Instant teleport to any saved spot.
 * **Time & Weather:** A location can store a time of day and a weather state. Left-click a teleport button to teleport; right-click to teleport and set them. Opt-in per location. Weather states added by other mods are picked up automatically, and one that is no longer installed is skipped rather than failing the teleport. A weather mod holding its own locked state overrides this, and SLM says so rather than failing quietly.
 * **Live Readout:** The footer shows the current game time and weather state. A padlock appears when SLM is holding the weather - right-click it to unlock the weather cycle - and it turns red when another mod has taken it.
 * **Per-Save Persistence:** Your locations are tied to each save file.
@@ -37,7 +37,7 @@
 1. Open the CET overlay.
 2. The **Simple Location Manager** window appears.
 3. Click **+** to save your current spot, or the coordinates button next to it to enter a location manually.
-4. Open the **Settings** tab to import/export, enable Lazy Mode, or adjust UI preferences.
+4. Open the **Settings** tab to import/export, or adjust UI preferences.
 5. Optionally bind a **Quick Save** key in the CET bindings menu to save a location without opening the overlay.
 
 ## 🧩 For Preset Authors

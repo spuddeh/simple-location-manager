@@ -2,7 +2,7 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Entry point for the Simple Location Manager mod.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -------------------------------------------------------------------
 
 local Logic = require("modules/logic")
@@ -10,10 +10,16 @@ local UI = require("modules/ui")
 local Utils = require("modules/utils")
 local Impex = require("modules/impex")
 local Env = require("modules/env")
+local Loc = require("modules/loc")
 
 -- Load the saved locations and settings
 registerForEvent("onInit", function()
     Utils.Info("Initializing...")
+
+    -- Before Logic, because a warning raised during load has to have text to say it in.
+    -- The game's own language setting is not readable this early, so this settles on
+    -- English and UI.OnOverlayOpen picks up the real language once the game is up.
+    Loc.Init(nil)
 
     -- Codeware is required: weather has no vanilla scripted setter. Everything else
     -- keeps working without it, so this reports rather than stops.
@@ -26,6 +32,9 @@ registerForEvent("onInit", function()
 
     -- Initialize Logic (Load Data)
     Logic.Init()
+
+    -- Now that the saved settings are loaded, honour a language the player has pinned.
+    Loc.Apply(Logic.settings.language)
 
     -- Load Presets (Auto-Import)
     Impex.LoadPresets()

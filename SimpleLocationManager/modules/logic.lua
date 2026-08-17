@@ -2,12 +2,13 @@
 -- Mod Name: Simple Location Manager
 -- Author: Spuddeh
 -- Description: Core logic handling state, persistence, and game actions.
--- Mod Version: 1.6.0
+-- Mod Version: 1.7.0
 -- Credits: psiberx (CET Kit), community
 -------------------------------------------------------------------
 
 local Utils = require("modules/utils")
 local Env = require("modules/env")
+local L = require("modules/loc").L
 
 local Logic = {}
 
@@ -38,7 +39,7 @@ Logic.defaultSettings = {
     warningDistance = 25.0,
     showCoords = false,
     showDistrict = false,
-    lazyMode = false,               -- Default: false
+    language = "Auto",              -- "Auto" follows the game, or a language code
     defaultGroupState = "Expanded", -- "Expanded" or "Collapsed"
     groupBy = "District",           -- "District" or "Category"
     showSourceInfo = true,          -- Show source/conflict info
@@ -445,7 +446,7 @@ function Logic.QuickSaveLocation()
 
     -- Only notify success if actual location was added (not duplicate)
     if result then
-        Utils.Notify("Quick Saved Current Location")
+        Utils.Notify(L("quickSaveLocation.quickSavedCurrentLocation"))
         Utils.PlaySound("ui_hacking_access_granted")
         Utils.Info("Quick Saved current location.")
     end
