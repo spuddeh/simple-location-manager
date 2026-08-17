@@ -14,7 +14,7 @@
 * **Powerful Search:** Real-time filtering by name, description, district, or category.
 * **Import / Export:** Share a single spot, a whole district, or your entire database as a compact text string. Imports AMM locations too (AMM is not required).
 * **Presets:** Install location packs that auto-create their custom categories for you. Uninstall one and **Remove Preset Locations** in Settings clears out what it left behind, keeping any location you had edited as your own.
-* **Translations:** The interface follows the game's language, or one you pick in Settings. Adding a language is a single JSON file dropped in `lang/` — see the [translator guide](TRANSLATING.md).
+* **Translations:** The interface follows the game's language, or one you pick in Settings. Adding a language is a single JSON file dropped in `lang/` - see the [translator guide](SimpleLocationManager/lang/TRANSLATING.md).
 * **Navigation:** One click to drop a custom Map Pin at any saved location.
 * **Teleport:** Instant teleport to any saved spot.
 * **Time & Weather:** A location can store a time of day and a weather state. Left-click a teleport button to teleport; right-click to teleport and set them. Opt-in per location. Weather states added by other mods are picked up automatically, and one that is no longer installed is skipped rather than failing the teleport. A weather mod holding its own locked state overrides this, and SLM says so rather than failing quietly.
