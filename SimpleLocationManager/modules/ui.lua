@@ -230,8 +230,8 @@ end
 --- all in the Category view.
 ---
 --- Saying so is the picker's job, not this one's. The note sits under the box while the name is
---- being typed - a screen notification would fire from inside a CET modal, and those draw on
---- the ink layer the overlay is covering.
+--- being typed, which is the moment it is useful. A screen notification draws centre-left, and
+--- this mod's window is usually over it.
 ---@param chosen string
 ---@param newName string
 ---@param newIcon string|nil
