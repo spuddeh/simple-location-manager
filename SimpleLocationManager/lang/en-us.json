@@ -103,6 +103,7 @@
   "exportSelect.districtLine": "- %s",
   "exportSelect.exportSelectedTitle": "Export Selected (%d)",
   "exportSelect.filterLocations": " Filter locations...",
+  "exportSelect.groupTooltip": "How this list is grouped.\nSeparate from the Locations tab, so changing it here leaves that alone.",
   "exportSelect.noLocationsMatchThatFilter": "No locations match that filter.",
   "exportSelect.nothingToExport": "Nothing to export.",
   "exportSelect.selectShown": " Select shown",

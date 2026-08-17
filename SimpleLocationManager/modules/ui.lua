@@ -158,6 +158,7 @@ local updateConfirmId = nil      -- ID of the location pending a position update
 local showExportSelectModal = false -- Flag for the "Export Selected" modal
 local exportSelection = {}          -- Set of selected location ids
 local exportSelectSearch = ""       -- Filter inside the modal, separate from the main search
+local exportSelectGroupBy = "District" -- Grouping inside the modal, separate from the tab's
 
 -- Import System State
 local showImportRed = false -- Flag for the Import Data modal
@@ -455,6 +456,20 @@ local function DrawExportSelectModal()
             exportSelection = {}
         end
 
+        -- Its own grouping rather than the Locations tab's, because picking a set to export
+        -- and browsing the list are different jobs and one should not move the other.
+        ImGui.SameLine()
+        ImGui.SetNextItemWidth(EXPORT_SELECT_SORT_WIDTH)
+        if ImGui.BeginCombo("##exportGroupBy", GroupByLabel(exportSelectGroupBy)) then
+            for _, value in ipairs(GROUP_BY_VALUES) do
+                if ImGui.Selectable(GroupByLabel(value), exportSelectGroupBy == value) then
+                    exportSelectGroupBy = value
+                end
+            end
+            ImGui.EndCombo()
+        end
+        if ImGui.IsItemHovered() then ImGui.SetTooltip(L("exportSelect.groupTooltip")) end
+
         ImGui.Separator()
 
         if #candidates == 0 then
@@ -462,38 +477,58 @@ local function DrawExportSelectModal()
         end
 
         if ImGui.BeginChild("ExportSelectList", 0, 320, true, 0) then
-            for _, loc in ipairs(candidates) do
-                ImGui.PushID("exp_" .. loc.id)
+            -- A-Z is one group covering everything, so a header naming it says nothing.
+            local headed = exportSelectGroupBy ~= "A-Z"
 
-                local checked = exportSelection[loc.id] == true
-                local newChecked, changed = ImGui.Checkbox("##pick", checked)
-                if changed then
-                    exportSelection[loc.id] = newChecked or nil
+            for _, group in ipairs(Logic.GroupLocations(candidates, exportSelectGroupBy)) do
+                local open = true
+                if headed then
+                    -- Open on first sight and remembered by ImGui thereafter. This modal keeps
+                    -- no group state of its own: it is opened to pick a set and closed again.
+                    ImGui.SetNextItemOpen(true, ImGuiCond.Appearing)
+                    open = ImGui.CollapsingHeader((IconGlyphs[group.icon] or IconGlyphs.MapMarker) ..
+                        " " .. group.name .. " (" .. #group.locations .. ")##g_" .. group.key)
+                    if open then ImGui.Indent(10) end
                 end
 
-                ImGui.SameLine()
-                local catIcon = "DotsCircle"
-                for _, c in ipairs(Logic.GetCategories()) do
-                    if c.name == loc.category then
-                        catIcon = c.icon
-                        break
+                if open then
+                    for _, loc in ipairs(group.locations) do
+                        ImGui.PushID("exp_" .. loc.id)
+
+                        local checked = exportSelection[loc.id] == true
+                        local newChecked, changed = ImGui.Checkbox("##pick", checked)
+                        if changed then
+                            exportSelection[loc.id] = newChecked or nil
+                        end
+
+                        ImGui.SameLine()
+                        local catIcon = "DotsCircle"
+                        for _, c in ipairs(Logic.GetCategories()) do
+                            if c.name == loc.category then
+                                catIcon = c.icon
+                                break
+                            end
+                        end
+                        ImGui.PushTextWrapPos(0.0)
+                        ImGui.Text((IconGlyphs[catIcon] or IconGlyphs.Help) .. " " ..
+                            (loc.name or L("exportSelect.unnamed")))
+
+                        -- Under the name rather than beside it. Sharing the line ran a long name
+                        -- and a long district past the right edge, where the child clips.
+                        local districtStr = (loc.district or "Unknown")
+                        if loc.subDistrict and loc.subDistrict ~= "" then
+                            districtStr = districtStr .. " (" .. loc.subDistrict .. ")"
+                        end
+                        ImGui.Indent(EXPORT_SELECT_DISTRICT_INDENT)
+                        ImGui.TextColored(0.5, 0.5, 0.5, 1.0, districtStr)
+                        ImGui.Unindent(EXPORT_SELECT_DISTRICT_INDENT)
+                        ImGui.PopTextWrapPos()
+
+                        ImGui.PopID()
                     end
                 end
-                ImGui.PushTextWrapPos(0.0)
-                ImGui.Text((IconGlyphs[catIcon] or IconGlyphs.Help) .. " " .. (loc.name or L("exportSelect.unnamed")))
 
-                local districtStr = (loc.district or "Unknown")
-                if loc.subDistrict and loc.subDistrict ~= "" then
-                    districtStr = districtStr .. " (" .. loc.subDistrict .. ")"
-                end
-                -- Under the name rather than beside it. Sharing the line ran a long name and a
-                -- long district past the right edge, where the child clips rather than wraps.
-                ImGui.Indent(EXPORT_SELECT_DISTRICT_INDENT)
-                ImGui.TextColored(0.5, 0.5, 0.5, 1.0, districtStr)
-                ImGui.Unindent(EXPORT_SELECT_DISTRICT_INDENT)
-                ImGui.PopTextWrapPos()
-
-                ImGui.PopID()
+                if headed and open then ImGui.Unindent(10) end
             end
             ImGui.EndChild()
         end
@@ -2286,6 +2321,7 @@ local CATEGORY_CLEANUP_HEIGHT = 260
 
 -- Lines the district up with the location name above it, past the checkbox.
 local EXPORT_SELECT_DISTRICT_INDENT = 28
+local EXPORT_SELECT_SORT_WIDTH = 110
 
 --- One side of the preset cleanup location list.
 --- @param wantEdited boolean Draw the edited locations rather than the ones being deleted

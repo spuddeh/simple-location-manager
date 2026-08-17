@@ -863,6 +863,70 @@ function Logic.DeleteCategory(name)
     end
 end
 
+--- Bucket locations into ordered groups, the same way the Locations tab does.
+--- Takes an already-filtered list and shapes it; it draws nothing and holds no state, so a
+--- caller decides for itself how a group is headed and whether it can be collapsed.
+---@param locations table Locations to group, already filtered
+---@param groupBy string|nil "District", "Category" or "A-Z" (default "District")
+---@return table groups Array of { key, name, icon, locations }, empty groups dropped
+function Logic.GroupLocations(locations, groupBy)
+    groupBy = groupBy or "District"
+
+    if groupBy == "A-Z" then
+        local flat = {}
+        for _, loc in ipairs(locations) do table.insert(flat, loc) end
+        table.sort(flat, function(a, b) return (a.name or "") < (b.name or "") end)
+        return { { key = "az", name = "A-Z", icon = nil, locations = flat } }
+    end
+
+    if groupBy == "Category" then
+        -- Walked in GetCategories order rather than by what the locations mention, so the
+        -- groups come out in the same order as the Category Manager lists them.
+        local groups = {}
+        for _, cat in ipairs(Logic.GetCategories()) do
+            local bucket = {}
+            for _, loc in ipairs(locations) do
+                if loc.category == cat.name then table.insert(bucket, loc) end
+            end
+            if #bucket > 0 then
+                table.sort(bucket, function(a, b) return (a.name or "") < (b.name or "") end)
+                table.insert(groups, {
+                    key = "cat_" .. cat.name,
+                    name = cat.name,
+                    icon = cat.icon,
+                    locations = bucket,
+                })
+            end
+        end
+        return groups
+    end
+
+    local byDistrict = {}
+    local order = {}
+    for _, loc in ipairs(locations) do
+        local dName = loc.district or "Unknown"
+        if not byDistrict[dName] then
+            byDistrict[dName] = {}
+            table.insert(order, dName)
+        end
+        table.insert(byDistrict[dName], loc)
+    end
+
+    table.sort(order)
+    local groups = {}
+    for _, dName in ipairs(order) do
+        local bucket = byDistrict[dName]
+        table.sort(bucket, function(a, b) return (a.name or "") < (b.name or "") end)
+        table.insert(groups, {
+            key = "dist_" .. dName,
+            name = dName,
+            icon = "MapMarker",
+            locations = bucket,
+        })
+    end
+    return groups
+end
+
 --- Custom categories no location uses.
 --- Only custom ones: the defaults are the fixed list every location falls back into, and an
 --- empty default is the normal state rather than something to tidy away. Names are compared
