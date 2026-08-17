@@ -170,6 +170,11 @@ local presetOrphans = {}             -- Snapshot of orphaned presets, taken when
 local presetCleanupSelection = {}    -- Set of preset file names ticked for removal
 local presetCleanupDeleteEdited = false -- Delete edited locations rather than keeping them
 
+-- Unused Category Cleanup State
+local showCategoryCleanupModal = false -- Flag for the "Remove Unused Categories" modal
+local unusedCategories = {}            -- Snapshot of unused custom categories, taken on open
+local categoryCleanupSelection = {}    -- Set of category names ticked for removal
+
 -- Category Management State
 local showCategoryModal = false         -- Flag for Add/Edit Category modal
 local showDeleteCategoryModal = false   -- Flag for Delete Category confirmation modal
@@ -1971,6 +1976,23 @@ local function DrawSettingsTab()
         newCatIcon = "NewBox"
         IconPicker.ClearSearch()
     end
+
+    ImGui.SameLine()
+
+    -- The snapshot is taken on click rather than every frame: it walks every location, and
+    -- the list must not shift under the player while they are ticking boxes.
+    if ImGui.Button(IconGlyphs.Broom .. L("categoryCleanup.button")) then
+        unusedCategories = Logic.GetUnusedCustomCategories()
+        categoryCleanupSelection = {}
+        for _, cat in ipairs(unusedCategories) do
+            categoryCleanupSelection[cat.name] = true
+        end
+        showCategoryCleanupModal = true
+    end
+    if ImGui.IsItemHovered() then
+        ImGui.SetTooltip(L("categoryCleanup.tooltip"))
+    end
+
     ImGui.Spacing()
 
     local cats = Logic.GetCategories()
@@ -2246,6 +2268,10 @@ local PRESET_CLEANUP_LIST_HEIGHT = 400
 -- Lines the owning file name up with the location name above it, past the bullet.
 local PRESET_CLEANUP_OWNER_INDENT = 22
 
+-- One line per category, so this holds about a dozen before it scrolls.
+local CATEGORY_CLEANUP_WIDTH = 320
+local CATEGORY_CLEANUP_HEIGHT = 260
+
 --- One side of the preset cleanup location list.
 --- @param wantEdited boolean Draw the edited locations rather than the ones being deleted
 --- @param showOwner boolean Name the preset each location came from
@@ -2467,6 +2493,81 @@ local function DrawPresetCleanupModal()
                 if #presetOrphans > 0 then
                     ImGui.SetNextWindowSize(PRESET_CLEANUP_WIDTH, 0, ImGuiCond.Appearing)
                 end
+            end
+        })
+end
+
+-- Remove Unused Categories Modal
+-- Custom categories only. A default with nothing in it is the normal state of the list every
+-- location falls back into, not something to tidy away.
+local function DrawCategoryCleanupModal()
+    UI.WrapperModal(L("categoryCleanup.title"), showCategoryCleanupModal,
+        ImGuiWindowFlags.AlwaysAutoResize, function()
+            if #unusedCategories == 0 then
+                ImGui.Text(L("categoryCleanup.everyCategoryIsInUse"))
+                ImGui.Spacing()
+
+                if ImGui.Button(IconGlyphs.Check .. L("presetCleanup.close")) then
+                    showCategoryCleanupModal = false
+                    ImGui.CloseCurrentPopup()
+                end
+                return
+            end
+
+            ImGui.Text(L("categoryCleanup.theseCategoriesHaveNoLocations"))
+            ImGui.Spacing()
+
+            local selected = 0
+            if ImGui.BeginChild("UnusedCategories", CATEGORY_CLEANUP_WIDTH,
+                    CATEGORY_CLEANUP_HEIGHT, true) then
+                for _, cat in ipairs(unusedCategories) do
+                    local ticked = categoryCleanupSelection[cat.name] or false
+                    local newTicked, changed = ImGui.Checkbox("##unusedcat_" .. cat.name, ticked)
+                    if changed then
+                        categoryCleanupSelection[cat.name] = newTicked
+                    end
+                    ImGui.SameLine()
+                    ImGui.Text((IconGlyphs[cat.icon] or IconGlyphs.Help) .. " " .. cat.name)
+                end
+                ImGui.EndChild()
+            end
+
+            for _, cat in ipairs(unusedCategories) do
+                if categoryCleanupSelection[cat.name] then selected = selected + 1 end
+            end
+
+            ImGui.Spacing()
+            ImGui.PushStyleColor(ImGuiCol.Text, 0.7, 0.7, 0.7, 1.0)
+            ImGui.TextWrapped(L("categoryCleanup.noLocationsAreChanged"))
+            ImGui.PopStyleColor()
+            ImGui.Spacing()
+
+            if selected == 0 then
+                ImGui.PushStyleColor(ImGuiCol.Text, 0.5, 0.5, 0.5, 1.0)
+                ImGui.Text(L("categoryCleanup.tickACategoryToRemoveIt"))
+                ImGui.PopStyleColor()
+            else
+                ImGui.PushStyleColor(ImGuiCol.Button, 0.6, 0.1, 0.1, 1.0)
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0.7, 0.15, 0.15, 1.0)
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0.5, 0.05, 0.05, 1.0)
+                if ImGui.Button(IconGlyphs.Delete .. L("categoryCleanup.removeCount", selected)) then
+                    local removed = Logic.DeleteCategories(categoryCleanupSelection)
+                    Utils.Notify(L(removed == 1 and "categoryCleanup.removedOne"
+                        or "categoryCleanup.removedMany", removed))
+                    showCategoryCleanupModal = false
+                    ImGui.CloseCurrentPopup()
+                end
+                ImGui.PopStyleColor(3)
+            end
+
+            ImGui.SameLine()
+            if ImGui.Button(IconGlyphs.Cancel .. L("exportSelect.cancel")) then
+                showCategoryCleanupModal = false
+                ImGui.CloseCurrentPopup()
+            end
+        end, {
+            onClose = function()
+                showCategoryCleanupModal = false
             end
         })
 end
@@ -3034,6 +3135,10 @@ function UI.Draw()
 
         if showPresetCleanupModal then
             DrawPresetCleanupModal()
+        end
+
+        if showCategoryCleanupModal then
+            DrawCategoryCleanupModal()
         end
 
         if showManualModal then

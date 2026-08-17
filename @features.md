@@ -8,6 +8,7 @@
 - [x] Import/export locations as JSON for sharing, reachable from the Locations tab as well as Settings. An imported location's category is created from its name where the string did not define one.
 - [x] Presets system: install location packs with auto-installing categories.
 - [x] Preset cleanup: locations left behind by an uninstalled preset are found by comparing what the locations name against the preset files actually present, and removed per preset file. A location the user has edited is kept and re-tagged as their own manual entry unless they ask for it to go too.
+- [x] Unused category cleanup: custom categories no location uses are listed and removed per category. Defaults are never listed, and no location is changed - a category comes off the list the user picks from, and a location still naming it re-links if it is added back.
 - [x] AMM Support: import Appearance Menu Mod locations.
 - [x] Map pins for saved locations, tagged with the mod's own identity so its pin is distinguishable from the player's waypoint or another mod's, removed on replace, on clear and on shutdown, and released from the tracked waypoint slot only while that slot holds this mod's pin.
 - [x] Teleport to any saved location directly.

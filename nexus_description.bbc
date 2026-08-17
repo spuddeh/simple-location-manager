@@ -13,7 +13,7 @@ Ever found a preem photo spot, a hidden gem, or a great testing location, only t
 [*][b]Smart Organisation:[/b] Locations are automatically grouped by [b]District[/b] or [b]Category[/b], or shown as a flat [b]A-Z[/b] list.
 [*][b]Manual Coordinates:[/b] Save or teleport to a shared X/Y/Z (with optional Yaw) without typing a console command. Pastes CET teleport commands and AMM JSON too.
 [*][b]Favourites:[/b] Keep your most-used spots at the top of the list for instant access.
-[*][b]Custom Categories:[/b] Create your own categories (e.g., "Stunts", "Photos") and give them their own icons. Type a new category name while adding a location and click the symbol beside the box to pick its icon there and then.
+[*][b]Custom Categories:[/b] Create your own categories (e.g., "Stunts", "Photos") and give them their own icons. Type a new category name while adding a location and click the symbol beside the box to pick its icon there and then. [b]Remove unused[/b] clears out any custom category nothing is filed under.
 [*][b]AMM Support:[/b] Import existing locations created for Appearance Menu Mod. [i]AMM is [b]not[/b] required for this to work.[/i]
 [*][b]Search:[/b] Filter by name, district, or description.
 [*][b]Import / Export:[/b] Share locations with your choombas! Copy a single spot, a whole district, a set you pick yourself, or your entire database to the clipboard as a text string.

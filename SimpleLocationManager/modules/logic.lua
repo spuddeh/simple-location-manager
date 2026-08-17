@@ -863,6 +863,59 @@ function Logic.DeleteCategory(name)
     end
 end
 
+--- Custom categories no location uses.
+--- Only custom ones: the defaults are the fixed list every location falls back into, and an
+--- empty default is the normal state rather than something to tidy away. Names are compared
+--- without case, the same way DeleteCategory removes them.
+---@return table unused Array of { name, icon }, sorted by name
+function Logic.GetUnusedCustomCategories()
+    if not Logic.settings.customCategories then return {} end
+
+    local used = {}
+    for _, loc in ipairs(Logic.locations) do
+        if loc.category then used[string.lower(loc.category)] = true end
+    end
+
+    local unused = {}
+    for _, c in ipairs(Logic.settings.customCategories) do
+        if not used[string.lower(c.name)] then
+            table.insert(unused, { name = c.name, icon = c.icon })
+        end
+    end
+
+    table.sort(unused, function(a, b) return a.name < b.name end)
+    return unused
+end
+
+--- Delete several custom categories at once.
+--- One Save at the end rather than one per category, so a list of twenty is a single write.
+---@param names table<string, boolean> Set of category names to remove, keyed by name
+---@return number removed
+function Logic.DeleteCategories(names)
+    if not Logic.settings.customCategories then return 0 end
+
+    local wanted = {}
+    for name, on in pairs(names) do
+        if on then wanted[string.lower(name)] = true end
+    end
+
+    local kept = {}
+    for _, c in ipairs(Logic.settings.customCategories) do
+        if not wanted[string.lower(c.name)] then
+            table.insert(kept, c)
+        end
+    end
+
+    local removed = #Logic.settings.customCategories - #kept
+    if removed > 0 then
+        Logic.settings.customCategories = kept
+        Logic.Save()
+        Utils.Info("Removed " .. removed .. " unused custom categor" ..
+            (removed == 1 and "y." or "ies."))
+    end
+    return removed
+end
+
 --- Update a custom category (Rename and/or Change Icon)
 function Logic.UpdateCategory(oldName, newName, newIcon)
     if not Logic.settings.customCategories then return false end

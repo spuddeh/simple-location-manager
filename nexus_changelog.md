@@ -3,6 +3,7 @@
 ### [Unreleased - v1.7.0]
 - New: Translations. The mod follows your game's language, or one you pick in Settings. Anything not yet translated shows in English. Adding a language takes a single file in the mod's lang folder - see the Translating article.
 - New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
+- New: Remove unused, in the Category Manager. Lists the custom categories no location uses and clears the ones you tick. Default categories are never listed, and no location changes - the category just comes off the list you pick from. Handy right after clearing out a preset, since a preset brings its own categories with it.
 - Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
 - Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 
@@ -107,6 +108,7 @@ Adds translations and a cleanup for locations left behind by an uninstalled pres
 <!-- nexus-description-end -->
 New: Translations. The mod follows your game's language, or one you pick in Settings. Anything not yet translated shows in English. Adding a language takes a single file in the mod's lang folder - see the Translating article.
 New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
+New: Remove unused, in the Category Manager. Lists the custom categories no location uses and clears the ones you tick. Default categories are never listed, and no location changes - the category just comes off the list you pick from. Handy right after clearing out a preset, since a preset brings its own categories with it.
 Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
 Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 ```
@@ -124,12 +126,13 @@ The history no longer fits one Nexus comment (5000 char limit), so it is 3 posts
 [b][size=3]Version 1.7.0[/size][/b]
 [list][*]New: Translations. The mod follows your game's language, or one you pick in Settings. Anything not yet translated shows in English. Adding a language takes a single file in the mod's lang folder - see the Translating article.
 [*]New: Remove Preset Locations, in Settings. Uninstall a preset and its locations stay behind; this lists the presets whose file is gone and clears them out, one preset at a time. Tick a preset on the left and the right side names every location it would remove, so nothing goes without you seeing it first. A location you had edited yourself is listed separately and kept, becoming your own, unless you tick the box to delete those too.
+[*]New: Remove unused, in the Category Manager. Lists the custom categories no location uses and clears the ones you tick. Default categories are never listed, and no location changes - the category just comes off the list you pick from. Handy right after clearing out a preset, since a preset brings its own categories with it.
 [*]Removed: Lazy Mode. The teleport button is now on every location without turning anything on first. The Safety Protocol notice is still in Settings.
 [*]Note: Cyrillic, Polish, Czech, Turkish, Chinese, Japanese and Korean need CET's own font language setting changed, in its config.json. CET draws this window and loads one alphabet at a time, which is not something a mod can set.
 [/list]
 ```
 
-> Character count: 1160 / 5000
+> Character count: 1489 / 5000
 
 ### Comment 2 - older versions
 
