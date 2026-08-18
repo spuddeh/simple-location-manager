@@ -56,6 +56,11 @@
 ### 1.0.0kp
 - Initial upload of the Konpeki Plaza SLM preset
 
+### 1.0.1apartments
+- All six apartments now sit inside the apartment itself rather than at the door or the elevator, so the district and sub-district are recorded correctly. V's Corpo Plaza Apartment had no sub-district at all: the lobby it was anchored in belongs to no district under City Center.
+- Your existing locations update in place. The ids are unchanged, so nothing duplicates.
+- Note: you now arrive inside the apartment. If you have not bought it, that is still where you land.
+
 ### 1.0.0apartments
 - Initial upload of the Vanilla/DLC apartments preset
 

@@ -49,7 +49,13 @@ CONT = "[i](Continued - older versions)[/i]\n\n"
 BODY_MARKER = "\n---\n## Release body"
 BBC_MARKER = "\n---\n## Stickied Comment BBCode"
 
-SKIP = {"1.0.0joker", "1.0.0kp", "1.0.0apartments"}
+# A preset carries a per-file suffixed tag - "1.0.1apartments", "1.0.0kp" - and releases on its
+# own schedule. Those belong to the preset's file, not to this mod's page changelog, so the
+# sticky comment carries only SLM's own semver versions.
+#
+# Matched by SHAPE rather than listed. The list this replaces named three suffixed versions, and
+# a fourth added later went straight into the comment because nobody remembered to extend it.
+SLM_VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 
 # The file description field, capped by Nexus at 255 characters. The workflow truncates at a
 # word boundary and warns, so overrunning is quiet rather than loud.
@@ -74,7 +80,7 @@ def read_sections(body):
         title, rest = m.group(1).strip(), m.group(2)
         unreleased = re.match(r"\[Unreleased - v(.+)\]$", title)
         version = unreleased.group(1) if unreleased else title
-        if version in SKIP:
+        if not SLM_VERSION.match(version):
             continue
         bullets = [ln[2:].strip() for ln in rest.splitlines() if ln.startswith("- ")]
         if bullets:
