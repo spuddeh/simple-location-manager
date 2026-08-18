@@ -57,6 +57,11 @@ BBC_MARKER = "\n---\n## Stickied Comment BBCode"
 # a fourth added later went straight into the comment because nobody remembered to extend it.
 SLM_VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 
+# Nexus v3 validates an artifact's display name and 422s the upload otherwise. It fails AFTER
+# the file has been sent, so the release looks like it is working right up until it is not -
+# "Vanilla & DLC Apartments Preset" and "Balatro / Jim B Joker Preset" both did.
+NEXUS_NAME = re.compile(r"^[a-zA-Z0-9 _'().-]+$")
+
 # The file description field, capped by Nexus at 255 characters. The workflow truncates at a
 # word boundary and warns, so overrunning is quiet rather than loud.
 FILE_DESCRIPTION = (
@@ -109,7 +114,27 @@ def pack(blocks):
     return comments
 
 
+def check_display_names():
+    """Every artifact name Nexus will accept. Checked here because this script runs before a
+    release by definition - the wording change that breaks a name is the same edit that brings
+    someone to this file."""
+    import json
+    bad = []
+    with io.open("release-manifest.json", encoding="utf-8") as fh:
+        for key, art in json.load(fh)["artifacts"].items():
+            name = art.get("displayName", "")
+            if not NEXUS_NAME.match(name):
+                offending = sorted({c for c in name if not NEXUS_NAME.match(c)})
+                bad.append(f"{key}: {name!r} contains {offending}")
+    if bad:
+        raise SystemExit("displayName rejected by Nexus (^[a-zA-Z0-9 _'().-]+$):\n  "
+                         + "\n  ".join(bad))
+    print("display names: all accepted by Nexus")
+
+
 def main():
+    check_display_names()
+
     s = io.open(CHANGELOG, encoding="utf-8").read()
     sections = read_sections(s.split("\n---\n## Notes")[0])
 
